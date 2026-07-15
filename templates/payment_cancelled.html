@@ -1,0 +1,111 @@
+{% extends "base.html" %}
+{% block title %}Payment Cancelled - {{ company_name }}{% endblock %}
+
+{% block styles %}
+{{ super() }}
+<style>
+    .auth-container {
+        padding: 80px 0 100px;
+        background: #fff;
+    }
+
+    .auth-card {
+        background: #fff;
+        border-radius: 30px;
+        border: 1px solid #f0f0f0;
+        box-shadow: 0 20px 50px rgba(0, 0, 0, 0.04);
+        overflow: hidden;
+    }
+
+    .auth-card-body {
+        padding: 50px;
+    }
+
+    .auth-card h2 {
+        font-family: 'Playfair Display', serif;
+        font-weight: 700;
+        color: #1a1a1a;
+    }
+
+    .btn-auth {
+        background: #1a1a1a;
+        color: #fff;
+        padding: 15px 30px;
+        border-radius: 50px;
+        font-weight: 700;
+        text-transform: uppercase;
+        letter-spacing: 2px;
+        font-size: 0.85rem;
+        border: none;
+        transition: all 0.3s;
+    }
+
+    .btn-auth:hover {
+        background: #a64d79;
+        color: #fff;
+        transform: translateY(-3px);
+        box-shadow: 0 10px 25px rgba(166, 77, 121, 0.2);
+    }
+    
+    .btn-outline-auth {
+        background: transparent;
+        color: #1a1a1a;
+        padding: 15px 30px;
+        border-radius: 50px;
+        font-weight: 700;
+        text-transform: uppercase;
+        letter-spacing: 2px;
+        font-size: 0.85rem;
+        border: 2px solid #1a1a1a;
+        transition: all 0.3s;
+    }
+
+    .btn-outline-auth:hover {
+        background: #1a1a1a;
+        color: #fff;
+        transform: translateY(-3px);
+    }
+</style>
+{% endblock %}
+
+{% block content %}
+<div class="auth-container">
+    <div class="container">
+        <div class="row justify-content-center">
+            <div class="col-md-8" data-reveal="bottom">
+                <div class="auth-card">
+                    <div class="auth-card-body text-center">
+                        <div class="mb-4">
+                            <i class="fas fa-times-circle" style="font-size:5rem;color:#e74c3c;"></i>
+                        </div>
+                        <h2 class="mb-3">Payment Cancelled</h2>
+                        <p class="text-muted mb-2" style="font-size: 1.1rem;">Your online payment was not completed for Order #{{ order.id }}.</p>
+                        <p class="text-muted mb-5">Your order is saved. You can retry payment or switch to Cash on Delivery.</p>
+
+                        <div class="d-flex flex-column flex-md-row justify-content-center align-items-center gap-3" style="gap: 15px;">
+                            <!-- Retry Online Payment -->
+                            <a href="{{ url_for('checkout_bp.initiate_phonepe_payment', order_id=order.id) }}" class="btn btn-auth">
+                                <i class="fas fa-redo mr-2"></i> Retry Payment
+                            </a>
+
+                            <!-- Switch to COD -->
+                            <form method="POST" action="{{ url_for('checkout_bp.switch_to_cod', order_id=order.id) }}" onsubmit="return confirm('Are you sure you want to switch to Cash on Delivery?')">
+                                <input type="hidden" name="csrf_token" value="{{ csrf_token() }}">
+                                <button type="submit" class="btn btn-outline-auth">
+                                    <i class="fas fa-money-bill-wave mr-2"></i> Switch to COD
+                                </button>
+                            </form>
+                        </div>
+
+                        <div class="mt-5">
+                            <a href="{{ url_for('checkout_bp.checkout') }}" class="text-muted small text-uppercase font-weight-bold" style="letter-spacing: 1px;">
+                                <i class="fas fa-arrow-left mr-1"></i> Go back to Checkout
+                            </a>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}

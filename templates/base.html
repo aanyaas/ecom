@@ -1,0 +1,3228 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="utf-8">
+    <title>{% block title %}{{ company_name }} - Handmade Jewellery & Handicrafts{% endblock %}</title>
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <meta name="description"
+        content="{% block meta_description %}Discover exquisite handmade jewellery and handicrafts at {{ company_name }}. Shop unique necklaces, earrings, bracelets, rings, and more with free shipping and easy returns.{% endblock %}">
+    <meta name="keywords"
+        content="{% block meta_keywords %}handmade jewellery, handicraft, necklaces, earrings, bracelets, rings, Indian crafts, artisan jewellery{% endblock %}">
+    <meta name="color-scheme" content="light">
+
+    <!-- Open Graph / Facebook -->
+    <meta property="og:type" content="{% block og_type %}website{% endblock %}">
+    <meta property="og:url" content="{{ request.url }}">
+    <meta property="og:title" content="{% block og_title %}{{ self.title() }}{% endblock %}">
+    <meta property="og:description" content="{% block og_description %}{{ self.meta_description() }}{% endblock %}">
+    <meta property="og:image"
+        content="{% block og_image %}{{ url_for('static', filename='img/logo.png', _external=True) }}{% endblock %}">
+
+    <!-- Twitter -->
+    <meta property="twitter:card" content="summary_large_image">
+    <meta property="twitter:url" content="{{ request.url }}">
+    <meta property="twitter:title" content="{{ self.og_title() }}">
+    <meta property="twitter:description" content="{{ self.og_description() }}">
+    <meta property="twitter:image" content="{{ self.og_image() }}">
+
+    {% block schema_markup %}{% endblock %}
+
+    <meta name="csrf-token" content="{{ csrf_token() }}">
+
+    <!-- Favicon -->
+    <link href="{{ url_for('static', filename='img/favicon.ico') }}" rel="icon">
+
+    <!-- Google Fonts -->
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link
+        href="https://fonts.googleapis.com/css2?family=Playfair+Display:ital,wght@0,400;0,700;0,900;1,400&family=Poppins:wght@300;400;500;600;700&display=swap"
+        rel="stylesheet">
+    <!-- Fontshare Premium Fonts -->
+    <link href="https://api.fontshare.com/v2/css?f[]=boska@700,900&f[]=general-sans@400,500,600,700&display=swap"
+        rel="stylesheet">
+
+    <!-- Font Awesome -->
+    <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/5.15.4/css/all.min.css" rel="stylesheet">
+
+    <!-- Owl Carousel -->
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/OwlCarousel2/2.3.4/assets/owl.carousel.min.css">
+    <link rel="stylesheet"
+        href="https://cdnjs.cloudflare.com/ajax/libs/OwlCarousel2/2.3.4/assets/owl.theme.default.min.css">
+
+    <!-- Bootstrap CSS -->
+    <link rel="stylesheet" href="https://stackpath.bootstrapcdn.com/bootstrap/4.4.1/css/bootstrap.min.css">
+    <!-- Custom CSS -->
+    <link href="{{ url_for('static', filename='css/style.css') }}" rel="stylesheet">
+    <link href="https://cdn.jsdelivr.net/npm/nouislider@15.7.1/dist/nouislider.min.css" rel="stylesheet">
+    {% block styles %}{% endblock %}
+
+    {%- set _theme = get_config('THEME', {}) %}
+    <script>
+        // Set CSS variables via JS to prevent HTML/CSS formatters from breaking Jinja syntax
+        const root = document.documentElement;
+        root.style.setProperty('--primary-color', `{{ _theme.get("primary_color", "#a64d79") }}`);
+        root.style.setProperty('--secondary-color', `{{ _theme.get("secondary_color", "#ba6286") }}`);
+        root.style.setProperty('--accent-color', `{{ _theme.get("accent_color", "#e8c08a") }}`);
+        root.style.setProperty('--bg-warm', `{{ _theme.get("bg_warm", "#fdf6f0") }}`);
+        root.style.setProperty('--dark-color', `{{ _theme.get("text_dark", "#1a1a1a") }}`);
+        root.style.setProperty('--font-heading', `{{ _theme.get("font_heading", "'Boska', serif")|safe }}`);
+        root.style.setProperty('--font-body', `{{ _theme.get("font_body", "'General Sans', sans-serif")|safe }}`);
+    </script>
+    <style>
+        /* ===== LUXURY GLOBAL STYLES (JSON-driven theme) ===== */
+        :root {
+            --light-color: #f8f4ef;
+            --text-color: #2f2a26;
+            --transition: all 0.4s cubic-bezier(0.165, 0.84, 0.44, 1);
+        }
+
+        body {
+            background-color: var(--light-color);
+            color: var(--text-color);
+            font-family: 'General Sans', 'Poppins', sans-serif;
+            overflow-x: hidden;
+            scroll-behavior: smooth;
+        }
+
+        /* Custom Scrollbar */
+        ::-webkit-scrollbar {
+            width: 8px;
+        }
+
+        ::-webkit-scrollbar-track {
+            background: #f1f1f1;
+        }
+
+        ::-webkit-scrollbar-thumb {
+            background: #ba6286;
+            border-radius: 10px;
+        }
+
+        ::-webkit-scrollbar-thumb:hover {
+            background: #a64d79;
+        }
+
+        /* Reveal Animations */
+        .reveal {
+            opacity: 0;
+            transform: translateY(30px);
+            transition: all 0.8s ease;
+        }
+
+        .reveal.active {
+            opacity: 1;
+            transform: translateY(0);
+        }
+
+        /* WhatsApp floating button */
+        .whatsapp-float {
+            position: fixed;
+            width: 60px;
+            height: 60px;
+            left: 25px;
+            bottom: 25px;
+            background: #25D366;
+            color: #fff !important;
+            border-radius: 50%;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 32px;
+            box-shadow: 0 10px 25px rgba(37, 211, 102, 0.3);
+            z-index: 9999;
+            text-decoration: none;
+            transition: var(--transition);
+        }
+
+        .whatsapp-float:hover {
+            transform: scale(1.1) rotate(10deg);
+            box-shadow: 0 15px 30px rgba(37, 211, 102, 0.4);
+        }
+
+        /* Back to top button */
+        .back-to-top {
+            position: fixed;
+            bottom: 100px;
+            right: 25px;
+            display: none;
+            z-index: 1000;
+            background: var(--secondary-color);
+            border-radius: 50%;
+            width: 45px;
+            height: 45px;
+            text-align: center;
+            line-height: 45px;
+            color: white;
+            border: none;
+            box-shadow: 0 5px 15px rgba(0, 0, 0, 0.1);
+            transition: var(--transition);
+        }
+
+        .back-to-top:hover {
+            background: var(--primary-color);
+            transform: translateY(-5px);
+            color: white;
+        }
+
+        /* 3D Tilt Effect CSS Support */
+        .product-card {
+            transform-style: preserve-3d;
+            transition: transform 0.1s ease-out, box-shadow 0.1s ease-out;
+            will-change: transform;
+        }
+
+        .product-card:hover {
+            box-shadow: 0 20px 40px rgba(0, 0, 0, 0.2) !important;
+        }
+
+        html[data-theme="dark"] .product-card:hover {
+            box-shadow: 0 20px 40px rgba(255, 255, 255, 0.05) !important;
+        }
+
+        /* Glassmorphism Header */
+        .header-sticky {
+            position: sticky;
+            top: 0;
+            width: 100%;
+            z-index: 1000;
+            background: rgba(255, 255, 255, 0.95);
+            backdrop-filter: blur(10px);
+            border-bottom: 1px solid rgba(0, 0, 0, 0.05);
+            transition: all 0.3s ease;
+        }
+
+        .header-scrolled {
+            padding: 10px 0 !important;
+            box-shadow: 0 10px 30px rgba(0, 0, 0, 0.05);
+        }
+
+        .serif-font {
+            font-family: 'Boska', 'Playfair Display', serif !important;
+        }
+
+        /* Modern Cart Badge */
+        .cart-count {
+            background: var(--primary-color);
+            color: #fff;
+            font-size: 10px;
+            font-weight: 700;
+            padding: 2px 6px;
+            border-radius: 50px;
+            position: absolute;
+            top: -5px;
+            right: -5px;
+            border: 2px solid #fff;
+            transition: transform 0.2s ease;
+        }
+
+        /* Custom Pulse Animation for Cart Count Badge */
+        @keyframes cartPulse {
+            0% {
+                transform: scale(1);
+            }
+
+            50% {
+                transform: scale(1.4);
+            }
+
+            100% {
+                transform: scale(1);
+            }
+        }
+
+        .cart-badge--pulse {
+            animation: cartPulse 0.4s ease-out;
+        }
+
+        /* Luxury Site Footer Redesign */
+        .site-footer {
+            background: linear-gradient(135deg, #1c1518 0%, #2b1f24 100%);
+            color: #fdfdfd;
+            padding: 90px 0 30px 0;
+            font-family: 'Poppins', sans-serif;
+            border-top: 1px solid rgba(166, 77, 121, 0.15);
+            position: relative;
+            overflow: hidden;
+        }
+
+        .site-footer::before {
+            content: '';
+            position: absolute;
+            top: 0;
+            right: 0;
+            width: 50%;
+            height: 100%;
+            background: radial-gradient(circle at top right, rgba(166, 77, 121, 0.08), transparent 60%);
+            pointer-events: none;
+        }
+
+        .footer-brand h1 {
+            font-family: 'Playfair Display', serif;
+            letter-spacing: 6px;
+            font-weight: 900;
+            margin-bottom: 25px;
+            background: linear-gradient(45deg, #fff, #e8c08a);
+            -webkit-background-clip: text;
+            background-clip: text;
+            -webkit-text-fill-color: transparent;
+            display: inline-block;
+        }
+
+        .footer-brand p {
+            color: #d1c8c8;
+            line-height: 1.9;
+            font-size: 0.95rem;
+            font-weight: 300;
+        }
+
+        .footer-contact p {
+            margin-bottom: 15px;
+            display: flex;
+            align-items: center;
+            color: #eee;
+            font-size: 0.95rem;
+            transition: color 0.3s ease;
+        }
+
+        .footer-contact p:hover {
+            color: var(--accent-color, #e8c08a);
+        }
+
+        .footer-contact i {
+            width: 42px;
+            height: 42px;
+            background: rgba(255, 255, 255, 0.03);
+            border: 1px solid rgba(255, 255, 255, 0.08);
+            border-radius: 50%;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            margin-right: 15px;
+            color: var(--accent-color, #e8c08a);
+            transition: all 0.4s cubic-bezier(0.165, 0.84, 0.44, 1);
+        }
+
+        .footer-contact p:hover i {
+            background: var(--accent-color, #e8c08a);
+            color: #1a1014;
+            transform: scale(1.1) rotate(10deg);
+            border-color: var(--accent-color, #e8c08a);
+        }
+
+        .site-footer h5 {
+            font-family: 'Playfair Display', serif;
+            font-weight: 700;
+            font-size: 1.25rem;
+            margin-bottom: 35px;
+            color: #fff;
+            position: relative;
+            letter-spacing: 1.5px;
+            text-transform: uppercase;
+        }
+
+        .site-footer h5::after {
+            content: '';
+            position: absolute;
+            bottom: -12px;
+            left: 0;
+            width: 40px;
+            height: 2px;
+            background: linear-gradient(90deg, var(--accent-color, #e8c08a), transparent);
+            transition: width 0.4s ease;
+        }
+
+        .site-footer .col-md-4:hover h5::after {
+            width: 70px;
+        }
+
+        .site-footer a:not(.btn):not(.footer-brand a) {
+            color: #bbb;
+            transition: var(--transition);
+            text-decoration: none !important;
+            font-size: 0.95rem;
+            display: inline-block;
+            position: relative;
+        }
+
+        .site-footer a:not(.social-links a):not(.btn):not(.footer-brand a):hover {
+            color: var(--accent-color, #e8c08a);
+            transform: translateX(8px);
+        }
+
+        /* Luxury Newsletter Enhancement */
+        .newsletter-form {
+            background: rgba(255, 255, 255, 0.04);
+            padding: 6px;
+            border-radius: 50px;
+            border: 1px solid rgba(255, 255, 255, 0.08);
+            box-shadow: inset 0 2px 10px rgba(0, 0, 0, 0.2);
+            transition: all 0.4s cubic-bezier(0.165, 0.84, 0.44, 1);
+            display: flex;
+            align-items: center;
+        }
+
+        .newsletter-form:focus-within {
+            border-color: rgba(232, 192, 138, 0.4);
+            box-shadow: 0 0 20px rgba(232, 192, 138, 0.1), inset 0 2px 10px rgba(0, 0, 0, 0.2);
+            background: rgba(255, 255, 255, 0.06);
+        }
+
+        .newsletter-form input {
+            background: transparent !important;
+            border: none !important;
+            color: #fff !important;
+            padding-left: 15px;
+            box-shadow: none !important;
+            font-size: 0.9rem;
+            height: 45px;
+            flex: 1;
+            min-width: 0;
+        }
+
+        .newsletter-form input::placeholder {
+            color: #888;
+            font-weight: 300;
+        }
+
+        .newsletter-form .btn-primary {
+            background: linear-gradient(135deg, var(--secondary-color, #ba6286), var(--primary-color, #a64d79));
+            color: #fff !important;
+            border: none;
+            border-radius: 50px !important;
+            padding: 0 22px;
+            height: 42px;
+            font-weight: 600;
+            text-transform: uppercase;
+            letter-spacing: 1px;
+            font-size: 0.8rem;
+            box-shadow: 0 4px 15px rgba(166, 77, 121, 0.25);
+            transition: all 0.3s ease;
+            white-space: nowrap;
+        }
+
+        .newsletter-form .btn-primary:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 8px 25px rgba(166, 77, 121, 0.4);
+            background: linear-gradient(135deg, var(--primary-color, #a64d79), var(--secondary-color, #ba6286));
+            color: #fff !important;
+        }
+
+        .social-links {
+            display: flex;
+            gap: 12px;
+            margin-top: 30px;
+        }
+
+        .social-links a {
+            width: 48px;
+            height: 48px;
+            background: rgba(255, 255, 255, 0.04);
+            border: 1px solid rgba(255, 255, 255, 0.08);
+            color: #fff !important;
+            border-radius: 50%;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 1.25rem;
+            transition: all 0.4s cubic-bezier(0.175, 0.885, 0.32, 1.275);
+            position: relative;
+            overflow: hidden;
+            z-index: 1;
+        }
+
+        .social-links a i {
+            color: #fff !important;
+            z-index: 2;
+        }
+
+        .social-links a::before {
+            content: '';
+            position: absolute;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            z-index: -1;
+            transition: all 0.4s cubic-bezier(0.175, 0.885, 0.32, 1.275);
+            opacity: 0;
+            transform: scale(0.5);
+            border-radius: 50%;
+        }
+
+        .social-links a:hover::before {
+            opacity: 1;
+            transform: scale(1);
+        }
+
+        .social-links a:hover {
+            border-color: transparent;
+            transform: translateY(-6px) scale(1.1);
+            color: #fff;
+        }
+
+        .social-links a.facebook-icon:hover {
+            box-shadow: 0 10px 20px rgba(24, 119, 242, 0.4);
+        }
+
+        .social-links a.facebook-icon::before {
+            background: #1877F2;
+        }
+
+        .social-links a.instagram-icon:hover {
+            box-shadow: 0 10px 20px rgba(225, 48, 108, 0.4);
+        }
+
+        .social-links a.instagram-icon::before {
+            background: linear-gradient(45deg, #f09433 0%, #e6683c 25%, #dc2743 50%, #cc2366 75%, #bc1888 100%);
+        }
+
+        .social-links a.youtube-icon:hover {
+            box-shadow: 0 10px 20px rgba(255, 0, 0, 0.4);
+        }
+
+        .social-links a.youtube-icon::before {
+            background: #FF0000;
+        }
+
+        .footer-bottom {
+            border-top: 1px solid rgba(255, 255, 255, 0.05);
+            padding-top: 30px;
+            margin-top: 70px;
+        }
+
+        .footer-tags a {
+            color: #888;
+            font-size: 0.85rem;
+            margin: 0 6px;
+        }
+
+        .footer-tags a:hover {
+            color: var(--accent-color);
+            transform: none !important;
+        }
+
+        #toast-container {
+            position: fixed;
+            top: 20px;
+            right: 20px;
+            z-index: 10050;
+            display: flex;
+            flex-direction: column;
+            gap: 15px;
+            pointer-events: none;
+        }
+
+        .aanyaas-toast {
+            pointer-events: auto;
+            display: flex;
+            align-items: flex-start;
+            gap: 14px;
+            padding: 16px;
+            border-radius: 16px;
+            box-shadow: 0 8px 30px rgba(0, 0, 0, 0.12);
+            position: relative;
+            overflow: hidden;
+            animation: toastSlideIn 0.4s cubic-bezier(0.175, 0.885, 0.32, 1.275) forwards;
+            background: #fff;
+            border-left: 5px solid #ba6286;
+        }
+
+        .aanyaas-toast.toast-success {
+            border-left-color: #28a745;
+            background: #f6fff8;
+        }
+
+        .aanyaas-toast.toast-error,
+        .aanyaas-toast.toast-danger {
+            border-left-color: #dc3545;
+            background: #fff8f8;
+        }
+
+        .aanyaas-toast.toast-warning {
+            border-left-color: #fd7e14;
+            background: #fffbf4;
+        }
+
+        .aanyaas-toast.toast-info {
+            border-left-color: #17a2b8;
+            background: #f4fbfd;
+        }
+
+        .toast-icon-wrap {
+            font-size: 22px;
+            flex-shrink: 0;
+        }
+
+        .toast-success .toast-icon-wrap {
+            color: #28a745;
+        }
+
+        .toast-error .toast-icon-wrap {
+            color: #dc3545;
+        }
+
+        .toast-body-wrap {
+            flex: 1;
+        }
+
+        .toast-title {
+            font-weight: 700;
+            font-size: 13px;
+            text-transform: uppercase;
+            letter-spacing: 0.05em;
+            margin-bottom: 3px;
+        }
+
+        .toast-message {
+            font-size: 14px;
+            color: #555;
+            line-height: 1.45;
+        }
+
+        .toast-close {
+            background: none;
+            border: none;
+            font-size: 20px;
+            cursor: pointer;
+            padding: 0;
+            margin-top: -2px;
+            color: #aaa;
+        }
+
+        .toast-close:hover {
+            color: #555;
+        }
+
+        .toast-progress {
+            position: absolute;
+            bottom: 0;
+            left: 0;
+            height: 4px;
+            width: 100%;
+            background: rgba(0, 0, 0, 0.08);
+            animation: toastProgress 4s linear forwards;
+        }
+
+        @keyframes toastSlideIn {
+            from {
+                opacity: 0;
+                transform: translateX(100%) scale(0.9);
+            }
+
+            to {
+                opacity: 1;
+                transform: translateX(0) scale(1);
+            }
+        }
+
+        @keyframes toastSlideOut {
+            from {
+                opacity: 1;
+                transform: translateX(0) scale(1);
+                max-height: 200px;
+                margin-bottom: 0;
+            }
+
+            to {
+                opacity: 0;
+                transform: translateX(100%) scale(0.9);
+                max-height: 0;
+                margin-bottom: -12px;
+            }
+        }
+
+        @keyframes toastProgress {
+            from {
+                width: 100%;
+            }
+
+            to {
+                width: 0%;
+            }
+        }
+
+        .aanyaas-toast.dismissing {
+            animation: toastSlideOut 0.35s ease-in forwards;
+        }
+
+        @media (max-width: 480px) {
+            #toast-container {
+                top: 10px;
+                right: 10px;
+                max-width: calc(100% - 20px);
+            }
+        }
+
+        .footer-tags {
+            font-size: 12px;
+            line-height: 1.8;
+            color: #4a3f3a;
+        }
+
+        .footer-tags span {
+            display: inline-block;
+            margin: 0 1px;
+        }
+
+        .footer-tags span:hover {
+            color: #ba6286;
+            transition: color 0.2s ease;
+        }
+
+        /* Modern Premium Sliding Cart Drawer */
+        #cartDrawerOverlay {
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background: rgba(0, 0, 0, 0.4);
+            backdrop-filter: blur(4px);
+            -webkit-backdrop-filter: blur(4px);
+            z-index: 10000;
+            display: none;
+            opacity: 0;
+            transition: opacity 0.4s cubic-bezier(0.165, 0.84, 0.44, 1);
+        }
+
+        #cartDrawerOverlay.active {
+            display: block;
+            opacity: 1;
+        }
+
+        #cartDrawer {
+            position: fixed;
+            top: 0;
+            right: -460px;
+            width: 450px;
+            max-width: 100%;
+            height: 100%;
+            background: #fff;
+            box-shadow: -10px 0 35px rgba(0, 0, 0, 0.1);
+            z-index: 10010;
+            transition: right 0.4s cubic-bezier(0.165, 0.84, 0.44, 1);
+            overflow: hidden;
+        }
+
+        #cartDrawer.active {
+            right: 0;
+        }
+
+        .cart-drawer-header {
+            padding: 20px;
+            border-bottom: 1px solid #f0edf0;
+        }
+
+        .cart-drawer-close {
+            font-size: 28px;
+            cursor: pointer;
+            border: none;
+            background: none;
+            color: #555;
+            transition: transform 0.3s;
+            line-height: 1;
+        }
+
+        .cart-drawer-close:hover {
+            color: var(--primary-color);
+            transform: rotate(90deg);
+        }
+
+        /* Cart Drawer Items Styling */
+        .cart-drawer-item {
+            display: flex;
+            align-items: center;
+            padding: 15px 0;
+            border-bottom: 1px solid #f8f5f8;
+            transition: all 0.35s ease;
+        }
+
+        .cart-drawer-item-img {
+            width: 80px;
+            height: 96px;
+            object-fit: cover;
+            border-radius: 8px;
+            background: #f8f4ef;
+            box-shadow: 0 4px 10px rgba(0, 0, 0, 0.03);
+        }
+
+        .cart-drawer-item-title {
+            font-family: 'Poppins', sans-serif;
+            font-weight: 500;
+            font-size: 0.95rem;
+            color: #2b2725;
+            text-decoration: none !important;
+            transition: color 0.2s;
+            display: -webkit-box;
+            -webkit-line-clamp: 1;
+            line-clamp: 1;
+            -webkit-box-orient: vertical;
+            overflow: hidden;
+        }
+
+        .cart-drawer-item-title:hover {
+            color: var(--primary-color);
+        }
+
+        .cart-drawer-qty-pill {
+            display: inline-flex;
+            align-items: center;
+            background: #fdf5f8;
+            border-radius: 30px;
+            padding: 4px 8px;
+            border: 1px solid rgba(166, 77, 121, 0.1);
+        }
+
+        .cart-drawer-qty-btn {
+            background: transparent;
+            border: none;
+            color: var(--primary-color);
+            font-size: 10px;
+            width: 20px;
+            height: 20px;
+            border-radius: 50%;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            transition: background 0.2s;
+        }
+
+        .cart-drawer-qty-btn:hover:not(:disabled) {
+            background: rgba(166, 77, 121, 0.1);
+        }
+
+        .cart-drawer-qty-input {
+            width: 26px;
+            border: none;
+            background: transparent;
+            text-align: center;
+            font-weight: 600;
+            font-size: 0.85rem;
+            color: #1a1a1a;
+        }
+
+        .cart-drawer-trash {
+            color: #ccc;
+            border: none;
+            background: transparent;
+            font-size: 1.1rem;
+            transition: all 0.2s;
+            padding: 0;
+            cursor: pointer;
+        }
+
+        .cart-drawer-trash:hover {
+            color: #dc3545;
+            transform: scale(1.1);
+        }
+
+        /* Best Offers Cross Sell Items */
+        .best-offer-item {
+            display: flex;
+            align-items: center;
+            background: #fdfdfd;
+            border: 1px solid #f0eaf0;
+            border-radius: 12px;
+            padding: 10px;
+            transition: all 0.3s;
+        }
+
+        .best-offer-item:hover {
+            box-shadow: 0 4px 15px rgba(166, 77, 121, 0.05);
+            border-color: rgba(166, 77, 121, 0.2);
+        }
+
+        .best-offer-img {
+            width: 50px;
+            height: 60px;
+            object-fit: cover;
+            border-radius: 6px;
+        }
+
+        .best-offer-add-btn {
+            background: transparent;
+            border: 1px solid var(--primary-color);
+            color: var(--primary-color);
+            border-radius: 20px;
+            padding: 4px 12px;
+            font-size: 0.75rem;
+            font-weight: 700;
+            transition: all 0.3s;
+            cursor: pointer;
+        }
+
+        .best-offer-add-btn:hover {
+            background: var(--primary-color);
+            color: #fff;
+            transform: scale(1.05);
+        }
+
+        /* Modal Coupon Tile */
+        .coupon-modal-tile {
+            background: #fff;
+            border: 1.5px dashed var(--primary-color);
+            border-radius: 15px;
+            padding: 15px;
+            position: relative;
+            cursor: pointer;
+            transition: all 0.3s;
+        }
+
+        .coupon-modal-tile:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 8px 20px rgba(166, 77, 121, 0.1);
+            background: #fffcfd;
+        }
+
+        .coupon-modal-apply-btn {
+            background: var(--primary-color);
+            color: white;
+            border: none;
+            border-radius: 20px;
+            padding: 4px 12px;
+            font-size: 0.75rem;
+            font-weight: 600;
+        }
+
+        /* Cart Drawer Coupons Screen Sliding Sub-pane */
+        #cartDrawerCouponsScreen {
+            position: absolute;
+            top: 0;
+            right: -100%;
+            width: 100%;
+            height: 100%;
+            background: #fff;
+            z-index: 10020;
+            transition: right 0.4s cubic-bezier(0.165, 0.84, 0.44, 1);
+            display: flex;
+            flex-direction: column;
+        }
+
+        #cartDrawerCouponsScreen.active {
+            right: 0;
+        }
+
+        .coupon-tile-premium {
+            background: #fff;
+            border: 1.5px dashed var(--primary-color);
+            border-radius: 16px;
+            padding: 18px;
+            margin-bottom: 16px;
+            cursor: pointer;
+            transition: all 0.3s ease;
+            position: relative;
+            overflow: hidden;
+        }
+
+        .coupon-tile-premium:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 8px 25px rgba(166, 77, 121, 0.1);
+        }
+
+        .coupon-tile-premium.disabled {
+            border-color: #dcd7dc;
+            cursor: not-allowed;
+            opacity: 0.85;
+        }
+
+        .coupon-tile-premium.disabled:hover {
+            transform: none;
+            box-shadow: none;
+        }
+
+        .coupon-tile-premium .coupon-badge {
+            background: rgba(166, 77, 121, 0.08);
+            color: var(--primary-color);
+            font-weight: 700;
+            padding: 4px 10px;
+            border-radius: 20px;
+            font-size: 0.72rem;
+            display: inline-block;
+        }
+
+        .coupon-tile-premium.disabled .coupon-badge {
+            background: #f0edf0;
+            color: #8c888c;
+        }
+
+        .coupon-tile-apply-btn {
+            background: var(--primary-color);
+            color: white;
+            border: none;
+            border-radius: 30px;
+            padding: 6px 16px;
+            font-size: 0.78rem;
+            font-weight: 700;
+            transition: all 0.2s ease;
+            color: #fff !important;
+        }
+
+        .coupon-tile-apply-btn:hover {
+            background: var(--secondary-color);
+            transform: scale(1.05);
+        }
+
+        .coupon-tile-premium.disabled .coupon-tile-apply-btn {
+            background: #e8e5e8;
+            color: #8c888c !important;
+            cursor: not-allowed;
+            pointer-events: none;
+        }
+
+        /* Modern Premium Side Drawer */
+        #sideDrawer {
+            position: fixed;
+            top: 0;
+            left: -360px;
+            width: 360px;
+            max-width: 85vw;
+            height: 100%;
+            background: rgba(255, 255, 255, 0.95);
+            backdrop-filter: blur(25px);
+            -webkit-backdrop-filter: blur(25px);
+            z-index: 2001;
+            transition: all 0.4s cubic-bezier(0.165, 0.84, 0.44, 1);
+            box-shadow: 10px 0 40px rgba(0, 0, 0, 0.1);
+            overflow-y: auto;
+            overflow-x: hidden;
+            color: #2b2725;
+            border-right: 1px solid rgba(166, 77, 121, 0.15);
+        }
+
+        #sideDrawer.active {
+            left: 0;
+        }
+
+        #drawerOverlay {
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background: rgba(0, 0, 0, 0.65);
+            backdrop-filter: blur(6px);
+            -webkit-backdrop-filter: blur(6px);
+            z-index: 2000;
+            display: none;
+            opacity: 0;
+            transition: opacity 0.4s ease;
+        }
+
+        #drawerOverlay.active {
+            display: block;
+            opacity: 1;
+        }
+
+        .drawer-header {
+            padding: 20px;
+            position: relative;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            border-bottom: 1px solid rgba(0, 0, 0, 0.05);
+            background: linear-gradient(180deg, rgba(253, 246, 240, 0.9) 0%, rgba(255, 255, 255, 0) 100%);
+        }
+
+        .drawer-close {
+            position: absolute;
+            top: 20px;
+            right: 20px;
+            font-size: 26px;
+            cursor: pointer;
+            border: none;
+            background: #fff;
+            color: var(--primary-color);
+            width: 40px;
+            height: 40px;
+            border-radius: 50%;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            transition: all 0.3s;
+            line-height: 1;
+            box-shadow: 0 4px 10px rgba(0, 0, 0, 0.05);
+        }
+
+        .drawer-close:hover {
+            background: var(--primary-color);
+            color: #fff;
+            transform: rotate(90deg) scale(1.1);
+            box-shadow: 0 6px 15px rgba(166, 77, 121, 0.2);
+        }
+
+        .drawer-content {
+            padding: 15px 0 30px;
+        }
+
+        .drawer-content .nav-link {
+            padding: 12px 30px;
+            border-bottom: 1px solid rgba(0, 0, 0, 0.03);
+            color: #2b2725;
+            font-weight: 600;
+            font-family: 'Poppins', sans-serif;
+            font-size: 0.95rem;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            transition: all 0.3s cubic-bezier(0.165, 0.84, 0.44, 1);
+            position: relative;
+            overflow: hidden;
+            text-transform: uppercase;
+            letter-spacing: 1px;
+        }
+
+        .drawer-content .nav-link i.fa-angle-right {
+            transition: transform 0.3s;
+            color: #a64d79;
+        }
+
+        .drawer-content .nav-link.active-dropdown i.fa-angle-right {
+            transform: rotate(90deg);
+        }
+
+        .drawer-content .nav-link::before {
+            content: '';
+            position: absolute;
+            left: 0;
+            top: 0;
+            height: 100%;
+            width: 4px;
+            background: var(--primary-color);
+            transform: scaleY(0);
+            transition: transform 0.3s ease;
+            transform-origin: center;
+        }
+
+        .drawer-content .nav-link:hover {
+            background: rgba(166, 77, 121, 0.04);
+            color: var(--primary-color);
+            padding-left: 36px;
+        }
+
+        .drawer-content .nav-link:hover::before {
+            transform: scaleY(1);
+        }
+
+        .drawer-content .dropdown-menu {
+            position: static;
+            width: 100%;
+            border: none;
+            background: rgba(253, 246, 240, 0.5);
+            padding: 8px 0 12px 0;
+            display: none;
+            box-shadow: inset 0 4px 10px rgba(0, 0, 0, 0.02);
+            margin: 0;
+            border-radius: 0;
+        }
+
+        .drawer-content .dropdown-menu.show {
+            display: block;
+            animation: drawerDropdownFade 0.3s ease-in-out forwards;
+        }
+
+        @keyframes drawerDropdownFade {
+            from {
+                opacity: 0;
+                transform: translateY(-5px);
+            }
+
+            to {
+                opacity: 1;
+                transform: translateY(0);
+            }
+        }
+
+        .drawer-content .dropdown-item {
+            padding: 12px 30px 12px 55px;
+            font-size: 0.9rem;
+            color: #555;
+            transition: all 0.3s;
+            font-family: 'General Sans', sans-serif;
+            position: relative;
+            font-weight: 500;
+        }
+
+        .drawer-content .dropdown-item::before {
+            content: '';
+            position: absolute;
+            left: 36px;
+            top: 50%;
+            transform: translateY(-50%);
+            width: 6px;
+            height: 6px;
+            border-radius: 50%;
+            background: #ddd;
+            transition: all 0.3s;
+        }
+
+        .drawer-content .dropdown-item:hover {
+            background: transparent;
+            color: var(--primary-color);
+            padding-left: 60px;
+        }
+
+        .drawer-content .dropdown-item:hover::before {
+            background: var(--primary-color);
+            box-shadow: 0 0 10px var(--primary-color);
+        }
+
+        /* Search Overlay Styles */
+        #searchOverlay {
+            position: fixed;
+            top: -140px;
+            left: 0;
+            width: 100%;
+            height: 120px;
+            background: rgba(255, 255, 255, 0.98);
+            backdrop-filter: blur(10px);
+            z-index: 2002;
+            transition: 0.5s cubic-bezier(0.16, 1, 0.3, 1);
+            box-shadow: 0 10px 40px rgba(0, 0, 0, 0.08);
+            display: flex;
+            align-items: center;
+            padding: 0 20px;
+        }
+
+        #searchOverlay.active {
+            top: 0;
+        }
+
+        #searchOverlay form {
+            max-width: 900px;
+            margin: 0 auto;
+            width: 100%;
+            display: flex;
+            align-items: center;
+        }
+
+        #searchOverlay input {
+            font-size: 32px;
+            border: none;
+            border-bottom: 1px solid #eee;
+            border-radius: 0;
+            padding: 15px 0;
+            background: transparent;
+            font-weight: 300;
+        }
+
+        #searchOverlay input:focus {
+            box-shadow: none;
+            outline: none;
+            border-bottom-color: #ba6286;
+        }
+
+        #closeSearch {
+            font-size: 40px;
+            cursor: pointer;
+            margin-left: 30px;
+            color: #999;
+            background: none;
+            border: none;
+            transition: color 0.2s;
+        }
+
+        #closeSearch:hover {
+            color: #333;
+        }
+
+        /* Premium Enhancements */
+        body {
+            font-family: 'Poppins', sans-serif;
+            background-color: #fdfcfd;
+            color: #2a2a2a;
+            overflow-x: hidden;
+        }
+
+        h1,
+        h2,
+        h3,
+        h4,
+        .serif-font {
+            font-family: 'Playfair Display', serif;
+        }
+
+        .text-primary {
+            color: #a64d79 !important;
+        }
+
+        .bg-primary {
+            background-color: #a64d79 !important;
+        }
+
+        /* Luxury Header */
+        .header-sticky {
+            position: sticky;
+            top: 0;
+            z-index: 1050;
+            background: rgba(255, 255, 255, 0.8);
+            backdrop-filter: blur(20px);
+            -webkit-backdrop-filter: blur(20px);
+            transition: all 0.4s cubic-bezier(0.165, 0.84, 0.44, 1);
+            border-bottom: 1px solid rgba(0, 0, 0, 0.05);
+        }
+
+        .header-sticky.scrolled {
+            padding: 5px 0 !important;
+            box-shadow: 0 10px 30px rgba(0, 0, 0, 0.05);
+        }
+
+        .brand-logo {
+            font-size: 36px;
+            letter-spacing: 6px;
+            font-weight: 900;
+            color: #1a1a1a;
+        }
+
+        @media (max-width: 768px) {
+            .brand-logo {
+                font-size: 26px;
+                letter-spacing: 3px;
+            }
+        }
+
+        @media (max-width: 480px) {
+            .brand-logo {
+                font-size: 19px;
+                letter-spacing: 2px;
+            }
+        }
+
+        .btn-primary {
+            background-color: #a64d79;
+            border-color: #a64d79;
+            border-radius: 50px;
+            padding: 12px 30px;
+            font-weight: 500;
+            letter-spacing: 1px;
+            transition: all 0.4s;
+            text-transform: uppercase;
+            font-size: 13px;
+        }
+
+        .btn-primary:hover {
+            background-color: #8c3a63;
+            transform: translateY(-3px);
+            box-shadow: 0 10px 20px rgba(166, 77, 121, 0.2);
+        }
+
+        /* Custom Scrollbar */
+        ::-webkit-scrollbar {
+            width: 6px;
+        }
+
+        ::-webkit-scrollbar-track {
+            background: #f1f1f1;
+        }
+
+        ::-webkit-scrollbar-thumb {
+            background: #a64d79;
+            border-radius: 10px;
+        }
+
+        /* Global Reveal Animation */
+        .reveal {
+            opacity: 0;
+            transform: translateY(30px);
+            transition: all 0.8s ease-out;
+        }
+
+        .reveal.active {
+            opacity: 1;
+            transform: translateY(0);
+        }
+
+        /* Luxury Product Card Design System */
+        .product-item {
+            background-color: transparent !important;
+            border: none !important;
+            border-radius: 0;
+            box-shadow: none;
+            transition: all 0.5s cubic-bezier(0.165, 0.84, 0.44, 1);
+            margin-bottom: 40px;
+        }
+
+        .product-img {
+            background: #f4f1ef;
+            aspect-ratio: 4 / 5;
+            position: relative;
+            overflow: hidden;
+            border-radius: 4px;
+        }
+
+        .product-img img {
+            width: 100%;
+            height: 100%;
+            object-fit: cover;
+            transition: transform 1.2s cubic-bezier(0.165, 0.84, 0.44, 1);
+        }
+
+        .product-item:hover .product-img img {
+            transform: scale(1.08);
+        }
+
+        .product-action {
+            position: absolute;
+            top: 50%;
+            left: 50%;
+            transform: translate(-50%, -20%);
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            gap: 15px;
+            opacity: 0;
+            visibility: hidden;
+            transition: all 0.4s cubic-bezier(0.165, 0.84, 0.44, 1);
+            z-index: 10;
+            width: 100%;
+        }
+
+        .product-item:hover .product-action {
+            opacity: 1;
+            visibility: visible;
+            transform: translate(-50%, -50%);
+        }
+
+        .product-action .btn {
+            width: 45px;
+            height: 45px;
+            border-radius: 50%;
+            background: rgba(255, 255, 255, 0.9);
+            backdrop-filter: blur(8px);
+            border: none;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            color: #1a1a1a;
+            box-shadow: 0 10px 20px rgba(0, 0, 0, 0.1);
+            transition: all 0.3s;
+            padding: 0;
+        }
+
+        .product-action .btn:hover {
+            background: #a64d79;
+            color: #fff;
+            transform: translateY(-5px);
+            box-shadow: 0 15px 25px rgba(166, 77, 121, 0.3);
+        }
+
+        .product-action .btn-in-cart {
+            width: auto !important;
+            height: 45px !important;
+            border-radius: 30px !important;
+            padding: 0 18px !important;
+            background: #25d366 !important;
+            color: #fff !important;
+            display: flex !important;
+            align-items: center;
+            gap: 8px;
+            font-size: 13px !important;
+            font-weight: 700 !important;
+            border: none !important;
+            box-shadow: 0 10px 20px rgba(37, 211, 102, 0.25);
+            text-decoration: none !important;
+            transition: all 0.3s;
+        }
+
+        .product-action .btn-in-cart:hover {
+            background: #1eb954 !important;
+            transform: scale(1.05);
+            box-shadow: 0 15px 25px rgba(37, 211, 102, 0.35);
+        }
+
+        .product-action .btn i {
+            font-size: 16px;
+        }
+
+        .product-discount-badge {
+            position: absolute;
+            top: 12px;
+            left: 12px;
+            background: #2f2a26;
+            color: #f7d49c;
+            padding: 5px 12px;
+            border-radius: 30px;
+            font-size: 11px;
+            font-weight: bold;
+            z-index: 2;
+        }
+
+        .product-soldout-badge {
+            position: absolute;
+            top: 12px;
+            right: 12px;
+            background: #ba6286;
+            color: white;
+            padding: 5px 12px;
+            border-radius: 30px;
+            font-size: 11px;
+            font-weight: bold;
+            z-index: 2;
+            box-shadow: 0 2px 6px rgba(0, 0, 0, 0.1);
+        }
+
+        /* Navbar Icons Enhancement */
+        .nav-icon-btn {
+            color: #2b2725 !important;
+            transition: all 0.3s cubic-bezier(0.165, 0.84, 0.44, 1);
+            position: relative;
+            display: inline-flex;
+            align-items: center;
+            justify-content: center;
+            width: 40px;
+            height: 40px;
+            border-radius: 50%;
+            background: transparent;
+        }
+
+        .nav-icon-btn:hover {
+            color: #a64d79 !important;
+            background: rgba(166, 77, 121, 0.05);
+            transform: translateY(-2px);
+        }
+
+        .nav-icon-btn i {
+            font-size: 1.35rem !important;
+        }
+
+        .nav-icon-btn .cart-count {
+            position: absolute;
+            top: 4px;
+            right: 2px;
+            background: #a64d79;
+            color: white !important;
+            border-radius: 50%;
+            width: 18px;
+            height: 18px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 10px !important;
+            font-weight: 700;
+            border: 2px solid #fff;
+            box-shadow: 0 2px 5px rgba(0, 0, 0, 0.15);
+            padding: 0 !important;
+            margin: 0 !important;
+            min-width: 0 !important;
+            line-height: 1 !important;
+        }
+
+        .product-item .card-footer {
+            padding: 20px 0 !important;
+            text-align: left !important;
+            background: transparent !important;
+            border: none !important;
+        }
+
+        .product-item .card-footer a {
+            font-family: 'Playfair Display', serif;
+            font-size: 1.1rem;
+            font-weight: 700;
+            color: #1a1a1a;
+            margin-bottom: 5px;
+            display: block;
+            text-decoration: none;
+        }
+
+        .product-item .card-footer h5 {
+            font-size: 1rem;
+            letter-spacing: 1px;
+            color: #a64d79;
+            font-weight: 600;
+            margin: 0;
+        }
+
+        /* Section Styling */
+        .section-padding {
+            padding: 80px 0;
+        }
+
+        .section-title {
+            font-family: 'Playfair Display', serif;
+            font-size: 2.8rem;
+            margin-bottom: 50px;
+            font-weight: 700;
+            color: #1a1a1a;
+            position: relative;
+            display: inline-block;
+        }
+
+        .section-title span {
+            background: #f8f4ef;
+            /* Match body background */
+            position: relative;
+            z-index: 1;
+            padding: 0 15px;
+        }
+
+        /* Footer Styles */
+        .site-footer {
+            background-color: #251820;
+            color: #d1c9c4;
+            padding-top: 80px;
+            font-family: 'Poppins', sans-serif;
+        }
+
+        .site-footer h5 {
+            color: #fff;
+            font-size: 16px;
+            text-transform: uppercase;
+            letter-spacing: 2px;
+            margin-bottom: 30px;
+            font-weight: 700;
+        }
+
+        .site-footer a {
+            color: #b0a49c;
+            transition: all 0.3s;
+            text-decoration: none !important;
+        }
+
+        .site-footer a:hover {
+            color: #ba6286;
+            padding-left: 5px;
+        }
+
+        .footer-brand h1 {
+            color: #fff;
+            font-weight: 800;
+            letter-spacing: 1px;
+            margin-bottom: 25px;
+        }
+
+        .footer-contact p {
+            margin-bottom: 15px;
+            display: flex;
+            align-items: center;
+        }
+
+        .footer-contact i {
+            color: #ba6286;
+            width: 30px;
+            font-size: 18px;
+        }
+
+        .newsletter-form .input-group {
+            background: rgba(255, 255, 255, 0.05);
+            border-radius: 50px;
+            padding: 5px;
+            border: 1px solid rgba(255, 255, 255, 0.1);
+        }
+
+        .newsletter-form input {
+            background: transparent !important;
+            border: none !important;
+            color: #fff !important;
+            padding-left: 20px;
+        }
+
+        .newsletter-form button {
+            border-radius: 50px !important;
+            padding: 8px 25px;
+        }
+
+        .social-links a {
+            display: inline-flex;
+            width: 40px;
+            height: 40px;
+            background: rgba(255, 255, 255, 0.05);
+            border-radius: 50%;
+            align-items: center;
+            justify-content: center;
+            margin-right: 10px;
+            font-size: 18px;
+            transition: all 0.3s;
+        }
+
+        .hamburger-icon {
+            width: 24px;
+            height: 14px;
+            display: flex;
+            flex-direction: column;
+            justify-content: space-between;
+        }
+
+        .hamburger-icon span {
+            display: block;
+            height: 2px;
+            width: 100%;
+            background: #1a1a1a;
+            transition: all 0.3s;
+        }
+
+        .hamburger-icon span:last-child {
+            width: 60%;
+        }
+
+        #sidebarToggle:hover .hamburger-icon span:last-child {
+            width: 100%;
+        }
+
+        .footer-tags {
+            font-size: 12px;
+            opacity: 0.6;
+            line-height: 2;
+        }
+
+        .footer-tags span {
+            margin: 0 8px;
+        }
+
+        .footer-bottom {
+            background: #110e0c;
+            padding: 25px 0;
+            margin-top: 60px;
+        }
+    </style>
+    <script src="https://cdn.jsdelivr.net/npm/canvas-confetti@1.6.0/dist/confetti.browser.min.js"></script>
+</head>
+
+<script>
+    // Image Protection Script
+    (function () {
+        'use strict';
+
+        // Disable right-click on images
+        document.addEventListener('contextmenu', function (e) {
+            if (e.target.tagName === 'IMG') {
+                e.preventDefault();
+                return false;
+            }
+        }, false);
+
+        // Disable drag on images
+        document.addEventListener('dragstart', function (e) {
+            if (e.target.tagName === 'IMG') {
+                e.preventDefault();
+                return false;
+            }
+        }, false);
+
+        // Disable keyboard shortcuts for saving
+        document.addEventListener('keydown', function (e) {
+            // Ctrl+S / Cmd+S
+            if ((e.ctrlKey || e.metaKey) && e.key === 's') {
+                e.preventDefault();
+                return false;
+            }
+        }, false);
+
+        // Disable inspect element on images (F12, Ctrl+Shift+I)
+        document.addEventListener('keydown', function (e) {
+            if (e.key === 'F12' ||
+                ((e.ctrlKey || e.metaKey) && e.shiftKey && (e.key === 'I' || e.key === 'i' || e.key === 'J' || e.key === 'j' || e.key === 'C' || e.key === 'c'))) {
+                // Allow dev tools but show warning
+                console.warn('Developer tools detected. Image protection active.');
+            }
+        }, false);
+
+        // Add watermark overlay on hover (optional)
+        document.addEventListener('DOMContentLoaded', function () {
+            const images = document.querySelectorAll('.product-img img, .product-image, .gallery-img');
+            images.forEach(function (img) {
+                img.setAttribute('oncontextmenu', 'return false;');
+                img.setAttribute('draggable', 'false');
+            });
+        });
+    })();
+</script>
+
+<body data-user-logged-in="{{ 'true' if user_logged_in else 'false' }}"
+    data-cart-count-url="{{ url_for('cart_bp.get_cart_count') }}"
+    data-add-to-cart-url="{{ url_for('cart_bp.add_to_cart', product_id=0) }}"
+    data-cart-url="{{ url_for('cart_bp.cart') }}" data-csrf-token="{{ csrf_token() }}">
+
+    <!-- Promotional Banner -->
+    <div id="promoBanner" class="promo-banner d-none">
+        <div class="container d-flex justify-content-between align-items-center">
+            <div class="mx-auto text-center font-weight-bold">
+                🚀 FLASH SALE: Use code <span style="color: #ffeaa7;">NEW10</span> for 10% off all orders over
+                ₹999! Free shipping included.
+            </div>
+            <button type="button" id="closePromoBanner" class="close text-white" aria-label="Close"
+                style="opacity: 0.9; text-shadow: none;">
+                <span aria-hidden="true">&times;</span>
+            </button>
+        </div>
+    </div>
+
+    <style>
+        .promo-banner {
+            background: linear-gradient(135deg, var(--primary-color) 0%, #6c5ce7 100%);
+            color: white;
+            padding: 10px 0;
+            font-size: 0.9rem;
+            z-index: 1050;
+            position: relative;
+        }
+
+        html[data-theme="dark"] .promo-banner {
+            background: linear-gradient(135deg, #2d3436 0%, #000000 100%);
+            border-bottom: 1px solid #333;
+        }
+    </style>
+
+    <div id="searchOverlay">
+        <form action="{{ url_for('shop_bp.shop') }}" method="GET" class="position-relative w-100">
+            <input type="text" name="q" class="form-control" placeholder="What are you looking for?" id="searchInput"
+                autocomplete="off">
+            <button type="submit" class="d-none"></button>
+            <div id="autocomplete-results" class="autocomplete-dropdown list-group position-absolute w-100 d-none"
+                style="z-index: 1050; max-height: 300px; overflow-y: auto; top: 100%; border-radius: 10px; box-shadow: 0 10px 30px rgba(0,0,0,0.15);">
+            </div>
+        </form>
+        <button type="button" id="closeSearch" aria-label="Close search">&times;</button>
+    </div>
+
+    <!-- Cart Drawer Overlay -->
+    <div id="cartDrawerOverlay"></div>
+
+    <!-- Cart Drawer -->
+    <div id="cartDrawer" style="display: flex; flex-direction: column; height: 100%;">
+        <!-- Main Cart Screen -->
+        <div id="cartDrawerMainScreen" style="display: flex; flex-direction: column; height: 100%; width: 100%;">
+            <div class="cart-drawer-header d-flex justify-content-between align-items-center" style="flex-shrink: 0;">
+                <h4 class="m-0 font-weight-bold"
+                    style="font-family: 'Playfair Display', serif; color: var(--dark-color); font-size: 1.3rem;">
+                    Shopping Cart (<span class="cart-count-badge">0</span>)</h4>
+                <button class="cart-drawer-close" id="closeCartDrawer" aria-label="Close cart">&times;</button>
+            </div>
+
+            <!-- Free Shipping Progress Bar Container -->
+            <div class="p-3 bg-light border-bottom" id="freeShippingContainer" style="flex-shrink: 0;">
+                <!-- Will be dynamically populated via JS -->
+            </div>
+
+            <!-- Cart Items Container (Scrollable) -->
+            <div class="cart-drawer-items p-3" style="overflow-y: auto; flex-grow: 1; min-height: 0;"
+                id="cartDrawerItems">
+                <!-- Will be dynamically populated via JS -->
+            </div>
+
+            <!-- Coupon / Best Offers / Checkout Footer (Fixed at bottom) -->
+            <div class="cart-drawer-footer border-top p-3 bg-white"
+                style="flex-shrink: 0; box-shadow: 0 -5px 15px rgba(0,0,0,0.05); z-index: 10;">
+                <!-- Dynamic Footer Area -->
+                <div id="cartDrawerFooterContent">
+                    <!-- Will be dynamically populated via JS -->
+                </div>
+            </div>
+        </div>
+
+        <!-- Coupons Sub-Screen (Initially hidden, slides in from right/fades in) -->
+        <div id="cartDrawerCouponsScreen">
+            <div class="cart-drawer-header d-flex align-items-center py-3 px-3"
+                style="flex-shrink: 0; border-bottom: 1px solid #f0edf0;">
+                <button class="btn btn-link text-dark p-0 mr-3" id="backToCartBtn" aria-label="Go back to cart"
+                    style="font-size: 1.1rem; line-height: 1; border: none; background: none; outline: none;">
+                    <i class="fas fa-arrow-left"></i>
+                </button>
+                <div>
+                    <h5 class="m-0 font-weight-bold"
+                        style="font-family: 'Playfair Display', serif; color: var(--dark-color); font-size: 1.15rem;">
+                        Coupons</h5>
+                    <span class="text-muted small" style="font-size: 0.75rem;">Cart value: <strong
+                            id="couponsScreenCartValue" style="color: var(--primary-color);">₹0.00</strong></span>
+                </div>
+                <button class="cart-drawer-close ml-auto" id="closeCartDrawerFromCoupons" aria-label="Close cart"
+                    style="font-size: 28px; cursor: pointer; border: none; background: none; color: #555;">&times;</button>
+            </div>
+
+            <!-- Coupons List Container (Scrollable) -->
+            <div class="p-3" style="overflow-y: auto; flex-grow: 1; min-height: 0; background: #faf8fa;">
+                <div class="coupon-section mb-4 bg-white p-3 rounded shadow-sm" style="border: 1px solid #f2eef2;">
+                    <label class="small font-weight-bold text-uppercase text-muted d-block mb-2"
+                        style="letter-spacing: 1px; font-size: 0.7rem;">Enter Promo Code</label>
+                    <div class="input-group">
+                        <input type="text" class="form-control text-uppercase" id="couponsScreenInput"
+                            placeholder="Enter coupon code"
+                            style="border-radius: 30px 0 0 30px; border-color: #e8dee8; font-size: 0.8rem; padding-left: 15px; height: 40px; box-shadow: none;">
+                        <div class="input-group-append">
+                            <button class="btn btn-dark text-uppercase px-3" id="applyCouponsScreenBtn" type="button"
+                                style="border-radius: 0 30px 30px 0; font-size: 0.75rem; background: var(--dark-color); font-weight: 600; height: 40px; line-height: 1;">Apply</button>
+                        </div>
+                    </div>
+                    <div class="mt-2 small px-2" id="couponsScreenMessage"
+                        style="display: none; font-size: 0.75rem; font-weight: 600;"></div>
+                </div>
+
+                <h6 class="font-weight-bold text-uppercase small text-muted mb-3"
+                    style="letter-spacing: 1.5px; font-size: 0.72rem; font-family: 'Poppins', sans-serif;">Available
+                    Coupons</h6>
+                <div id="couponsScreenListContainer">
+                    <!-- Coupons will be dynamically loaded here with eligibility checks! -->
+                </div>
+            </div>
+        </div>
+
+        <!-- Cart Drawer Login Screen (Bottom Sheet) -->
+        <style>
+            #cartDrawerLoginScreen {
+                position: absolute;
+                bottom: 0;
+                left: 0;
+                width: 100%;
+                background: white;
+                border-radius: 20px 20px 0 0;
+                box-shadow: 0 -5px 25px rgba(0, 0, 0, 0.15);
+                transform: translateY(100%);
+                transition: transform 0.35s cubic-bezier(0.165, 0.84, 0.44, 1);
+                z-index: 100;
+                display: flex;
+                flex-direction: column;
+                padding: 20px;
+                max-height: 80%;
+                overflow-y: auto;
+            }
+
+            #cartDrawerLoginScreen.active {
+                transform: translateY(0);
+            }
+        </style>
+        <div id="cartDrawerLoginScreen">
+            <div class="d-flex justify-content-between align-items-center mb-3">
+                <div>
+                    <h4 class="m-0 font-weight-bold" style="color: var(--dark-color);">Almost there...</h4>
+                    <p class="text-muted small m-0 mt-1">Please login to place your order</p>
+                </div>
+                <button class="cart-drawer-close" id="closeCartLoginScreen" aria-label="Close"
+                    style="font-size: 24px; border: none; background: none;">&times;</button>
+            </div>
+
+            <div id="cartDrawerLoginAlert" class="alert d-none small" role="alert"></div>
+            <form id="cartDrawerLoginForm">
+                <input type="hidden" name="csrf_token" value="{{ csrf_token() }}">
+                <div class="form-group mb-3">
+                    <div class="input-group">
+                        <input type="text" name="username" id="cartLoginUsername" class="form-control"
+                            placeholder="Email or Mobile Number" required
+                            style="border-radius: 10px 0 0 10px; height: 45px;">
+                        <div class="input-group-append" id="sendCartOtpWrapper">
+                            <button class="btn" type="button" id="sendCartOtpBtn"
+                                style="border-radius: 0 10px 10px 0; background: #fdfdfd; border: 1px solid #ced4da; border-left: none; color: #ba6286; font-weight: 600; font-size: 0.85rem; padding: 0 15px;">Send
+                                OTP</button>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Password Login Section (Hidden by default) -->
+                <div id="cartPasswordSection" class="d-none">
+                    <div class="form-group mb-3">
+                        <div class="input-group">
+                            <input type="password" name="password" id="cartLoginPassword" class="form-control"
+                                placeholder="Password" style="border-radius: 10px 0 0 10px; height: 45px;">
+                            <div class="input-group-append">
+                                <button class="btn btn-outline-secondary toggle-pw" type="button"
+                                    data-target="cartLoginPassword" style="border-radius: 0 10px 10px 0;"><i
+                                        class="fas fa-eye"></i></button>
+                            </div>
+                        </div>
+                    </div>
+                    <button type="submit" id="cartLoginSubmitBtn" class="btn btn-block text-white font-weight-bold"
+                        style="background:linear-gradient(135deg,#ba6286,#9e4d70); border-radius: 10px; height: 45px;">
+                        <span id="cartLoginBtnText">Login</span>
+                        <span id="cartLoginBtnSpinner" class="d-none"><i class="fas fa-spinner fa-spin mr-1"></i></span>
+                    </button>
+                    <div class="text-center mt-3">
+                        <a href="javascript:void(0)" class="toggle-cart-login-mode small font-weight-bold"
+                            style="color:#ba6286;">Login with OTP</a>
+                    </div>
+                </div>
+
+                <!-- OTP Login Section (Default) -->
+                <div id="cartOtpSection">
+                    <div class="form-group mb-3">
+                        <input type="text" name="otp" id="cartLoginOtp" class="form-control text-center"
+                            placeholder="6-digit code" maxlength="6"
+                            style="border-radius: 10px; height: 45px; letter-spacing: 4px; font-size: 1.1rem; font-weight: bold;"
+                            required>
+                    </div>
+                    <button type="button" id="cartOtpVerifyBtn" class="btn btn-block text-white font-weight-bold"
+                        style="background:linear-gradient(135deg,#ba6286,#9e4d70); border-radius: 10px; height: 45px;">
+                        Verify & Login
+                    </button>
+                    <div class="text-center mt-3">
+                        <a href="javascript:void(0)" class="toggle-cart-login-mode small font-weight-bold"
+                            style="color:#ba6286;">Login with Password</a>
+                    </div>
+                </div>
+            </form>
+        </div>
+    </div>
+
+    <!-- Checkout Drawer -->
+    <style>
+        #checkoutDrawer {
+            position: fixed;
+            top: 0;
+            right: -450px;
+            width: 450px;
+            height: 100vh;
+            background: #f8f9fa;
+            z-index: 10005;
+            transition: right 0.3s cubic-bezier(0.165, 0.84, 0.44, 1);
+            box-shadow: -5px 0 25px rgba(0, 0, 0, 0.1);
+            display: flex;
+            flex-direction: column;
+            overflow: hidden;
+        }
+
+        #checkoutDrawer.active {
+            right: 0;
+        }
+
+        @media (max-width: 576px) {
+            #checkoutDrawer {
+                width: 100%;
+                right: -100%;
+            }
+        }
+    </style>
+    <div id="checkoutDrawer">
+        <!-- Content will be loaded dynamically via AJAX -->
+    </div>
+    <!-- End Cart Drawer Login Screen -->
+    </div>
+
+    <div id="drawerOverlay"></div>
+    <div id="sideDrawer">
+        <div class="drawer-header">
+            <button class="drawer-close" id="closeDrawer" aria-label="Close menu">&times;</button>
+            <a href="{{ url_for('pages_bp.home') }}" class="text-center w-100 d-block mb-2 text-decoration-none">
+                <img src="{{ url_for('static', filename='img/logo.png') }}" alt="{{ brand_name }} Logo" width="110"
+                    style="filter: drop-shadow(0 4px 6px rgba(0,0,0,0.06)); margin-bottom: 10px;">
+                <h5 class="mb-0"
+                    style="font-family: 'Playfair Display', serif; font-weight: 800; letter-spacing: 3px; color: #1a1a1a;">
+                    {{ brand_name|upper }}</h5>
+                <p class="small text-muted mb-0" style="font-size: 0.7rem; letter-spacing: 1px;">By Mrs. Haryana Sneha
+                    Verma</p>
+            </a>
+        </div>
+        <div class="drawer-content">
+            <div class="navbar-nav">
+                <a href="{{ url_for('pages_bp.home') }}" class="nav-link">
+                    <span><i class="fas fa-home mr-3 text-muted"
+                            style="width: 20px; text-align: center; font-size: 1.1rem;"></i> Home</span>
+                </a>
+                <a href="{{ url_for('shop_bp.shop') }}" class="nav-link">
+                    <span><i class="fas fa-shopping-bag mr-3 text-muted"
+                            style="width: 20px; text-align: center; font-size: 1.1rem;"></i> Shop All</span>
+                </a>
+                {% for parent in nav_categories %}
+                <div class="nav-item">
+                    {% if parent.subcategories %}
+                    <a href="#" class="nav-link drawer-dropdown-toggle" data-target="drawer-cat-{{ parent.id }}">
+                        <span><i class="far fa-gem mr-3 text-muted"
+                                style="width: 20px; text-align: center; font-size: 1.1rem;"></i> {{ parent.name
+                            }}</span>
+                        <i class="fa fa-angle-right ml-auto"></i>
+                    </a>
+                    <div class="dropdown-menu" id="drawer-cat-{{ parent.id }}">
+                        {% for child in parent.subcategories %}
+                        <a href="{{ url_for('shop_bp.shop') }}?category={{ child.slug }}" class="dropdown-item">{{
+                            child.name }}</a>
+                        {% endfor %}
+                    </div>
+                    {% else %}
+                    <a href="{{ url_for('shop_bp.shop') }}?category={{ parent.slug }}" class="nav-link">
+                        <span><i class="far fa-gem mr-3 text-muted"
+                                style="width: 20px; text-align: center; font-size: 1.1rem;"></i> {{ parent.name
+                            }}</span>
+                    </a>
+                    {% endif %}
+                </div>
+                {% endfor %}
+                <a href="{{ url_for('pages_bp.contact') }}" class="nav-link">
+                    <span><i class="far fa-envelope mr-3 text-muted"
+                            style="width: 20px; text-align: center; font-size: 1.1rem;"></i> Contact</span>
+                </a>
+
+                <div class="px-4 mt-2 mb-3 text-center">
+                    <p class="small text-muted text-uppercase font-weight-bold mb-2" style="letter-spacing: 2px;">
+                        Connect With Us</p>
+                    <div class="d-flex justify-content-center" style="gap: 15px;">
+                        <a href="{{ get_config('SOCIAL_INSTAGRAM', '#') }}"
+                            class="btn btn-sm btn-light rounded-circle shadow-sm"
+                            style="width: 40px; height: 40px; display: flex; align-items: center; justify-content: center; color: #E1306C; font-size: 1.1rem; transition: transform 0.3s;"><i
+                                class="fab fa-instagram"></i></a>
+                        <a href="{{ get_config('SOCIAL_FACEBOOK', '#') }}"
+                            class="btn btn-sm btn-light rounded-circle shadow-sm"
+                            style="width: 40px; height: 40px; display: flex; align-items: center; justify-content: center; color: #4267B2; font-size: 1.1rem; transition: transform 0.3s;"><i
+                                class="fab fa-facebook-f"></i></a>
+                        <a href="{{ get_config('SOCIAL_YOUTUBE', '#') }}"
+                            class="btn btn-sm btn-light rounded-circle shadow-sm"
+                            style="width: 40px; height: 40px; display: flex; align-items: center; justify-content: center; color: #FF0000; font-size: 1.1rem; transition: transform 0.3s;"><i
+                                class="fab fa-youtube"></i></a>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <div class="header-sticky py-4" id="mainHeader">
+        <div class="container-fluid">
+            <div class="row align-items-center px-xl-5">
+                <!-- Sidebar Toggle -->
+                <div class="col-lg-4 col-3">
+                    <button class="btn btn-link text-dark p-0 d-flex align-items-center" id="sidebarToggle"
+                        aria-label="Open menu">
+                        <div class="hamburger-icon mr-3">
+                            <span></span>
+                            <span></span>
+                        </div>
+                        <span class="small font-weight-bold d-none d-md-inline-block text-uppercase"
+                            style="letter-spacing: 2px;">Menu</span>
+                    </button>
+                </div>
+                <!-- Brand Text Center -->
+                <div class="col-lg-4 col-5 text-center">
+                    <a href="{{ url_for('pages_bp.home') }}" class="text-decoration-none">
+                        <h1 class="m-0 serif-font brand-logo">
+                            {{ brand_name|upper }}
+                        </h1>
+                    </a>
+                </div>
+                <!-- Icons -->
+                <div class="col-lg-4 col-4 text-right d-flex align-items-center justify-content-end" style="gap: 5px;">
+                    <button class="btn btn-link text-dark p-0 nav-icon-btn mx-1" id="searchToggle" aria-label="Search">
+                        <i class="fa fa-search"></i>
+                    </button>
+                    <a href="{{ url_for('pages_bp.wishlist') }}" class="nav-item nav-link p-0 nav-icon-btn mx-1"
+                        aria-label="Wishlist" title="My Wishlist">
+                        <i class="far fa-heart"></i>
+                    </a>
+                    <a href="{{ url_for('cart_bp.cart') }}" class="nav-item nav-link p-0 nav-icon-btn mx-1"
+                        aria-label="Shopping cart">
+                        <i class="fas fa-shopping-bag"></i>
+                        <span class="cart-count">{{ cart_count or 0 }}</span>
+                    </a>
+                    {% if user_logged_in %}
+                    <a href="{{ url_for('user_bp.profile') }}" class="nav-item nav-link p-0 nav-icon-btn mx-1"
+                        title="Profile">
+                        <i class="far fa-user-circle"></i>
+                    </a>
+                    {% else %}
+                    <a href="#" class="nav-item nav-link p-0 nav-icon-btn mx-1" data-toggle="modal"
+                        data-target="#loginModal" title="Login">
+                        <i class="far fa-user"></i>
+                    </a>
+                    {% endif %}
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Navbar Row Removed -->
+
+    {% block carousel %}{% endblock %}
+
+    <!-- Toast Notifications -->
+    <div id="toast-container" aria-live="polite" aria-atomic="true">
+        {% with messages = get_flashed_messages(with_categories=true) %}
+        {% if messages %}
+        {% for category, message in messages %}
+        <div class="aanyaas-toast toast-{{ category }}" role="alert">
+            <div class="toast-icon-wrap">
+                {% if category == 'success' %}<i class="fa fa-check-circle"></i>
+                {% elif category == 'info' %}<i class="fa fa-info-circle"></i>
+                {% elif category == 'warning' %}<i class="fa fa-exclamation-triangle"></i>
+                {% elif category == 'error' or category == 'danger' %}<i class="fa fa-times-circle"></i>
+                {% else %}<i class="fa fa-bell"></i>{% endif %}
+            </div>
+            <div class="toast-body-wrap">
+                <div class="toast-title">
+                    {% if category == 'success' %}Success
+                    {% elif category == 'info' %}Information
+                    {% elif category == 'warning' %}Warning
+                    {% elif category == 'error' or category == 'danger' %}Error
+                    {% else %}Notice{% endif %}
+                </div>
+                <div class="toast-message">{{ message }}</div>
+            </div>
+            <button class="toast-close" onclick="dismissToast(this)" aria-label="Close">&times;</button>
+            <div class="toast-progress"></div>
+        </div>
+        {% endfor %}
+        {% endif %}
+        {% endwith %}
+    </div>
+
+    <!-- Main Content -->
+    {% block content %}{% endblock %}
+
+    <!-- Footer -->
+    <footer class="site-footer">
+        <div class="container-fluid">
+            <div class="row px-xl-5">
+                <div class="col-lg-4 col-md-12 mb-5 footer-brand reveal">
+                    <a href="{{ url_for('pages_bp.home') }}" class="text-decoration-none">
+                        <h1 class="m-0">{{ brand_name|upper }}</h1>
+                    </a>
+                    <p class="mt-4 pr-lg-5">Exquisite handcrafted jewellery and artisanal handicrafts that celebrate the
+                        beauty of traditional craftsmanship with a modern touch. Every piece tells a story of heritage
+                        and passion.</p>
+                    <div class="footer-contact mt-4">
+                        <p><i class="far fa-envelope"></i> <span>{{ company_info.email or 'info@example.com' }}</span>
+                        </p>
+                        <p><i class="fas fa-phone-alt"></i> <span>{{ company_info.phone or '+91 95551 44442' }}</span>
+                        </p>
+                    </div>
+                </div>
+                <div class="col-lg-8 col-md-12">
+                    <div class="row">
+                        <div class="col-md-4 mb-5 reveal" style="transition-delay: 0.1s;">
+                            <h5>Quick Links</h5>
+                            <div class="d-flex flex-column justify-content-start">
+                                <a class="mb-3" href="{{ url_for('pages_bp.home') }}"><i
+                                        class="fa fa-angle-right mr-2 opacity-50"></i>Home</a>
+                                <a class="mb-3" href="{{ url_for('shop_bp.shop') }}"><i
+                                        class="fa fa-angle-right mr-2 opacity-50"></i>Our Shop</a>
+                                <a class="mb-3" href="{{ url_for('pages_bp.contact') }}"><i
+                                        class="fa fa-angle-right mr-2 opacity-50"></i>Contact Us</a>
+                                <a href="{{ url_for('pages_bp.testimonials') }}"><i
+                                        class="fa fa-angle-right mr-2 opacity-50"></i>Testimonials</a>
+                            </div>
+                        </div>
+                        <div class="col-md-4 mb-5 reveal" style="transition-delay: 0.2s;">
+                            <h5>Our Policies</h5>
+                            <div class="d-flex flex-column justify-content-start">
+                                <a class="mb-3" href="{{ url_for('pages_bp.terms') }}"><i
+                                        class="fa fa-angle-right mr-2 opacity-50"></i>Terms and Conditions</a>
+                                <a class="mb-3" href="{{ url_for('pages_bp.faq') }}"><i
+                                        class="fa fa-angle-right mr-2 opacity-50"></i>FAQ</a>
+                                <a class="mb-3" href="{{ url_for('pages_bp.shipping_policy') }}"><i
+                                        class="fa fa-angle-right mr-2 opacity-50"></i>Shipping Policy</a>
+                                <a class="mb-3" href="{{ url_for('pages_bp.return_policy') }}"><i
+                                        class="fa fa-angle-right mr-2 opacity-50"></i>Return Policy</a>
+                                <a href="{{ url_for('pages_bp.privacy_policy') }}"><i
+                                        class="fa fa-angle-right mr-2 opacity-50"></i>Privacy Policy</a>
+                            </div>
+                        </div>
+                        <div class="col-md-4 mb-5 reveal" style="transition-delay: 0.3s;">
+                            <h5>Newsletter</h5>
+                            <p class="small mb-4" style="color: #bbb; line-height: 1.6;">Subscribe to receive updates,
+                                access to exclusive deals, and more.</p>
+                            <form action="{{ url_for('pages_bp.subscribe') }}" method="POST" class="newsletter-form">
+                                <input type="hidden" name="csrf_token" value="{{ csrf_token() }}">
+                                <input type="email" name="email" class="form-control" placeholder="Your Email Address"
+                                    required aria-label="Email address">
+                                <button type="submit" class="btn btn-primary">Subscribe</button>
+                            </form>
+                            <div class="social-links mt-4 pt-2">
+                                <a href="{{ get_config('SOCIAL_FACEBOOK', '#') }}" target="_blank" aria-label="Facebook"
+                                    class="facebook-icon"><i class="fab fa-facebook-f"></i></a>
+                                <a href="{{ get_config('SOCIAL_INSTAGRAM', '#') }}" target="_blank"
+                                    aria-label="Instagram" class="instagram-icon"><i class="fab fa-instagram"></i></a>
+                                <a href="{{ get_config('SOCIAL_YOUTUBE', '#') }}" target="_blank" aria-label="YouTube"
+                                    class="youtube-icon"><i class="fab fa-youtube"></i></a>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <div class="footer-bottom">
+                <div class="row px-xl-5 align-items-center">
+                    <div class="col-md-6 text-center mb-3 mb-md-0">
+                        <p class="mb-0 small" style="color: #999; font-weight: 300;">&copy; 2026 <span
+                                class="font-weight-bold text-white" style="letter-spacing: 1px;">{{ company_name }}
+                            </span>. All Rights Reserved.</p>
+                    </div>
+                    <div class="col-md-6">
+                        <div class="footer-tags text-center text-md-right small">
+                            <span style="color: #666;" class="mr-2">Explore:</span>
+                            <a href="#">Jewellery</a> &bull;
+                            <a href="#">Necklaces</a> &bull;
+                            <a href="#">Earrings</a> &bull;
+                            <a href="#">Handicrafts</a>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </footer>
+    <!-- WhatsApp Floating Button -->
+    <a href="https://api.whatsapp.com/send/?phone={{ (company_info.phone or '9555144442') | replace('+', '') | replace(' ', '') | replace('-', '') }}&text=Hi%2C+I+need+help%21&type=phone_number&app_absent=0"
+        class="whatsapp-float" target="_blank" rel="noopener noreferrer" aria-label="Chat on WhatsApp"
+        title="Chat on WhatsApp">
+        <i class="fab fa-whatsapp"></i>
+    </a>
+    <!-- Back to Top -->
+    <a href="#" class="btn btn-primary back-to-top" aria-label="Back to top"><i class="fa fa-angle-double-up"></i></a>
+
+    <!-- JavaScript Libraries -->
+    <script src="https://code.jquery.com/jquery-3.6.0.min.js"></script>
+    <script src="https://stackpath.bootstrapcdn.com/bootstrap/4.4.1/js/bootstrap.bundle.min.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/OwlCarousel2/2.3.4/owl.carousel.min.js"></script>
+
+    <script>
+        (function () {
+            const body = document.body;
+            window.AANYAAS = {
+                userLoggedIn: body.dataset.userLoggedIn === 'true',
+                cartCountUrl: body.dataset.cartCountUrl,
+                addToCartUrl: body.dataset.addToCartUrl,
+                cartUrl: body.dataset.cartUrl,
+                csrfToken: body.dataset.csrfToken
+            };
+
+            // Sticky Header Scroll Logic
+            const header = document.getElementById('mainHeader');
+            window.addEventListener('scroll', () => {
+                if (window.scrollY > 50) {
+                    header.classList.add('header-scrolled');
+                } else {
+                    header.classList.remove('header-scrolled');
+                }
+
+                // Reveal Animation Trigger
+                const reveals = document.querySelectorAll('.reveal');
+                reveals.forEach(reveal => {
+                    const windowHeight = window.innerHeight;
+                    const revealTop = reveal.getBoundingClientRect().top;
+                    const revealPoint = 50; // reduced threshold
+                    const scrollPosition = window.innerHeight + window.scrollY;
+                    const documentHeight = document.documentElement.scrollHeight;
+                    if (revealTop < windowHeight - revealPoint || scrollPosition >= documentHeight - 50) {
+                        reveal.classList.add('active');
+                    }
+                });
+            });
+
+            // Initial trigger for items already in view
+            window.dispatchEvent(new Event('scroll'));
+        })();
+    </script>
+
+    <script src="{{ url_for('static', filename='js/main.js') }}" defer></script>
+    <script src="{{ url_for('static', filename='js/auth.js') }}" defer></script>
+    <script src="{{ url_for('static', filename='js/cart.js') }}" defer></script>
+    <script src="{{ url_for('static', filename='mail/jqBootstrapValidation.min.js') }}" defer></script>
+    <script src="{{ url_for('static', filename='mail/contact.js') }}" defer></script>
+    <script src="https://cdn.jsdelivr.net/npm/nouislider@15.7.1/dist/nouislider.min.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/wnumb@1.2.0/wNumb.min.js"></script>
+
+    <!-- Login / Register Modals -->
+    <div class="modal fade" id="loginModal" tabindex="-1" role="dialog" aria-labelledby="loginModalLabel"
+        aria-hidden="true">
+        <div class="modal-dialog modal-dialog-centered" role="document">
+            <div class="modal-content">
+                <div class="modal-header" style="background:linear-gradient(135deg,#ba6286,#9e4d70);color:#fff;">
+                    <h5 class="modal-title" id="loginModalLabel"><i class="fas fa-sign-in-alt mr-2"></i>Login to {{
+                        brand_name }}
+                    </h5>
+                    <button type="button" class="close text-white" data-dismiss="modal" aria-label="Close"><span
+                            aria-hidden="true">&times;</span></button>
+                </div>
+                <div class="modal-body p-4">
+                    <div id="loginAlert" class="alert d-none" role="alert"></div>
+                    <div id="loginMainContent">
+                        <!-- Consolidated Login Form -->
+                        <form id="loginModalForm">
+                            <input type="hidden" name="csrf_token" value="{{ csrf_token() }}">
+                            <input type="hidden" name="next" value="{{ request.args.get('next', '') }}">
+                            <div class="form-group">
+                                <label for="loginUsername"><i class="fas fa-id-card mr-1"></i> Email or Mobile
+                                    Number</label>
+                                <input type="text" name="username" id="loginUsername" class="form-control"
+                                    placeholder="Enter your email or mobile" required autocomplete="username">
+                            </div>
+
+                            <!-- Password Login Section -->
+                            <div id="passwordSection">
+                                <div class="form-group">
+                                    <label for="loginPassword"><i class="fas fa-lock mr-1"></i> Password</label>
+                                    <div class="input-group">
+                                        <input type="password" name="password" id="loginPassword" class="form-control"
+                                            placeholder="Enter your password" autocomplete="current-password">
+                                        <div class="input-group-append">
+                                            <button class="btn btn-outline-secondary toggle-pw" type="button"
+                                                data-target="loginPassword" aria-label="Show/hide password"><i
+                                                    class="fas fa-eye"></i></button>
+                                        </div>
+                                    </div>
+                                </div>
+                                <button type="submit" id="loginSubmitBtn" class="btn btn-block text-white"
+                                    style="background:linear-gradient(135deg,#ba6286,#9e4d70); margin-top: 20px;">
+                                    <span id="loginBtnText"><i class="fas fa-sign-in-alt mr-1"></i> Login</span>
+                                    <span id="loginBtnSpinner" class="d-none"><i
+                                            class="fas fa-spinner fa-spin mr-1"></i>
+                                        Logging in...</span>
+                                </button>
+                                <div class="text-center mt-3">
+                                    <a href="javascript:void(0)" class="toggle-login-mode small font-weight-bold"
+                                        style="color:#ba6286;">Login with OTP</a>
+                                    <span class="mx-2 text-muted">|</span>
+                                    <a href="#"
+                                        onclick="$('#loginModal').modal('hide');setTimeout(function(){$('#forgotPasswordModal').modal('show');},400);return false;"
+                                        class="text-muted small">Forgot password?</a>
+                                </div>
+                            </div>
+
+                            <!-- OTP Login Section (Hidden by default) -->
+                            <div id="otpSection" class="d-none">
+                                <div class="form-group">
+                                    <label for="loginOtp"><i class="fas fa-key mr-1"></i> Enter OTP</label>
+                                    <div class="input-group">
+                                        <input type="text" name="otp" id="loginOtp" class="form-control"
+                                            placeholder="6-digit code" maxlength="6">
+                                        <div class="input-group-append">
+                                            <button class="btn btn-outline-primary" type="button"
+                                                id="sendUnifiedOtpBtn">Send OTP</button>
+                                        </div>
+                                    </div>
+                                    <small id="unifiedOtpTimer" class="text-muted d-none">Resend in <span
+                                            id="unifiedTimerCount">60</span>s</small>
+                                </div>
+                                <button type="button" id="otpVerifySubmitBtn" class="btn btn-block text-white"
+                                    style="background:linear-gradient(135deg,#ba6286,#9e4d70);">
+                                    <i class="fas fa-check-circle mr-1"></i> Verify & Login
+                                </button>
+                                <div class="text-center mt-3">
+                                    <a href="javascript:void(0)" class="toggle-login-mode small font-weight-bold"
+                                        style="color:#ba6286;">Login with Password</a>
+                                </div>
+                            </div>
+                        </form>
+                    </div>
+                    <hr>
+                    <p class="text-center mb-0">Don't have an account? <a href="#"
+                            onclick="$('#loginModal').modal('hide');setTimeout(function(){$('#registerModal').modal('show');},400);return false;">Register
+                            here</a></p>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <div class="modal fade" id="forgotPasswordModal" tabindex="-1" role="dialog"
+        aria-labelledby="forgotPasswordModalLabel" aria-hidden="true">
+        <div class="modal-dialog modal-dialog-centered" role="document">
+            <div class="modal-content">
+                <div class="modal-header" style="background:linear-gradient(135deg,#ba6286,#9e4d70);color:#fff;">
+                    <h5 class="modal-title" id="forgotPasswordModalLabel"><i class="fas fa-key mr-2"></i>Recover
+                        Password</h5>
+                    <button type="button" class="close text-white" data-dismiss="modal" aria-label="Close"><span
+                            aria-hidden="true">&times;</span></button>
+                </div>
+                <div class="modal-body p-4">
+                    <p class="text-muted text-center mb-4">Enter your registered email address to receive a password
+                        reset link.</p>
+                    <form id="forgotPasswordModalForm">
+                        <input type="hidden" name="csrf_token" value="{{ csrf_token() }}">
+                        <div class="form-group">
+                            <label for="forgotEmail"><i class="fas fa-envelope mr-1"></i> Email Address</label>
+                            <input type="email" name="email" id="forgotEmail" class="form-control"
+                                placeholder="your@email.com" required>
+                        </div>
+                        <button type="submit" id="forgotSubmitBtn" class="btn btn-block text-white"
+                            style="background:linear-gradient(135deg,#ba6286,#9e4d70); margin-top: 20px;">
+                            <span id="forgotBtnText"><i class="fas fa-paper-plane mr-1"></i> Send Reset Link</span>
+                            <span id="forgotBtnSpinner" class="d-none"><i class="fas fa-spinner fa-spin mr-1"></i>
+                                Sending...</span>
+                        </button>
+                    </form>
+                    <hr>
+                    <p class="text-center mb-0"><a href="#"
+                            onclick="$('#forgotPasswordModal').modal('hide');setTimeout(function(){$('#loginModal').modal('show');},400);return false;">Back
+                            to Login</a></p>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <div class="modal fade" id="registerModal" tabindex="-1" role="dialog" aria-labelledby="registerModalLabel"
+        aria-hidden="true">
+        <div class="modal-dialog modal-dialog-centered" role="document">
+            <div class="modal-content">
+                <div class="modal-header" style="background:linear-gradient(135deg,#ba6286,#9e4d70);color:#fff;">
+                    <h5 class="modal-title" id="registerModalLabel"><i class="fas fa-user-plus mr-2"></i>Create Account
+                    </h5>
+                    <button type="button" class="close text-white" data-dismiss="modal" aria-label="Close"><span
+                            aria-hidden="true">&times;</span></button>
+                </div>
+                <div class="modal-body p-4">
+                    <div id="registerAlert" class="alert d-none" role="alert"></div>
+                    <form id="registerModalForm">
+                        <input type="hidden" name="csrf_token" value="{{ csrf_token() }}">
+                        <div class="form-group">
+                            <label for="regIdentifier"><i class="fas fa-id-card mr-1"></i> Email or Mobile Number <span
+                                    class="text-danger">*</span></label>
+                            <input type="text" name="identifier" id="regIdentifier" class="form-control"
+                                placeholder="Enter email or 10-digit mobile" required>
+                            <small class="text-muted">This will be your unique login ID.</small>
+                        </div>
+                        <div class="form-group">
+                            <label for="regPassword"><i class="fas fa-lock mr-1"></i> Password</label>
+                            <div class="input-group">
+                                <input type="password" name="password" id="regPassword" class="form-control"
+                                    placeholder="Create a password" required autocomplete="new-password">
+                                <div class="input-group-append">
+                                    <button class="btn btn-outline-secondary toggle-pw" type="button"
+                                        data-target="regPassword" aria-label="Show/hide password"><i
+                                            class="fas fa-eye"></i></button>
+                                </div>
+                            </div>
+                        </div>
+                        <div class="form-group">
+                            <label for="regConfirmPassword"><i class="fas fa-lock mr-1"></i> Confirm Password</label>
+                            <div class="input-group">
+                                <input type="password" name="confirm_password" id="regConfirmPassword"
+                                    class="form-control" placeholder="Confirm password" required>
+                                <div class="input-group-append">
+                                    <button class="btn btn-outline-secondary toggle-pw" type="button"
+                                        data-target="regConfirmPassword" aria-label="Show/hide password"><i
+                                            class="fas fa-eye"></i></button>
+                                </div>
+                            </div>
+                            <small class="form-text text-muted">Minimum 8 characters, must match password.</small>
+                        </div>
+                        <button type="submit" id="registerSubmitBtn" class="btn btn-block text-white"
+                            style="background:linear-gradient(135deg,#ba6286,#9e4d70);">
+                            <span id="registerBtnText"><i class="fas fa-user-plus mr-1"></i> Create Account</span>
+                            <span id="registerBtnSpinner" class="d-none"><i class="fas fa-spinner fa-spin mr-1"></i>
+                                Creating...</span>
+                        </button>
+                    </form>
+                    <hr>
+                    <p class="text-center mb-0">Already have an account? <a href="#"
+                            onclick="$('#registerModal').modal('hide');setTimeout(function(){$('#loginModal').modal('show');},400);return false;">Login
+                            here</a></p>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Coupons Modal -->
+    <div class="modal fade" id="couponsModal" tabindex="-1" role="dialog" aria-labelledby="couponsModalLabel"
+        aria-hidden="true">
+        <div class="modal-dialog modal-dialog-centered" role="document">
+            <div class="modal-content border-0 shadow-lg" style="border-radius: 20px;">
+                <div class="modal-header border-0 pb-0" style="background: transparent;">
+                    <h5 class="modal-title font-weight-bold" id="couponsModalLabel"
+                        style="font-family: 'Playfair Display', serif; color: var(--dark-color); font-size: 1.5rem;">
+                        Available Coupons</h5>
+                    <button type="button" class="close" data-dismiss="modal" aria-label="Close"
+                        style="font-size: 1.8rem; outline: none; border: none; background: none;">
+                        <span aria-hidden="true">&times;</span>
+                    </button>
+                </div>
+                <div class="modal-body p-4" style="max-height: 70vh; overflow-y: auto;">
+                    <div class="row">
+                        <!-- Coupon 1 -->
+                        <div class="col-12 mb-3">
+                            <div class="coupon-modal-tile d-flex justify-content-between align-items-center"
+                                data-code="F10"
+                                style="background: #fff; border: 1.5px dashed var(--primary-color); border-radius: 15px; padding: 15px; cursor: pointer; transition: all 0.3s;">
+                                <div>
+                                    <span class="badge badge-pink mb-1"
+                                        style="background: rgba(166, 77, 121, 0.1); color: var(--primary-color); font-weight: 600; padding: 5px 10px; border-radius: 20px; font-size: 0.75rem;">10%
+                                        OFF</span>
+                                    <h6 class="font-weight-bold m-0" style="color: #2b2725;">Use Code: F10</h6>
+                                    <p class="text-muted small m-0">Get 10% off on orders above ₹1,500.00</p>
+                                </div>
+                                <button class="coupon-modal-apply-btn btn btn-sm font-weight-bold"
+                                    style="background: var(--primary-color); color: white; border-radius: 20px; padding: 4px 12px; font-size: 0.75rem;">Apply</button>
+                            </div>
+                        </div>
+                        <!-- Coupon 2 -->
+                        <div class="col-12 mb-3">
+                            <div class="coupon-modal-tile d-flex justify-content-between align-items-center"
+                                data-code="F15"
+                                style="background: #fff; border: 1.5px dashed var(--primary-color); border-radius: 15px; padding: 15px; cursor: pointer; transition: all 0.3s;">
+                                <div>
+                                    <span class="badge badge-pink mb-1"
+                                        style="background: rgba(166, 77, 121, 0.1); color: var(--primary-color); font-weight: 600; padding: 5px 10px; border-radius: 20px; font-size: 0.75rem;">15%
+                                        OFF</span>
+                                    <h6 class="font-weight-bold m-0" style="color: #2b2725;">Use Code: F15</h6>
+                                    <p class="text-muted small m-0">Get 15% off on orders above ₹2,500.00</p>
+                                </div>
+                                <button class="coupon-modal-apply-btn btn btn-sm font-weight-bold"
+                                    style="background: var(--primary-color); color: white; border-radius: 20px; padding: 4px 12px; font-size: 0.75rem;">Apply</button>
+                            </div>
+                        </div>
+                        <!-- Coupon 3 -->
+                        <div class="col-12 mb-3">
+                            <div class="coupon-modal-tile d-flex justify-content-between align-items-center"
+                                data-code="F20"
+                                style="background: #fff; border: 1.5px dashed var(--primary-color); border-radius: 15px; padding: 15px; cursor: pointer; transition: all 0.3s;">
+                                <div>
+                                    <span class="badge badge-pink mb-1"
+                                        style="background: rgba(166, 77, 121, 0.1); color: var(--primary-color); font-weight: 600; padding: 5px 10px; border-radius: 20px; font-size: 0.75rem;">20%
+                                        OFF</span>
+                                    <h6 class="font-weight-bold m-0" style="color: #2b2725;">Use Code: F20</h6>
+                                    <p class="text-muted small m-0">Get 20% off on orders above ₹5,000.00</p>
+                                </div>
+                                <button class="coupon-modal-apply-btn btn btn-sm font-weight-bold"
+                                    style="background: var(--primary-color); color: white; border-radius: 20px; padding: 4px 12px; font-size: 0.75rem;">Apply</button>
+                            </div>
+                        </div>
+                        <!-- Coupon 4 -->
+                        <div class="col-12 mb-3">
+                            <div class="coupon-modal-tile d-flex justify-content-between align-items-center"
+                                data-code="F25"
+                                style="background: #fff; border: 1.5px dashed var(--primary-color); border-radius: 15px; padding: 15px; cursor: pointer; transition: all 0.3s;">
+                                <div>
+                                    <span class="badge badge-pink mb-1"
+                                        style="background: rgba(166, 77, 121, 0.1); color: var(--primary-color); font-weight: 600; padding: 5px 10px; border-radius: 20px; font-size: 0.75rem;">25%
+                                        OFF</span>
+                                    <h6 class="font-weight-bold m-0" style="color: #2b2725;">Use Code: F25</h6>
+                                    <p class="text-muted small m-0">Get 25% off on orders above ₹10,000.00</p>
+                                </div>
+                                <button class="coupon-modal-apply-btn btn btn-sm font-weight-bold"
+                                    style="background: var(--primary-color); color: white; border-radius: 20px; padding: 4px 12px; font-size: 0.75rem;">Apply</button>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        function getCsrfToken() {
+            const meta = document.querySelector('meta[name="csrf-token"]');
+            if (meta && meta.content) return meta.content;
+            const hiddenInput = document.querySelector('input[name="csrf_token"]');
+            if (hiddenInput) return hiddenInput.value;
+            return '';
+        }
+        $.ajaxSetup({
+            beforeSend: function (xhr, settings) {
+                if (!/^(GET|HEAD|OPTIONS|TRACE)$/i.test(settings.type) && !this.crossDomain) {
+                    const token = getCsrfToken();
+                    if (token) {
+                        xhr.setRequestHeader('X-CSRFToken', token);
+                        if (settings.data instanceof FormData) {
+                            settings.data.append('csrf_token', token);
+                        } else if (typeof settings.data === 'string') {
+                            settings.data += (settings.data ? '&' : '') + 'csrf_token=' + encodeURIComponent(token);
+                        } else if ($.isPlainObject(settings.data)) {
+                            settings.data = $.extend({}, settings.data, { csrf_token: token });
+                        }
+                    }
+                }
+            }
+        });
+
+        window.showToast = function (type, message) {
+            var container = document.getElementById('toast-container');
+            if (!container) return;
+            var toast = document.createElement('div');
+            toast.className = 'aanyaas-toast toast-' + type;
+            var icon = '';
+            switch (type) {
+                case 'success': icon = '<i class="fa fa-check-circle"></i>'; break;
+                case 'error': icon = '<i class="fa fa-times-circle"></i>'; break;
+                case 'warning': icon = '<i class="fa fa-exclamation-triangle"></i>'; break;
+                default: icon = '<i class="fa fa-bell"></i>';
+            }
+            toast.innerHTML = `
+            <div class="toast-icon-wrap">${icon}</div>
+            <div class="toast-body-wrap">
+                <div class="toast-title">${type.charAt(0).toUpperCase() + type.slice(1)}</div>
+                <div class="toast-message">${escapeHtml(message)}</div>
+            </div>
+            <button class="toast-close" onclick="dismissToast(this)">&times;</button>
+            <div class="toast-progress"></div>
+        `;
+            container.appendChild(toast);
+            setTimeout(function () {
+                if (toast.parentNode) {
+                    toast.classList.add('dismissing');
+                    setTimeout(function () { if (toast.parentNode) toast.parentNode.removeChild(toast); }, 380);
+                }
+            }, 4000);
+        };
+
+        function escapeHtml(str) {
+            return str.replace(/[&<>]/g, function (m) {
+                if (m === '&') return '&amp;';
+                if (m === '<') return '&lt;';
+                if (m === '>') return '&gt;';
+                return m;
+            });
+        }
+
+        function dismissToast(btn) {
+            var toast = btn.closest('.aanyaas-toast');
+            toast.classList.add('dismissing');
+            setTimeout(function () {
+                if (toast.parentNode) toast.parentNode.removeChild(toast);
+            }, 380);
+        }
+
+        (function () {
+            // Get the Back to Top button
+            const backToTop = document.querySelector('.back-to-top');
+            if (!backToTop) return;
+
+            // ---- 1. Smooth scroll on click (works every time) ----
+            backToTop.addEventListener('click', function (e) {
+                e.preventDefault();           // Stop browser from adding "#" to URL
+                window.scrollTo({ top: 0, behavior: 'smooth' });
+            });
+
+            // ---- 2. Show/hide button based on scroll position ----
+            window.addEventListener('scroll', function () {
+                if (window.scrollY > 300) {
+                    backToTop.style.display = 'flex';   // or 'block' – your CSS uses 'block' initially
+                } else {
+                    backToTop.style.display = 'none';
+                }
+            });
+
+            // Trigger scroll check on page load
+            window.dispatchEvent(new Event('scroll'));
+        })();
+
+        document.addEventListener('DOMContentLoaded', function () {
+            var toasts = document.querySelectorAll('.aanyaas-toast');
+            toasts.forEach(function (toast, i) {
+                setTimeout(function () {
+                    if (toast.parentNode) {
+                        toast.classList.add('dismissing');
+                        setTimeout(function () {
+                            if (toast.parentNode) toast.parentNode.removeChild(toast);
+                        }, 380);
+                    }
+                }, 4500 + (i * 600));
+            });
+        });
+        // Registration form validation
+        const regForm = document.getElementById('registerModalForm');
+        const regPassword = document.getElementById('regPassword');
+        const regConfirm = document.getElementById('regConfirmPassword');
+
+        function validateRegPassword() {
+            if (regPassword.value !== regConfirm.value) {
+                regConfirm.setCustomValidity("Passwords do not match");
+                return false;
+            } else {
+                regConfirm.setCustomValidity('');
+                return true;
+            }
+        }
+
+        regPassword.addEventListener('change', validateRegPassword);
+        regConfirm.addEventListener('keyup', validateRegPassword);
+
+        if (regForm) {
+            regForm.addEventListener('submit', function (e) {
+                if (!validateRegPassword()) {
+                    e.preventDefault();
+                    showToast('error', 'Please make sure your passwords match.');
+                }
+            });
+        }
+    </script>
+
+    <script>
+        // Sidebar Drawer Logic
+        const sideDrawer = document.getElementById('sideDrawer');
+        const drawerOverlay = document.getElementById('drawerOverlay');
+        const sidebarToggle = document.getElementById('sidebarToggle');
+        const closeBtn = document.getElementById('closeDrawer');
+
+        function toggleDrawer() {
+            sideDrawer.classList.toggle('active');
+            drawerOverlay.classList.toggle('active');
+            document.body.style.overflow = sideDrawer.classList.contains('active') ? 'hidden' : '';
+        }
+
+        if (sidebarToggle) sidebarToggle.addEventListener('click', toggleDrawer);
+        if (closeBtn) closeBtn.addEventListener('click', toggleDrawer);
+        if (drawerOverlay) drawerOverlay.addEventListener('click', toggleDrawer);
+
+        // Header Scroll Effect & Reveal Animation
+        const header = document.querySelector('.header-sticky');
+        const reveals = document.querySelectorAll('.reveal');
+
+        function handleScroll() {
+            // Header
+            if (window.scrollY > 50) {
+                header.classList.add('scrolled');
+            } else {
+                header.classList.remove('scrolled');
+            }
+
+            // Reveal
+            reveals.forEach(reveal => {
+                const windowHeight = window.innerHeight;
+                const elementTop = reveal.getBoundingClientRect().top;
+                const elementVisible = 50; // reduced threshold
+                const scrollPosition = window.innerHeight + window.scrollY;
+                const documentHeight = document.documentElement.scrollHeight;
+                if (elementTop < windowHeight - elementVisible || scrollPosition >= documentHeight - 50) {
+                    reveal.classList.add('active');
+                }
+            });
+        }
+
+        window.addEventListener('scroll', handleScroll);
+        window.addEventListener('load', handleScroll);
+
+        // Search Overlay Logic
+        const searchOverlay = document.getElementById('searchOverlay');
+        const searchToggle = document.getElementById('searchToggle');
+        const closeSearch = document.getElementById('closeSearch');
+        const searchInput = document.getElementById('searchInput');
+
+        function toggleSearch() {
+            searchOverlay.classList.toggle('active');
+            if (searchOverlay.classList.contains('active')) {
+                setTimeout(() => searchInput.focus(), 300);
+            }
+        }
+
+        if (searchToggle) searchToggle.addEventListener('click', toggleSearch);
+        if (closeSearch) closeSearch.addEventListener('click', toggleSearch);
+
+        // Close on Escape key
+        document.addEventListener('keydown', function (e) {
+            if (e.key === 'Escape') {
+                if (searchOverlay.classList.contains('active')) toggleSearch();
+                if (sideDrawer.classList.contains('active')) toggleDrawer();
+            }
+        });
+
+        // Dropdown toggle inside drawer
+        document.querySelectorAll('.drawer-dropdown-toggle').forEach(toggle => {
+            toggle.addEventListener('click', function (e) {
+                e.preventDefault();
+                const targetId = this.getAttribute('data-target');
+                const menu = document.getElementById(targetId);
+                if (menu) {
+                    menu.classList.toggle('show');
+                    const icon = this.querySelector('i');
+                    if (icon) {
+                        icon.classList.toggle('fa-angle-right');
+                        icon.classList.toggle('fa-angle-down');
+                    }
+                }
+            });
+        });
+
+        window.addToWishlist = function (productId) {
+            fetch(`/wishlist/add/${productId}`, {
+                method: 'POST',
+                headers: {
+                    'X-Requested-With': 'XMLHttpRequest',
+                    'X-CSRFToken': getCsrfToken()
+                }
+            })
+                .then(response => response.json())
+                .then(data => {
+                    if (data.success) {
+                        showToast('success', data.message);
+                        // Toggle heart icons for this product
+                        const hearts = document.querySelectorAll(`button[onclick="addToWishlist('${productId}')"] i`);
+                        hearts.forEach(icon => {
+                            if (data.message.toLowerCase().includes('already in wishlist')) {
+                                icon.classList.remove('far');
+                                icon.classList.add('fas', 'text-danger');
+                            } else if (data.message.toLowerCase().includes('added to your wishlist')) {
+                                icon.classList.remove('far');
+                                icon.classList.add('fas', 'text-danger');
+                            }
+                        });
+                    } else {
+                        showToast('error', data.message || 'Error adding to wishlist');
+                    }
+                })
+                .catch(error => {
+                    console.error('Error:', error);
+                    showToast('error', 'Failed to add to wishlist');
+                });
+        };
+
+        window.showCustomConfirm = function (message, onConfirm) {
+            // Create glassmorphic backdrop
+            var overlay = $('<div style="position: fixed; top: 0; left: 0; width: 100vw; height: 100vh; background: rgba(0,0,0,0.35); backdrop-filter: blur(8px); -webkit-backdrop-filter: blur(8px); z-index: 100000; display: flex; align-items: center; justify-content: center; opacity: 0; transition: opacity 0.2s cubic-bezier(0.165, 0.84, 0.44, 1);"></div>');
+
+            // Create elegant dialog container
+            var modal = $('<div style="background: #fff; padding: 30px; border-radius: 16px; width: 90%; max-width: 380px; box-shadow: 0 20px 40px rgba(0,0,0,0.12); transform: scale(0.9); transition: transform 0.25s cubic-bezier(0.34, 1.56, 0.64, 1); text-align: center; border: 1px solid rgba(255,255,255,0.8);"></div>');
+
+            var icon = $('<div style="width: 56px; height: 56px; background: #fff5f5; color: #dc3545; border-radius: 50%; display: flex; align-items: center; justify-content: center; margin: 0 auto 15px; font-size: 1.5rem;"><i class="fas fa-trash-alt"></i></div>');
+            var title = $('<h5 style="margin-bottom: 10px; font-weight: 700; color: #1a1a1a; font-family: \'Playfair Display\', serif;">Are you sure?</h5>');
+            var msg = $('<p style="color: #666; font-size: 0.95rem; margin-bottom: 25px; line-height: 1.5;"></p>').text(message);
+
+            var btnContainer = $('<div style="display: flex; gap: 12px; justify-content: center;"></div>');
+            var cancelBtn = $('<button style="flex: 1; padding: 12px 20px; border-radius: 8px; border: 1px solid #e0e0e0; background: #fff; color: #495057; font-weight: 600; font-size: 0.9rem; cursor: pointer; transition: all 0.2s; outline: none; box-shadow: 0 2px 4px rgba(0,0,0,0.02);">Cancel</button>');
+            var confirmBtn = $('<button style="flex: 1; padding: 12px 20px; border-radius: 8px; border: none; background: #dc3545; color: #fff; font-weight: 600; font-size: 0.9rem; cursor: pointer; transition: all 0.2s; outline: none; box-shadow: 0 4px 6px rgba(220,53,69,0.15);">Delete</button>');
+
+            // Hover transitions
+            cancelBtn.hover(function () { $(this).css({ 'background': '#f8f9fa', 'border-color': '#ccc' }); }, function () { $(this).css({ 'background': '#fff', 'border-color': '#e0e0e0' }); });
+            confirmBtn.hover(function () { $(this).css({ 'background': '#bd2130', 'box-shadow': '0 4px 10px rgba(189,33,48,0.25)' }); }, function () { $(this).css({ 'background': '#dc3545', 'box-shadow': '0 4px 6px rgba(220,53,69,0.15)' }); });
+
+            btnContainer.append(cancelBtn).append(confirmBtn);
+            modal.append(icon).append(title).append(msg).append(btnContainer);
+            overlay.append(modal);
+            $('body').append(overlay);
+
+            // Trigger animation
+            setTimeout(function () {
+                overlay.css('opacity', '1');
+                modal.css('transform', 'scale(1)');
+            }, 20);
+
+            function closeConfirm() {
+                overlay.css('opacity', '0');
+                modal.css('transform', 'scale(0.9)');
+                setTimeout(function () {
+                    overlay.remove();
+                }, 200);
+            }
+
+            cancelBtn.click(closeConfirm);
+            overlay.click(function (e) {
+                if (e.target === overlay[0]) closeConfirm();
+            });
+
+            confirmBtn.click(function () {
+                onConfirm();
+                closeConfirm();
+            });
+        };
+
+        // Service Worker & Web Push Registration
+        if ('serviceWorker' in navigator && 'PushManager' in window) {
+            window.addEventListener('load', function () {
+                navigator.serviceWorker.register('/static/js/service-worker.js').then(function (registration) {
+                    console.log('ServiceWorker registration successful with scope: ', registration.scope);
+
+                    const isUserLoggedIn = "{{ 'true' if user_logged_in else 'false' }}" === "true";
+                    if (isUserLoggedIn) {
+                        // Ask for push permission and subscribe
+                        Notification.requestPermission().then(function (permission) {
+                            if (permission === 'granted') {
+                                // Note: applicationServerKey should be VAPID_PUBLIC_KEY converted to Uint8Array
+                                // In a real implementation, this key would be injected by the backend
+                                const applicationServerKey = 'BFit019KruHTYDkdx01NK-x3ETQgu4yBGNgNxquuGfRfB5BKRrrPflitatq1iSbSO0-DDNbLJ08WH6I4PGpfkZk';
+
+                                // To actually subscribe we would use registration.pushManager.subscribe
+                                // We are mocking this for the frontend since pywebpush isn't installed
+                                console.log('Push permission granted.');
+
+                                // Mocking the subscription save
+                                fetch('/push-subscription', {
+                                    method: 'POST',
+                                    headers: {
+                                        'Content-Type': 'application/json',
+                                        'X-CSRFToken': document.querySelector('meta[name="csrf-token"]') ? document.querySelector('meta[name="csrf-token"]').content : ''
+                                    },
+                                    body: JSON.stringify({ endpoint: 'mock-endpoint', keys: { p256dh: 'mock', auth: 'mock' } })
+                                }).catch(e => console.error(e));
+                            }
+                        });
+                    }
+                }).catch(function (err) {
+                    console.log('ServiceWorker registration failed: ', err);
+                });
+            });
+        }
+    </script>
+
+    {% block scripts %}{% endblock %}
+
+    <script>
+        document.addEventListener('DOMContentLoaded', function () {
+            const searchInput = document.getElementById('searchInput');
+            const autocompleteResults = document.getElementById('autocomplete-results');
+            let debounceTimer;
+
+            searchInput.addEventListener('input', function () {
+                const query = this.value.trim();
+                clearTimeout(debounceTimer);
+
+                if (query.length < 2) {
+                    autocompleteResults.classList.add('d-none');
+                    return;
+                }
+
+                debounceTimer = setTimeout(() => {
+                    fetch(`/api/search-autocomplete?q=${encodeURIComponent(query)}`)
+                        .then(res => res.json())
+                        .then(data => {
+                            autocompleteResults.innerHTML = '';
+                            const suggestions = data.suggestions || [];
+                            const products = data.products || [];
+
+                            if (suggestions.length === 0 && products.length === 0) {
+                                autocompleteResults.innerHTML = '<div class="p-3 text-muted">No results found.</div>';
+                                autocompleteResults.classList.remove('d-none');
+                                return;
+                            }
+
+                            let html = '<div class="p-4" style="background: #fff; border-radius: 10px; box-shadow: 0 4px 12px rgba(0,0,0,0.1);">';
+                            
+                            // Suggestions Section
+                            if (suggestions.length > 0) {
+                                html += '<h6 class="text-muted font-weight-bold mb-3" style="font-size: 0.8rem; letter-spacing: 1px;">SUGGESTIONS</h6>';
+                                html += '<div class="d-flex flex-wrap mb-4" style="gap: 15px;">';
+                                suggestions.forEach(s => {
+                                    html += `<a href="/shop?q=${encodeURIComponent(s)}" class="text-dark" style="font-size: 0.95rem; text-decoration: none;">${s.toLowerCase()}</a>`;
+                                });
+                                html += '</div>';
+                            }
+
+                            // Products Section
+                            if (products.length > 0) {
+                                html += '<h6 class="text-muted font-weight-bold mb-3" style="font-size: 0.8rem; letter-spacing: 1px;">PRODUCTS</h6>';
+                                html += '<div class="d-flex flex-column">';
+                                products.forEach(p => {
+                                    html += `
+                                    <a href="/detail/${p.id}" class="d-flex align-items-center mb-3 text-decoration-none" style="transition: opacity 0.2s;">
+                                        <div style="width: 60px; height: 60px; overflow: hidden; border-radius: 4px; flex-shrink: 0;" class="mr-3">
+                                            ${p.image_url ? `<img src="${p.image_url}" alt="${p.name}" style="width: 100%; height: 100%; object-fit: cover;">` : '<div class="bg-light w-100 h-100"></div>'}
+                                        </div>
+                                        <div class="d-flex flex-column">
+                                            <span class="text-muted text-uppercase mb-1" style="font-size: 0.7rem; letter-spacing: 1px;">${p.subtitle}</span>
+                                            <span class="text-dark font-weight-normal mb-1" style="font-size: 0.95rem;">${p.name}</span>
+                                            <span class="text-dark font-weight-normal" style="font-size: 0.9rem;">₹${p.price.toLocaleString('en-IN')}</span>
+                                        </div>
+                                    </a>
+                                    `;
+                                });
+                                html += '</div>';
+                            }
+                            
+                            // View all link
+                            html += `<div class="border-top mt-3 pt-3 text-center">
+                                <a href="/shop?q=${encodeURIComponent(query)}" class="text-muted text-decoration-none" style="font-size: 0.9rem;">View all</a>
+                            </div>`;
+
+                            html += '</div>';
+                            
+                            autocompleteResults.innerHTML = html;
+                            autocompleteResults.classList.remove('d-none');
+                        });
+                }, 300);
+            });
+
+            // Close dropdown on click outside
+            document.addEventListener('click', function (e) {
+                if (!searchInput.contains(e.target) && !autocompleteResults.contains(e.target)) {
+                    autocompleteResults.classList.add('d-none');
+                }
+            });
+
+            // Promotional Banner Logic
+            const promoBanner = document.getElementById('promoBanner');
+            const closePromoBtn = document.getElementById('closePromoBanner');
+
+            if (!localStorage.getItem('promoBannerDismissed')) {
+                promoBanner.classList.remove('d-none');
+            }
+
+            if (closePromoBtn) {
+                closePromoBtn.addEventListener('click', function () {
+                    promoBanner.classList.add('d-none');
+                    localStorage.setItem('promoBannerDismissed', 'true');
+                });
+            }
+
+            // 3D Tilt Effect for Product Cards
+            const cards = document.querySelectorAll('.product-card');
+            cards.forEach(card => {
+                card.addEventListener('mousemove', e => {
+                    const rect = card.getBoundingClientRect();
+                    const x = e.clientX - rect.left;
+                    const y = e.clientY - rect.top;
+                    const centerX = rect.width / 2;
+                    const centerY = rect.height / 2;
+
+                    const rotateX = ((y - centerY) / centerY) * -10; // Max tilt 10deg
+                    const rotateY = ((x - centerX) / centerX) * 10;
+
+                    card.style.transform = `perspective(1000px) rotateX(${rotateX}deg) rotateY(${rotateY}deg) scale3d(1.02, 1.02, 1.02)`;
+                });
+
+                card.addEventListener('mouseleave', () => {
+                    card.style.transform = `perspective(1000px) rotateX(0) rotateY(0) scale3d(1, 1, 1)`;
+                    // Add smooth transition just for resetting
+                    card.style.transition = 'transform 0.5s ease-out, box-shadow 0.5s ease-out';
+                    setTimeout(() => {
+                        card.style.transition = 'transform 0.1s ease-out, box-shadow 0.1s ease-out';
+                    }, 500);
+                });
+            });
+        });
+    </script>
+
+    <!-- Chatbot Widget -->
+    <div id="chatbot-widget" class="chatbot-widget">
+        <button id="chatbot-toggle" class="chatbot-toggle">
+            <i class="fas fa-comment-dots"></i>
+        </button>
+        <div id="chatbot-window" class="chatbot-window glass-card d-none">
+            <div class="chatbot-header">
+                <h5 class="mb-0 text-white"><i class="fas fa-robot mr-2"></i> Support Bot</h5>
+                <button id="chatbot-close" class="btn text-white p-0"><i class="fas fa-times"></i></button>
+            </div>
+            <div id="chatbot-messages" class="chatbot-messages">
+                <div class="chat-message bot-message">
+                    Hello! How can I help you today?
+                </div>
+            </div>
+            <div class="chatbot-input p-2 border-top">
+                <form id="chatbot-form" class="d-flex w-100">
+                    <input type="hidden" name="csrf_token" value="{{ csrf_token() }}">
+                    <input type="text" id="chatbot-input-field" class="form-control" placeholder="Ask a question..."
+                        required>
+                    <button type="submit" class="btn btn-primary ml-2 rounded-circle px-3"><i
+                            class="fas fa-paper-plane"></i></button>
+                </form>
+            </div>
+        </div>
+    </div>
+
+    <style>
+        .chatbot-widget {
+            position: fixed;
+            bottom: 20px;
+            right: 20px;
+            z-index: 9999;
+        }
+
+        .chatbot-toggle {
+            background-color: var(--primary-color, #a64d79) !important;
+            color: white !important;
+            border: none;
+            border-radius: 50%;
+            width: 60px;
+            height: 60px;
+            font-size: 24px;
+            cursor: pointer;
+            box-shadow: 0 4px 15px rgba(0, 0, 0, 0.2);
+            transition: transform 0.3s ease;
+        }
+
+        .chatbot-toggle:hover {
+            transform: scale(1.1);
+        }
+
+        .chatbot-window {
+            position: absolute;
+            bottom: 75px;
+            right: 0;
+            width: 320px;
+            height: 400px;
+            display: flex;
+            flex-direction: column;
+            overflow: hidden;
+            box-shadow: 0 10px 30px rgba(0, 0, 0, 0.3);
+            border-radius: 15px;
+            background: var(--card-bg, #ffffff);
+        }
+
+        .chatbot-header {
+            background-color: var(--primary-color, #a64d79) !important;
+            padding: 15px;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+        }
+
+        .chatbot-messages {
+            flex-grow: 1;
+            padding: 15px;
+            overflow-y: auto;
+            display: flex;
+            flex-direction: column;
+            gap: 10px;
+            background-color: rgba(0, 0, 0, 0.02);
+        }
+
+        .chat-message {
+            padding: 10px 15px;
+            border-radius: 15px;
+            max-width: 80%;
+            font-size: 0.9rem;
+            word-wrap: break-word;
+        }
+
+        .bot-message {
+            background-color: #f1f1f1;
+            align-self: flex-start;
+            border-bottom-left-radius: 0;
+            color: #333;
+        }
+
+        html[data-theme="dark"] .bot-message {
+            background-color: #2d2d2d;
+            color: #eee;
+        }
+
+        .user-message {
+            background-color: var(--primary-color, #007bff);
+            color: white;
+            align-self: flex-end;
+            border-bottom-right-radius: 0;
+        }
+    </style>
+
+    <script>
+        document.addEventListener('DOMContentLoaded', function () {
+            const toggle = document.getElementById('chatbot-toggle');
+            const windowEl = document.getElementById('chatbot-window');
+            const close = document.getElementById('chatbot-close');
+            const form = document.getElementById('chatbot-form');
+            const inputField = document.getElementById('chatbot-input-field');
+            const messagesDiv = document.getElementById('chatbot-messages');
+
+            // Toggle Chat Window
+            toggle.addEventListener('click', () => {
+                windowEl.classList.toggle('d-none');
+                if (!windowEl.classList.contains('d-none')) {
+                    inputField.focus();
+                }
+            });
+
+            close.addEventListener('click', () => {
+                windowEl.classList.add('d-none');
+            });
+
+            // Handle Submit
+            form.addEventListener('submit', async (e) => {
+                e.preventDefault();
+                const text = inputField.value.trim();
+                if (!text) return;
+
+                // Add user message
+                appendMessage(text, 'user-message');
+                inputField.value = '';
+
+                // Fetch response
+                try {
+                    const response = await fetch('/api/chat', {
+                        method: 'POST',
+                        headers: {
+                            'Content-Type': 'application/json',
+                            'X-CSRFToken': form.querySelector('[name=csrf_token]').value
+                        },
+                        body: JSON.stringify({ message: text })
+                    });
+
+                    const data = await response.json();
+                    if (response.ok) {
+                        appendMessage(data.reply, 'bot-message');
+                    } else {
+                        appendMessage("Oops, I encountered an error.", 'bot-message text-danger');
+                    }
+                } catch (err) {
+                    appendMessage("Network error.", 'bot-message text-danger');
+                }
+            });
+
+            function appendMessage(text, className) {
+                const div = document.createElement('div');
+                div.className = `chat-message ${className}`;
+                div.textContent = text;
+                messagesDiv.appendChild(div);
+                messagesDiv.scrollTop = messagesDiv.scrollHeight;
+            }
+        });
+    </script>
+</body>
+
+</html>

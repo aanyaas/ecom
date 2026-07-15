@@ -1,0 +1,298 @@
+{% extends "admin/base.html" %}
+
+{% block styles %}
+<style>
+    /* Premium Glassmorphism Company Info Overhaul */
+    :root {
+        --glass-bg: rgba(255, 255, 255, 0.85);
+        --glass-border: rgba(255, 255, 255, 0.4);
+        --glass-shadow: 0 10px 30px rgba(0, 0, 0, 0.05);
+        --primary-accent: #a64d79;
+        --secondary-accent: #1a1a2e;
+        --text-dark: #2d3748;
+        --text-muted: #718096;
+    }
+
+    body {
+        background-color: #f4f7f6;
+        background-image: 
+            radial-gradient(at 0% 0%, hsla(331,65%,85%,1) 0, transparent 50%), 
+            radial-gradient(at 100% 0%, hsla(236,40%,85%,1) 0, transparent 50%);
+        background-attachment: fixed;
+        font-family: 'Inter', sans-serif;
+    }
+
+    @keyframes fadeUp {
+        from { opacity: 0; transform: translateY(20px); }
+        to { opacity: 1; transform: translateY(0); }
+    }
+
+    .info-card-luxury {
+        background: var(--glass-bg) !important;
+        backdrop-filter: blur(12px) !important;
+        -webkit-backdrop-filter: blur(12px);
+        border: 1px solid var(--glass-border) !important;
+        border-radius: 24px !important;
+        box-shadow: var(--glass-shadow) !important;
+        overflow: hidden;
+        animation: fadeUp 0.7s ease-out backwards;
+    }
+
+    .form-control {
+        background-color: rgba(255,255,255,0.7) !important;
+        border: 1px solid var(--glass-border) !important;
+        border-radius: 12px;
+        color: var(--text-dark);
+        padding: 0.75rem 1rem;
+        transition: all 0.3s ease;
+        height: auto !important;
+    }
+    select.form-control {
+        padding-top: 0.5rem;
+        padding-bottom: 0.5rem;
+    }
+    .form-control:focus {
+        background-color: #fff !important;
+        border-color: var(--primary-accent) !important;
+        box-shadow: 0 0 0 0.2rem rgba(166, 77, 121, 0.25) !important;
+    }
+    .btn-primary {
+        background-color: var(--primary-accent);
+        border-color: var(--primary-accent);
+        border-radius: 12px;
+        font-weight: 600;
+        letter-spacing: 0.5px;
+        padding: 10px 20px;
+        transition: all 0.3s ease;
+    }
+    .btn-primary:hover {
+        transform: translateY(-2px);
+        box-shadow: 0 4px 15px rgba(166, 77, 121, 0.4);
+    }
+    .custom-file-label {
+        border-radius: 12px;
+        background-color: rgba(255,255,255,0.7);
+        border: 1px solid var(--glass-border);
+    }
+</style>
+{% endblock %}
+
+{% block content %}
+<div class="card info-card-luxury mb-4" style="animation-delay: 0.1s;">
+    <div class="card-header bg-transparent border-0 pt-4 pb-2 px-4">
+        <h4 style="font-weight: 800; color: var(--text-dark);"><i class="fas fa-building mr-2 text-primary"></i>Company Information</h4>
+        <small class="text-muted">This information will be used on invoices and other documents</small>
+    </div>
+    <div class="card-body px-4 pb-4">
+        <form method="POST" enctype="multipart/form-data" id="companyInfoForm">
+            <input type="hidden" name="csrf_token" value="{{ csrf_token() }}"/>
+            
+            <div class="form-row">
+                <div class="form-group col-md-6">
+                    {{ form.company_name.label }}
+                    {{ form.company_name(class="form-control") }}
+                </div>
+                <div class="form-group col-md-6">
+                    {{ form.gstin.label }}
+                    {{ form.gstin(class="form-control") }}
+                </div>
+            </div>
+            
+            <div class="form-row">
+                <div class="form-group col-md-6">
+                    {{ form.pan.label }}
+                    {{ form.pan(class="form-control") }}
+                </div>
+                <div class="form-group col-md-6">
+                    {{ form.pincode.label }}
+                    {{ form.pincode(class="form-control") }}
+                </div>
+            </div>
+            
+            <div class="form-row">
+                <div class="form-group col-md-6">
+                    {{ form.phone.label }}
+                    {{ form.phone(class="form-control") }}
+                </div>
+                <div class="form-group col-md-6">
+                    {{ form.email.label }}
+                    {{ form.email(class="form-control") }}
+                </div>
+            </div>
+            
+            <div class="form-row">
+                <div class="form-group col-md-4">
+                    {{ form.state.label }}
+                    {{ form.state(class="form-control", id="state_select") }}
+                </div>
+                <div class="form-group col-md-4">
+                    {{ form.city.label }}
+                    {{ form.city(class="form-control", id="city_select") }}
+                </div>
+                <div class="form-group col-md-4">
+                    {{ form.state_code.label }}
+                    {{ form.state_code(class="form-control", id="state_code_field", readonly=true) }}
+                </div>
+            </div>
+            <div class="form-row">
+                <div class="form-group col-md-12">
+                    {{ form.website.label }}
+                    {{ form.website(class="form-control", placeholder="e.g. www.aanyaas.com") }}
+                </div>
+            </div>
+            <div class="form-group">
+                {{ form.address.label }}
+                {{ form.address(class="form-control", rows=1) }}
+            </div>
+            <div class="form-row">
+                <div class="form-group col-md-6">
+                    <label for="logo">Company Logo</label>
+                    <div class="custom-file">
+                        <input type="file" class="custom-file-input" id="logo" name="logo" accept="image/*">
+                        <label class="custom-file-label" for="logo">Choose file...</label>
+                    </div>
+                </div>
+            </div>
+     
+            <div class="form-group" id="logoPreviewContainer" style="{% if not logo_url %}display: none;{% endif %}">
+                <label>Current Logo:</label>
+                <div>
+                    <img id="logoPreviewImg" src="{{ logo_url if logo_url else '' }}" alt="Company Logo" style="max-height: 100px; border-radius: 8px; box-shadow: 0 4px 6px rgba(0,0,0,0.1);">
+                </div>
+            </div>
+            
+            <button type="submit" class="btn btn-primary" id="saveBtn">
+                <i class="fas fa-save mr-2"></i>Save Information
+            </button>
+        </form>
+    </div>
+</div>
+{% endblock %}
+
+{% block scripts %}
+<script>
+    // Update file input label with selected filename and show preview
+    $('.custom-file-input').on('change', function() {
+        let file = this.files[0];
+        let fileName = file ? file.name : "Choose file...";
+        $(this).next('.custom-file-label').addClass("selected").html(fileName);
+        
+        if (file && file.type.startsWith('image/')) {
+            let reader = new FileReader();
+            reader.onload = function(e) {
+                $('#logoPreviewImg').attr('src', e.target.result);
+                $('#logoPreviewContainer').show();
+            }
+            reader.readAsDataURL(file);
+        }
+    });
+
+    // State selection change handler
+    $('#state_select').on('change', function() {
+        const stateName = $(this).val();
+        
+        // Clear city dropdown
+        $('#city_select').html('<option value="">Select City</option>');
+        
+        if (stateName) {
+            // Fetch state code and cities for the selected state
+            fetch('/admin/get-state-data?state=' + encodeURIComponent(stateName))
+                .then(response => response.json())
+                .then(data => {
+                    if (data.state_code) {
+                        $('#state_code_field').val(data.state_code);
+                    }
+                    
+                    if (data.cities && data.cities.length > 0) {
+                        data.cities.forEach(city => {
+                            $('#city_select').append($('<option>', {
+                                value: city,
+                                text: city
+                            }));
+                        });
+                    }
+                })
+                .catch(error => {
+                    console.error('Error fetching state data:', error);
+                });
+        } else {
+            $('#state_code_field').val('');
+        }
+    });
+
+    // Pincode input handler
+    $('#pincode').on('blur', function() {
+        const pincode = $(this).val().trim();
+        
+        if (pincode.length === 6) {
+            fetch('/admin/get-pincode-data?pincode=' + pincode)
+                .then(response => response.json())
+                .then(data => {
+                    if (data.state) {
+                        $('#state_select').val(data.state);
+                        $('#state_select').trigger('change');
+                    }
+                    
+                    if (data.city) {
+                        $('#city_select').val(data.city);
+                    }
+                    
+                    if (data.state_code) {
+                        $('#state_code_field').val(data.state_code);
+                    }
+                })
+                .catch(error => {
+                    console.error('Error fetching pincode data:', error);
+                });
+        }
+    });
+
+    // AJAX Form Submission
+    $('#companyInfoForm').on('submit', function(e) {
+        e.preventDefault();
+        var form = this;
+        var saveBtn = document.getElementById('saveBtn');
+        var formData = new FormData(form);
+        
+        saveBtn.innerHTML = '<i class="fas fa-spinner fa-spin mr-2"></i>Saving...';
+        saveBtn.disabled = true;
+
+        fetch('', {
+            method: 'POST',
+            body: formData,
+            headers: {
+                'X-Requested-With': 'XMLHttpRequest'
+            }
+        })
+        .then(response => response.json())
+        .then(data => {
+            if(data.success) {
+                Swal.fire({
+                    icon: 'success',
+                    title: 'Success!',
+                    text: data.message,
+                    timer: 2000,
+                    showConfirmButton: false
+                });
+            } else {
+                Swal.fire({
+                    icon: 'error',
+                    title: 'Error',
+                    text: data.message
+                });
+            }
+        })
+        .catch(error => {
+            Swal.fire({
+                icon: 'error',
+                title: 'Error',
+                text: 'An unexpected error occurred.'
+            });
+        })
+        .finally(() => {
+            saveBtn.innerHTML = '<i class="fas fa-save mr-2"></i>Save Information';
+            saveBtn.disabled = false;
+        });
+    });
+</script>
+{% endblock %}

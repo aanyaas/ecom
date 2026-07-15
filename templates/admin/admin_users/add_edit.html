@@ -1,0 +1,224 @@
+{% extends "admin/base.html" %}
+
+{% block title %}{% if is_edit %}Edit Staff Member{% else %}Add Staff Member- - {{ brand_name }} {% endif %} — Admin
+Panel{% endblock %}
+
+{% block styles %}
+<style>
+    .form-card {
+        max-width: 800px;
+        margin: 0 auto;
+        border-radius: 16px;
+        border: none;
+        box-shadow: 0 10px 30px rgba(0, 0, 0, 0.05);
+    }
+
+    .form-header {
+        background: transparent;
+        border-bottom: 1px solid #f0f0f0;
+        padding: 25px 30px;
+    }
+
+    .form-body {
+        padding: 30px;
+    }
+
+    .form-label {
+        font-weight: 600;
+        font-size: 0.85rem;
+        color: #475467;
+        margin-bottom: 8px;
+    }
+
+    .form-control {
+        border-radius: 8px;
+        padding: 12px 16px;
+        height: auto;
+        border: 1px solid #d0d5dd;
+        transition: all 0.2s;
+    }
+
+    .form-control:focus {
+        border-color: var(--primary-color);
+        box-shadow: 0 0 0 4px rgba(166, 77, 121, 0.1);
+    }
+
+    .input-group-text {
+        background: #f9fafb;
+        border-color: #d0d5dd;
+        color: #667085;
+    }
+
+    .btn-submit {
+        padding: 12px 30px;
+        border-radius: 8px;
+        font-weight: 600;
+    }
+</style>
+{% endblock %}
+
+{% block content %}
+<div class="container-fluid py-4">
+    <div class="mb-4 text-center">
+        <a href="{{ url_for('admin_bp.admin_users_list') }}" class="text-muted small font-weight-bold text-uppercase">
+            <i class="fas fa-arrow-left mr-1"></i> Back to Staff List
+        </a>
+    </div>
+
+    <div class="card form-card">
+        <div class="form-header">
+            <h4 class="mb-1 font-weight-bold">{% if is_edit %}Edit Staff Profile{% else %}Create New Staff Member{%
+                endif %}</h4>
+            <p class="text-muted small mb-0">Configure account details and access roles for the administration portal.
+            </p>
+        </div>
+        <div class="form-body">
+            <form method="POST" action="" id="staffForm" data-is-edit="{{ 'true' if is_edit else 'false' }}">
+                <input type="hidden" name="csrf_token" value="{{ csrf_token() }}" />
+
+                <div class="row">
+                    <div class="col-md-6">
+                        <div class="form-group mb-4">
+                            <label class="form-label" for="username">Username</label>
+                            <div class="input-group">
+                                <div class="input-group-prepend">
+                                    <span class="input-group-text"><i class="fas fa-user"></i></span>
+                                </div>
+                                {{ form.username(class="form-control" + (" is-invalid" if form.username.errors else ""),
+                                placeholder="johndoe") }}
+                                {% for error in form.username.errors %}<div class="invalid-feedback">{{ error }}</div>{%
+                                endfor %}
+                            </div>
+                        </div>
+                    </div>
+                    <div class="col-md-6">
+                        <div class="form-group mb-4">
+                            <label class="form-label" for="email">Email Address</label>
+                            <div class="input-group">
+                                <div class="input-group-prepend">
+                                    <span class="input-group-text"><i class="fas fa-envelope"></i></span>
+                                </div>
+                                {{ form.email(class="form-control" + (" is-invalid" if form.email.errors else ""),
+                                placeholder="john@example.com") }}
+                                {% for error in form.email.errors %}<div class="invalid-feedback">{{ error }}</div>{%
+                                endfor %}
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+                <div class="row">
+                    <div class="col-md-6">
+                        <div class="form-group mb-4">
+                            <label class="form-label" for="password">Password {% if is_edit %}<small
+                                    class="text-muted">(Leave blank to keep current)</small>{% endif %}</label>
+                            <div class="input-group">
+                                <div class="input-group-prepend">
+                                    <span class="input-group-text"><i class="fas fa-lock"></i></span>
+                                </div>
+                                {{ form.password(class="form-control" + (" is-invalid" if form.password.errors else ""),
+                                placeholder="••••••••") }}
+                                {% for error in form.password.errors %}<div class="invalid-feedback">{{ error }}</div>{%
+                                endfor %}
+                            </div>
+                        </div>
+                    </div>
+                    <div class="col-md-6">
+                        <div class="form-group mb-4">
+                            <label class="form-label" for="confirm_password">Confirm Password</label>
+                            <div class="input-group">
+                                <div class="input-group-prepend">
+                                    <span class="input-group-text"><i class="fas fa-shield-alt"></i></span>
+                                </div>
+                                {{ form.confirm_password(class="form-control" + (" is-invalid" if
+                                form.confirm_password.errors else ""), placeholder="••••••••") }}
+                                {% for error in form.confirm_password.errors %}<div class="invalid-feedback">{{ error }}
+                                </div>{% endfor %}
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+                <hr class="my-4 opacity-50">
+
+                <div class="row">
+                    <div class="col-md-6">
+                        <div class="form-group mb-4">
+                            <label class="form-label" for="role">Administrative Role</label>
+                            {{ form.role(class="form-control custom-select" + (" is-invalid" if form.role.errors else
+                            "")) }}
+                            {% for error in form.role.errors %}<div class="invalid-feedback">{{ error }}</div>{% endfor
+                            %}
+                            <small class="text-muted">Determines user permissions across the dashboard.</small>
+                        </div>
+                    </div>
+                    <div class="col-md-6">
+                        <div class="form-group mb-4">
+                            <label class="form-label" for="is_active">Account Status</label>
+                            {{ form.is_active(class="form-control custom-select" + (" is-invalid" if
+                            form.is_active.errors else "")) }}
+                            {% for error in form.is_active.errors %}<div class="invalid-feedback">{{ error }}</div>{%
+                            endfor %}
+                        </div>
+                    </div>
+                </div>
+
+                <div class="row">
+                    <div class="col-md-6">
+                        <div class="form-group mb-4">
+                            <label class="form-label" for="mobile_number">Mobile Number</label>
+                            <div class="input-group">
+                                <div class="input-group-prepend">
+                                    <span class="input-group-text"><i class="fas fa-phone"></i></span>
+                                </div>
+                                {{ form.mobile_number(class="form-control" + (" is-invalid" if form.mobile_number.errors
+                                else ""), placeholder="99999XXXXX") }}
+                                {% for error in form.mobile_number.errors %}<div class="invalid-feedback">{{ error }}
+                                </div>{% endfor %}
+                            </div>
+                        </div>
+                    </div>
+                    <div class="col-md-6">
+                        <div class="form-group mb-4">
+                            <label class="form-label" for="expiry_date">Account Expiry <small
+                                    class="text-muted">(Optional)</small></label>
+                            <div class="input-group">
+                                <div class="input-group-prepend">
+                                    <span class="input-group-text"><i class="fas fa-calendar-alt"></i></span>
+                                </div>
+                                {{ form.expiry_date(class="form-control" + (" is-invalid" if form.expiry_date.errors
+                                else ""), type="date") }}
+                                {% for error in form.expiry_date.errors %}<div class="invalid-feedback">{{ error }}
+                                </div>{% endfor %}
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+                <div class="mt-4 pt-2">
+                    <button type="submit" class="btn btn-primary btn-submit px-5">
+                        {% if is_edit %}<i class="fas fa-save mr-2"></i>Update Staff Profile{% else %}<i
+                            class="fas fa-user-plus mr-2"></i>Create Account{% endif %}
+                    </button>
+                    <a href="{{ url_for('admin_bp.admin_users_list') }}"
+                        class="btn btn-light btn-submit ml-2 px-4">Cancel</a>
+                </div>
+            </form>
+        </div>
+    </div>
+</div>
+{% endblock %}
+
+{% block scripts %}
+<script>
+    $(document).ready(function () {
+        const isEdit = $('#staffForm').data('is-edit');
+
+        // Only require password for new users
+        if (!isEdit) {
+            $('#password').attr('required', true);
+            $('#confirm_password').attr('required', true);
+        }
+    });
+</script>
+{% endblock %}

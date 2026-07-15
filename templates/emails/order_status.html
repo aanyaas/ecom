@@ -1,0 +1,240 @@
+<!DOCTYPE html>
+<html>
+
+<head>
+    <meta charset="utf-8">
+    <meta name="viewport" content="width=device-width, initial-width=1.0">
+    <title>Order Update | - {{ brand_name }}</title>
+    <style>
+        body {
+            font-family: 'Helvetica Neue', Helvetica, Arial, sans-serif;
+            background-color: #f4f4f4;
+            margin: 0;
+            padding: 0;
+        }
+
+        .container {
+            max-width: 600px;
+            margin: 20px auto;
+            background-color: #ffffff;
+            border-radius: 8px;
+            overflow: hidden;
+            box-shadow: 0 4px 6px rgba(0, 0, 0, 0.05);
+        }
+
+        .header {
+            background: linear-gradient(135deg, #1e1e1e 0%, #3a3a3a 100%);
+            color: #ffffff;
+            padding: 30px;
+            text-align: center;
+        }
+
+        .header h1 {
+            margin: 0;
+            font-size: 24px;
+            font-weight: 300;
+            letter-spacing: 2px;
+        }
+
+        .content {
+            padding: 30px;
+            color: #333333;
+            line-height: 1.6;
+        }
+
+        .greeting {
+            font-size: 18px;
+            font-weight: bold;
+            margin-bottom: 20px;
+        }
+
+        .order-meta {
+            background-color: #f9f9f9;
+            padding: 15px;
+            border-radius: 6px;
+            margin-bottom: 20px;
+            border-left: 4px solid #d4af37;
+        }
+
+        .status-badge {
+            display: inline-block;
+            padding: 5px 12px;
+            background-color: #e0f2f1;
+            color: #00695c;
+            border-radius: 20px;
+            font-weight: bold;
+            font-size: 14px;
+            text-transform: uppercase;
+            letter-spacing: 1px;
+        }
+
+        .status-badge.placed {
+            background-color: #e3f2fd;
+            color: #1565c0;
+        }
+
+        .status-badge.accepted {
+            background-color: #fff3e0;
+            color: #e65100;
+        }
+
+        .status-badge.shipped {
+            background-color: #f3e5f5;
+            color: #6a1b9a;
+        }
+
+        .status-badge.delivered {
+            background-color: #e8f5e9;
+            color: #2e7d32;
+        }
+
+        .tracking-info {
+            background-color: #e8eaf6;
+            padding: 15px;
+            border-radius: 6px;
+            margin: 20px 0;
+            text-align: center;
+        }
+
+        .tracking-info strong {
+            color: #3f51b5;
+            font-size: 18px;
+        }
+
+        .footer {
+            background-color: #f4f4f4;
+            padding: 20px;
+            text-align: center;
+            font-size: 12px;
+            color: #777777;
+            border-top: 1px solid #eeeeee;
+        }
+
+        .btn {
+            display: inline-block;
+            padding: 12px 24px;
+            background-color: #1e1e1e;
+            color: #ffffff;
+            text-decoration: none;
+            border-radius: 4px;
+            margin-top: 15px;
+            font-weight: bold;
+        }
+    </style>
+</head>
+
+<body>
+    <div class="container">
+        <div class="header">
+            <h1>- {{ brand_name }}</h1>
+            <p style="margin: 5px 0 0; color: #d4af37; font-size: 14px; text-transform: uppercase;">Premium Elegance</p>
+        </div>
+        <div class="content">
+            <div class="greeting">Hello {{ customer.name }},</div>
+
+            {% if event == 'placed' %}
+            <p>Thank you for choosing - {{ brand_name }}. Your order has been placed successfully and is currently
+                pending review.
+            </p>
+            {% elif event == 'accepted' %}
+            <p>Great news! Your order has been accepted and is currently being processed by our team.</p>
+            {% elif event == 'shipped' %}
+            <p>Your order is on its way! It has been handed over to our delivery partners.</p>
+            {% if tracking_info %}
+            <div class="tracking-info">
+                <p style="margin:0 0 5px 0;">Courier Partner: <strong>{{ tracking_info.courier_name }}</strong></p>
+                <p style="margin:0;">Tracking ID: <strong>{{ tracking_info.tracking_id }}</strong></p>
+            </div>
+            {% endif %}
+            {% elif event == 'delivered' %}
+            <p>Your order has been marked as delivered. We hope you enjoy your premium purchase!</p>
+            <div style="background-color: #f9f9f9; padding: 15px; border-radius: 6px; margin: 20px 0; border-left: 4px solid #d4af37;">
+                <p style="margin-top: 0; font-weight: bold;">Rate and Review your products:</p>
+                <ul style="margin-bottom: 0; padding-left: 20px;">
+                    {% for item in order_items %}
+                    <li style="margin-bottom: 5px;">
+                        <a href="{{ url_for('checkout_bp.rate_product', order_id=order.id, product_id=item.product_id, _external=True) }}" style="color: #3f51b5; text-decoration: none;">
+                            {{ item.product_name }}
+                        </a>
+                    </li>
+                    {% endfor %}
+                </ul>
+            </div>
+            {% elif event == 'cancelled' %}
+            <p>We are sorry to inform you that your order has been cancelled.</p>
+            {% if tracking_info and tracking_info.reason %}
+            <p
+                style="background-color: #ffebee; padding: 10px; border-radius: 4px; border-left: 3px solid #f44336; color: #b71c1c;">
+                <strong>Reason for cancellation:</strong> {{ tracking_info.reason }}
+            </p>
+            {% endif %}
+            {% elif event == 'return_requested' %}
+            <p>We have received your return request for this order.</p>
+            {% if tracking_info and tracking_info.reason %}
+            <div
+                style="background-color: #fff8e1; padding: 10px; border-radius: 4px; border-left: 3px solid #ffc107; color: #795548; margin-bottom: 10px;">
+                <strong>Reason for return:</strong> {{ tracking_info.reason }}
+                {% if tracking_info.remarks %}
+                <br><strong>Remarks:</strong> {{ tracking_info.remarks }}
+                {% endif %}
+            </div>
+            {% endif %}
+            <p>Our team will review your request and get back to you shortly with the next steps.</p>
+            {% elif event == 'return_approved' %}
+            <p>Great news! Your return request for this order has been approved.</p>
+            <p>Please follow the instructions provided by our support team to send the item(s) back to us.</p>
+            {% elif event == 'return_processing' %}
+            <p>We have received your returned item(s) and are currently processing them.</p>
+            <p>We will notify you as soon as the refund is initiated.</p>
+            {% elif event == 'return_completed' %}
+            <p>Your return process is now complete!</p>
+            {% if tracking_info and tracking_info.refund_amount %}
+            <p
+                style="background-color: #e8f5e9; padding: 10px; border-radius: 4px; border-left: 3px solid #4caf50; color: #2e7d32;">
+                <strong>Refund Amount:</strong> ₹{{ tracking_info.refund_amount }}
+            </p>
+            {% endif %}
+            <p>The refund amount should reflect in your original payment method shortly.</p>
+            {% elif event == 'return_rejected' %}
+            <p>We regret to inform you that your return request could not be approved.</p>
+            {% if tracking_info and tracking_info.reason %}
+            <div
+                style="background-color: #ffebee; padding: 10px; border-radius: 4px; border-left: 3px solid #f44336; color: #b71c1c; margin-bottom: 10px;">
+                <strong>Reason for rejection:</strong> {{ tracking_info.reason }}
+            </div>
+            {% endif %}
+            {% endif %}
+
+                        <div class="order-meta">
+                <p style="margin: 0 0 10px 0;"><strong>Order ID:</strong> #{{ order.id }}</p>
+                <p style="margin: 0 0 10px 0;"><strong>Date:</strong> {{ order.order_date.strftime('%d %b %Y, %H:%M') if
+                    order.order_date else 'N/A' }}</p>
+                <p style="margin: 0 0 10px 0;"><strong>Status:</strong> <span class="status-badge {{ event }}">{{ event }}</span>
+                </p>
+                {% set points_earned = (order.total_amount|float / 100)|int %}
+                {% if points_earned > 0 %}
+                <p style="margin: 10px 0 0 0; color: #2e7d32;"><strong>⭐ Loyalty Points Earned:</strong> +{{ points_earned }} pts</p>
+                {% endif %}
+                {% if order.loyalty_points_used and order.loyalty_points_used|int > 0 %}
+                <p style="margin: 5px 0 0 0; color: #d32f2f;"><strong>🎯 Loyalty Points Used:</strong> -{{ order.loyalty_points_used }} pts</p>
+                {% endif %}
+            </div>
+
+            {% if event not in ['cancelled', 'return_requested', 'return_approved', 'return_processing',
+            'return_completed', 'return_rejected'] %}
+            <p>Please find a copy of your invoice attached to this email for your records.</p>
+            {% endif %}
+
+            <p>If you have any questions, feel free to reply to this email or contact our support team.</p>
+
+            <p>Warm regards,<br>The - {{ brand_name }} Team</p>
+        </div>
+        <div class="footer">
+            &copy; {{ order.order_date.strftime('%Y') if order.order_date else '2026' }} {{ company_name }}. All rights
+            reserved.<br>
+            Gurugram, Haryana
+        </div>
+    </div>
+</body>
+
+</html>

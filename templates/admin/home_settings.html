@@ -1,0 +1,429 @@
+{% extends "admin/base.html" %}
+
+{% block title %}Home Page Settings - {{ brand_name }}{% endblock %}
+
+{% block styles %}
+<style>
+    .preview-img {
+        max-height: 100px;
+        max-width: 100%;
+        border-radius: 8px;
+        object-fit: cover;
+        box-shadow: 0 4px 6px rgba(0,0,0,0.1);
+        margin-top: 10px;
+        display: none;
+    }
+    .settings-card {
+        transition: transform 0.2s, box-shadow 0.2s;
+        border-radius: 12px;
+        border: 1px solid #eee;
+    }
+    .settings-card:hover {
+        transform: translateY(-2px);
+        box-shadow: 0 10px 20px rgba(0,0,0,0.05);
+    }
+    .nav-tabs .nav-link {
+        font-weight: 600;
+        color: #6c757d;
+        border: none;
+        padding: 15px 25px;
+        border-bottom: 3px solid transparent;
+        transition: all 0.3s ease;
+    }
+    .nav-tabs .nav-link:hover {
+        border-color: transparent;
+        color: var(--primary-color);
+    }
+    .nav-tabs .nav-link.active {
+        color: var(--primary-color);
+        background-color: transparent;
+        border-color: transparent;
+        border-bottom: 3px solid var(--primary-color);
+    }
+</style>
+{% endblock %}
+
+{% block content %}
+<div class="container-fluid">
+    <div class="d-sm-flex align-items-center justify-content-between mb-4">
+        <h1 class="h3 mb-0 text-gray-800">Home Page Settings</h1>
+        <button type="button" class="btn btn-primary shadow-sm" id="saveAllBtn" onclick="document.getElementById('homeSettingsForm').dispatchEvent(new Event('submit'))">
+            <i class="fas fa-save fa-sm text-white-50 mr-2"></i>Save All Settings
+        </button>
+    </div>
+
+    <div class="card shadow-sm mb-4 border-0" style="border-radius: 15px; overflow: hidden;">
+        <div class="card-header bg-white border-bottom-0 pt-0 pb-0 px-0">
+            <nav>
+                <div class="nav nav-tabs nav-fill" id="nav-tab" role="tablist">
+                    <a class="nav-item nav-link active" id="nav-banners-tab" data-toggle="tab" href="#nav-banners" role="tab" aria-controls="nav-banners" aria-selected="true"><i class="fas fa-images mr-2"></i>Carousel Banners</a>
+                    <a class="nav-item nav-link" id="nav-categories-tab" data-toggle="tab" href="#nav-categories" role="tab" aria-controls="nav-categories" aria-selected="false"><i class="fas fa-th-large mr-2"></i>Featured Categories</a>
+                    <a class="nav-item nav-link" id="nav-offers-tab" data-toggle="tab" href="#nav-offers" role="tab" aria-controls="nav-offers" aria-selected="false"><i class="fas fa-tags mr-2"></i>Offer Blocks</a>
+                </div>
+            </nav>
+        </div>
+        <div class="card-body bg-light pt-4">
+            <form id="homeSettingsForm" action="{{ url_for('admin_bp.home_settings') }}" method="POST" enctype="multipart/form-data">
+                <input type="hidden" name="csrf_token" value="{{ csrf_token() }}">
+                
+                {% set banners = config.get('HOME_BANNERS', []) %}
+                {% set categories = config.get('HOME_CATEGORIES', []) %}
+                {% set offers = config.get('HOME_OFFERS', []) %}
+                
+                <input type="hidden" id="banner_count" name="banner_count" value="{{ banners|length if banners|length > 0 else 3 }}">
+                <input type="hidden" id="category_count" name="category_count" value="{{ categories|length if categories|length > 0 else 4 }}">
+                <input type="hidden" id="offer_count" name="offer_count" value="{{ offers|length if offers|length > 0 else 2 }}">
+
+                <div class="tab-content" id="nav-tabContent">
+                    <!-- Carousel Banners -->
+                    <div class="tab-pane fade show active" id="nav-banners" role="tabpanel" aria-labelledby="nav-banners-tab">
+                        <div class="d-flex justify-content-between align-items-center mb-4">
+                            <h5 class="text-secondary font-weight-bold mb-0">Manage Carousel Banners</h5>
+                            <button type="button" class="btn btn-sm btn-outline-primary" onclick="addNewBanner()"><i class="fas fa-plus mr-1"></i>Add Banner</button>
+                        </div>
+                        <div id="banners-container" class="row">
+                            {% for banner in banners %}
+                            <div class="col-md-6 mb-4 banner-item" data-index="{{ loop.index0 }}">
+                                <div class="card settings-card h-100 bg-white">
+                                    <div class="card-body">
+                                        <div class="d-flex justify-content-between align-items-center mb-3">
+                                            <h6 class="font-weight-bold text-primary m-0"><i class="fas fa-image mr-2"></i>Banner <span class="banner-number">{{ loop.index }}</span></h6>
+                                            <button type="button" class="btn btn-sm btn-light text-danger" onclick="removeBanner(this)"><i class="fas fa-trash"></i></button>
+                                        </div>
+                                        <div class="form-group mb-3">
+                                            <label class="small font-weight-bold text-muted">Title</label>
+                                            <input type="text" class="form-control bg-light" name="banner_title_{{ loop.index0 }}" value="{{ banner.title }}" required>
+                                        </div>
+                                        <div class="form-group mb-3">
+                                            <label class="small font-weight-bold text-muted">Subtitle</label>
+                                            <input type="text" class="form-control bg-light" name="banner_subtitle_{{ loop.index0 }}" value="{{ banner.subtitle }}" required>
+                                        </div>
+                                        <div class="form-group mb-3">
+                                            <label class="small font-weight-bold text-muted">Button Link URL</label>
+                                            <input type="text" class="form-control bg-light" name="banner_link_{{ loop.index0 }}" value="{{ banner.link_url }}" required>
+                                        </div>
+                                        <div class="form-group mb-0">
+                                            <label class="small font-weight-bold text-muted">Media File</label>
+                                            <div class="custom-file">
+                                                <input type="file" class="custom-file-input media-input" name="banner_media_{{ loop.index0 }}" accept="image/*,video/webm,video/mp4" onchange="previewMedia(this)">
+                                                <label class="custom-file-label text-truncate" data-browse="Browse">{{ banner.media_path.split('/')[-1] if banner.media_path else 'Choose file...' }}</label>
+                                            </div>
+                                            <input type="hidden" name="banner_current_path_{{ loop.index0 }}" value="{{ banner.media_path }}">
+                                            <input type="hidden" name="banner_current_is_video_{{ loop.index0 }}" value="{{ '1' if banner.is_video else '0' }}">
+                                            <img src="{{ url_for('static', filename=banner.media_path) if banner.media_path and not banner.is_video else '' }}" class="preview-img" {% if banner.media_path and not banner.is_video %}style="display: block;"{% endif %}>
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+                            {% endfor %}
+                        </div>
+                    </div>
+
+                    <!-- Featured Categories -->
+                    <div class="tab-pane fade" id="nav-categories" role="tabpanel" aria-labelledby="nav-categories-tab">
+                        <div class="d-flex justify-content-between align-items-center mb-4">
+                            <h5 class="text-secondary font-weight-bold mb-0">Manage Featured Categories</h5>
+                            <button type="button" class="btn btn-sm btn-outline-primary" onclick="addNewCategory()"><i class="fas fa-plus mr-1"></i>Add Slot</button>
+                        </div>
+                        <div id="categories-container" class="row">
+                            {% for i in range(categories|length) %}
+                            {% set cat_obj = categories[i] %}
+                            <div class="col-md-4 mb-4 category-item" data-index="{{ i }}">
+                                <div class="card settings-card h-100 bg-white">
+                                    <div class="card-body">
+                                        <div class="d-flex justify-content-between align-items-center mb-3">
+                                            <h6 class="font-weight-bold text-primary m-0"><i class="fas fa-th mr-2"></i>Slot <span class="category-number">{{ loop.index }}</span></h6>
+                                            <button type="button" class="btn btn-sm btn-light text-danger" onclick="removeCategory(this)"><i class="fas fa-trash"></i></button>
+                                        </div>
+                                        <div class="form-group mb-3">
+                                            <label class="small font-weight-bold text-muted">Select Category</label>
+                                            <select class="form-control bg-light" name="category_{{ i }}">
+                                                <option value="">Select Category</option>
+                                                {% for cat in all_categories %}
+                                                <option value="{{ cat.slug }}" {% if cat_obj.slug == cat.slug %}selected{% endif %}>{{ cat.name }}</option>
+                                                {% endfor %}
+                                            </select>
+                                        </div>
+                                        <div class="form-group mb-0">
+                                            <label class="small font-weight-bold text-muted">Category Image</label>
+                                            <div class="custom-file">
+                                                <input type="file" class="custom-file-input media-input" name="category_image_{{ i }}" accept="image/*" onchange="previewMedia(this)">
+                                                <label class="custom-file-label text-truncate" data-browse="Browse">{{ cat_obj.image.split('/')[-1] if cat_obj.image else 'Choose file...' }}</label>
+                                            </div>
+                                            <input type="hidden" name="category_current_image_{{ i }}" value="{{ cat_obj.image }}">
+                                            <img src="{{ url_for('static', filename=cat_obj.image) if cat_obj.image else '' }}" class="preview-img" {% if cat_obj.image %}style="display: block;"{% endif %}>
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+                            {% endfor %}
+                        </div>
+                    </div>
+
+                    <!-- Offers Settings -->
+                    <div class="tab-pane fade" id="nav-offers" role="tabpanel" aria-labelledby="nav-offers-tab">
+                        <div class="d-flex justify-content-between align-items-center mb-4">
+                            <h5 class="text-secondary font-weight-bold mb-0">Manage Offer Blocks</h5>
+                            <button type="button" class="btn btn-sm btn-outline-primary" onclick="addNewOffer()"><i class="fas fa-plus mr-1"></i>Add Offer</button>
+                        </div>
+                        <div id="offers-container" class="row">
+                            {% for offer in offers %}
+                            <div class="col-md-6 mb-4 offer-item" data-index="{{ loop.index0 }}">
+                                <div class="card settings-card h-100 bg-white">
+                                    <div class="card-body">
+                                        <div class="d-flex justify-content-between align-items-center mb-3">
+                                            <h6 class="font-weight-bold text-primary m-0"><i class="fas fa-tag mr-2"></i>Offer Block <span class="offer-number">{{ loop.index }}</span></h6>
+                                            <div class="d-flex align-items-center">
+                                                <select class="form-control form-control-sm bg-light mr-2 border-0" name="offer_align_{{ loop.index0 }}" style="width: auto;">
+                                                    <option value="left" {% if offer.align == 'left' %}selected{% endif %}>Left Align</option>
+                                                    <option value="center" {% if offer.align == 'center' %}selected{% endif %}>Center Align</option>
+                                                    <option value="right" {% if offer.align == 'right' %}selected{% endif %}>Right Align</option>
+                                                </select>
+                                                <button type="button" class="btn btn-sm btn-light text-danger" onclick="removeOffer(this)"><i class="fas fa-trash"></i></button>
+                                            </div>
+                                        </div>
+                                        <div class="form-group mb-3">
+                                            <label class="small font-weight-bold text-muted">Subtitle / Small Header</label>
+                                            <input type="text" class="form-control bg-light" name="offer_subtitle_{{ loop.index0 }}" value="{{ offer.subtitle }}" required>
+                                        </div>
+                                        <div class="form-group mb-3">
+                                            <label class="small font-weight-bold text-muted">Main Title</label>
+                                            <input type="text" class="form-control bg-light" name="offer_title_{{ loop.index0 }}" value="{{ offer.title }}" required>
+                                        </div>
+                                        <div class="form-group mb-3">
+                                            <label class="small font-weight-bold text-muted">Description Text</label>
+                                            <textarea class="form-control bg-light" name="offer_text_{{ loop.index0 }}" rows="2" required>{{ offer.text }}</textarea>
+                                        </div>
+                                        <div class="form-group mb-3">
+                                            <label class="small font-weight-bold text-muted">Button Link URL</label>
+                                            <input type="text" class="form-control bg-light" name="offer_link_{{ loop.index0 }}" value="{{ offer.link_url }}" required>
+                                        </div>
+                                        <div class="form-group mb-0">
+                                            <label class="small font-weight-bold text-muted">Background Image</label>
+                                            <div class="custom-file">
+                                                <input type="file" class="custom-file-input media-input" name="offer_bg_{{ loop.index0 }}" accept="image/*" onchange="previewMedia(this)">
+                                                <label class="custom-file-label text-truncate" data-browse="Browse">{{ offer.bg_image.split('/')[-1] if offer.bg_image else 'Choose file...' }}</label>
+                                            </div>
+                                            <input type="hidden" name="offer_current_bg_{{ loop.index0 }}" value="{{ offer.bg_image }}">
+                                            <img src="{{ url_for('static', filename=offer.bg_image) if offer.bg_image else '' }}" class="preview-img" {% if offer.bg_image %}style="display: block;"{% endif %}>
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+                            {% endfor %}
+                        </div>
+                    </div>
+                </div>
+            </form>
+        </div>
+    </div>
+</div>
+{% endblock %}
+
+{% block scripts %}
+<script>
+    // Preview Image Logic
+    function previewMedia(input) {
+        var fileName = input.files[0] ? input.files[0].name : "Choose file...";
+        $(input).next('.custom-file-label').html(fileName);
+        
+        if (input.files && input.files[0]) {
+            var reader = new FileReader();
+            reader.onload = function(e) {
+                var img = $(input).closest('.form-group').find('.preview-img');
+                if(input.files[0].type.startsWith('image/')) {
+                    img.attr('src', e.target.result).show();
+                } else {
+                    img.hide();
+                }
+            }
+            reader.readAsDataURL(input.files[0]);
+        }
+    }
+
+    // Add/Remove Logic
+    function updateCounts() {
+        $('#banner_count').val($('.banner-item').length);
+        $('#category_count').val($('.category-item').length);
+        $('#offer_count').val($('.offer-item').length);
+        
+        $('.banner-item').each(function(i) { $(this).find('.banner-number').text(i + 1); });
+        $('.category-item').each(function(i) { $(this).find('.category-number').text(i + 1); });
+        $('.offer-item').each(function(i) { $(this).find('.offer-number').text(i + 1); });
+    }
+
+    function removeBanner(btn) { $(btn).closest('.banner-item').remove(); updateCounts(); }
+    function removeCategory(btn) { $(btn).closest('.category-item').remove(); updateCounts(); }
+    function removeOffer(btn) { $(btn).closest('.offer-item').remove(); updateCounts(); }
+
+    function addNewBanner() {
+        let idx = $('.banner-item').length;
+        let html = `
+        <div class="col-md-6 mb-4 banner-item" data-index="${idx}">
+            <div class="card settings-card h-100 bg-white">
+                <div class="card-body">
+                    <div class="d-flex justify-content-between align-items-center mb-3">
+                        <h6 class="font-weight-bold text-primary m-0"><i class="fas fa-image mr-2"></i>Banner <span class="banner-number">${idx + 1}</span></h6>
+                        <button type="button" class="btn btn-sm btn-light text-danger" onclick="removeBanner(this)"><i class="fas fa-trash"></i></button>
+                    </div>
+                    <div class="form-group mb-3">
+                        <label class="small font-weight-bold text-muted">Title</label>
+                        <input type="text" class="form-control bg-light" name="banner_title_${idx}" value="" required>
+                    </div>
+                    <div class="form-group mb-3">
+                        <label class="small font-weight-bold text-muted">Subtitle</label>
+                        <input type="text" class="form-control bg-light" name="banner_subtitle_${idx}" value="" required>
+                    </div>
+                    <div class="form-group mb-3">
+                        <label class="small font-weight-bold text-muted">Button Link URL</label>
+                        <input type="text" class="form-control bg-light" name="banner_link_${idx}" value="" required>
+                    </div>
+                    <div class="form-group mb-0">
+                        <label class="small font-weight-bold text-muted">Media File</label>
+                        <div class="custom-file">
+                            <input type="file" class="custom-file-input media-input" name="banner_media_${idx}" accept="image/*,video/webm,video/mp4" onchange="previewMedia(this)" required>
+                            <label class="custom-file-label text-truncate" data-browse="Browse">Choose file...</label>
+                        </div>
+                        <input type="hidden" name="banner_current_path_${idx}" value="">
+                        <input type="hidden" name="banner_current_is_video_${idx}" value="0">
+                        <img src="" class="preview-img">
+                    </div>
+                </div>
+            </div>
+        </div>`;
+        $('#banners-container').append(html);
+        updateCounts();
+    }
+
+    function addNewCategory() {
+        let idx = $('.category-item').length;
+        let categoriesOptions = `{% for cat in all_categories %}<option value="{{ cat.slug }}">{{ cat.name }}</option>{% endfor %}`;
+        let html = `
+        <div class="col-md-4 mb-4 category-item" data-index="${idx}">
+            <div class="card settings-card h-100 bg-white">
+                <div class="card-body">
+                    <div class="d-flex justify-content-between align-items-center mb-3">
+                        <h6 class="font-weight-bold text-primary m-0"><i class="fas fa-th mr-2"></i>Slot <span class="category-number">${idx + 1}</span></h6>
+                        <button type="button" class="btn btn-sm btn-light text-danger" onclick="removeCategory(this)"><i class="fas fa-trash"></i></button>
+                    </div>
+                    <div class="form-group mb-3">
+                        <label class="small font-weight-bold text-muted">Select Category</label>
+                        <select class="form-control bg-light" name="category_${idx}" required>
+                            <option value="">Select Category</option>
+                            ${categoriesOptions}
+                        </select>
+                    </div>
+                    <div class="form-group mb-0">
+                        <label class="small font-weight-bold text-muted">Category Image</label>
+                        <div class="custom-file">
+                            <input type="file" class="custom-file-input media-input" name="category_image_${idx}" accept="image/*" onchange="previewMedia(this)" required>
+                            <label class="custom-file-label text-truncate" data-browse="Browse">Choose file...</label>
+                        </div>
+                        <input type="hidden" name="category_current_image_${idx}" value="">
+                        <img src="" class="preview-img">
+                    </div>
+                </div>
+            </div>
+        </div>`;
+        $('#categories-container').append(html);
+        updateCounts();
+    }
+
+    function addNewOffer() {
+        let idx = $('.offer-item').length;
+        let html = `
+        <div class="col-md-6 mb-4 offer-item" data-index="${idx}">
+            <div class="card settings-card h-100 bg-white">
+                <div class="card-body">
+                    <div class="d-flex justify-content-between align-items-center mb-3">
+                        <h6 class="font-weight-bold text-primary m-0"><i class="fas fa-tag mr-2"></i>Offer Block <span class="offer-number">${idx + 1}</span></h6>
+                        <div class="d-flex align-items-center">
+                            <select class="form-control form-control-sm bg-light mr-2 border-0" name="offer_align_${idx}" style="width: auto;">
+                                <option value="left">Left Align</option>
+                                <option value="center" selected>Center Align</option>
+                                <option value="right">Right Align</option>
+                            </select>
+                            <button type="button" class="btn btn-sm btn-light text-danger" onclick="removeOffer(this)"><i class="fas fa-trash"></i></button>
+                        </div>
+                    </div>
+                    <div class="form-group mb-3">
+                        <label class="small font-weight-bold text-muted">Subtitle / Small Header</label>
+                        <input type="text" class="form-control bg-light" name="offer_subtitle_${idx}" value="" required>
+                    </div>
+                    <div class="form-group mb-3">
+                        <label class="small font-weight-bold text-muted">Main Title</label>
+                        <input type="text" class="form-control bg-light" name="offer_title_${idx}" value="" required>
+                    </div>
+                    <div class="form-group mb-3">
+                        <label class="small font-weight-bold text-muted">Description Text</label>
+                        <textarea class="form-control bg-light" name="offer_text_${idx}" rows="2" required></textarea>
+                    </div>
+                    <div class="form-group mb-3">
+                        <label class="small font-weight-bold text-muted">Button Link URL</label>
+                        <input type="text" class="form-control bg-light" name="offer_link_${idx}" value="" required>
+                    </div>
+                    <div class="form-group mb-0">
+                        <label class="small font-weight-bold text-muted">Background Image</label>
+                        <div class="custom-file">
+                            <input type="file" class="custom-file-input media-input" name="offer_bg_${idx}" accept="image/*" onchange="previewMedia(this)" required>
+                            <label class="custom-file-label text-truncate" data-browse="Browse">Choose file...</label>
+                        </div>
+                        <input type="hidden" name="offer_current_bg_${idx}" value="">
+                        <img src="" class="preview-img">
+                    </div>
+                </div>
+            </div>
+        </div>`;
+        $('#offers-container').append(html);
+        updateCounts();
+    }
+
+    // AJAX Submission
+    document.getElementById('homeSettingsForm').addEventListener('submit', function(e) {
+        e.preventDefault();
+        var form = this;
+        var saveBtn = document.getElementById('saveAllBtn');
+        var formData = new FormData(form);
+        
+        saveBtn.innerHTML = '<i class="fas fa-spinner fa-spin mr-2"></i>Saving...';
+        saveBtn.disabled = true;
+
+        fetch(form.action, {
+            method: 'POST',
+            body: formData,
+            headers: {
+                'X-Requested-With': 'XMLHttpRequest'
+            }
+        })
+        .then(response => response.json())
+        .then(data => {
+            if(data.success) {
+                Swal.fire({
+                    icon: 'success',
+                    title: 'Success!',
+                    text: data.message,
+                    timer: 2000,
+                    showConfirmButton: false
+                });
+            } else {
+                Swal.fire({
+                    icon: 'error',
+                    title: 'Error',
+                    text: data.message
+                });
+            }
+        })
+        .catch(error => {
+            Swal.fire({
+                icon: 'error',
+                title: 'Error',
+                text: 'An unexpected error occurred.'
+            });
+        })
+        .finally(() => {
+            saveBtn.innerHTML = '<i class="fas fa-save fa-sm text-white-50 mr-2"></i>Save All Settings';
+            saveBtn.disabled = false;
+        });
+    });
+</script>
+{% endblock %}

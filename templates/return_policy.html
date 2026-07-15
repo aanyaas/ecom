@@ -1,0 +1,162 @@
+{% extends "base.html" %}
+
+{% block title %}{{ company_name }} - Return Policy{% endblock %}
+
+{% block styles %}
+{{ super() }}
+<style>
+    .page-header-luxury {
+        padding: 80px 0 40px;
+        background: #fdfcfd;
+        text-align: center;
+        border-bottom: 1px solid #f0f0f0;
+    }
+
+    .page-header-luxury h1 {
+        font-family: 'Playfair Display', serif;
+        font-weight: 700;
+        font-size: 3rem;
+        color: #1a1a1a;
+        margin-bottom: 15px;
+    }
+
+    .breadcrumb-luxury {
+        display: flex;
+        justify-content: center;
+        align-items: center;
+        gap: 15px;
+        list-style: none;
+        padding: 0;
+        margin: 0;
+        font-size: 0.85rem;
+        text-transform: uppercase;
+        letter-spacing: 2px;
+        font-weight: 600;
+    }
+
+    .breadcrumb-luxury a {
+        color: #999;
+        transition: color 0.3s;
+    }
+
+    .breadcrumb-luxury a:hover {
+        color: #a64d79;
+        text-decoration: none;
+    }
+
+    .breadcrumb-luxury span {
+        color: #1a1a1a;
+    }
+
+    .policy-content {
+        padding: 60px 0 100px;
+        background: #fff;
+    }
+
+    .policy-card {
+        background: #fff;
+        border: 1px solid #f0f0f0;
+        border-radius: 30px;
+        padding: 50px;
+        box-shadow: 0 15px 40px rgba(0,0,0,0.02);
+    }
+
+    .policy-card h4 {
+        font-family: 'Playfair Display', serif;
+        font-weight: 700;
+        color: #a64d79;
+        margin-top: 40px;
+        margin-bottom: 20px;
+        font-size: 1.5rem;
+    }
+    
+    .policy-card h4:first-child {
+        margin-top: 0;
+    }
+
+    .policy-card p, .policy-card ul {
+        font-size: 1.05rem;
+        line-height: 1.8;
+        color: #555;
+    }
+
+    .policy-card ul {
+        padding-left: 20px;
+        margin-bottom: 20px;
+    }
+
+    .policy-card li {
+        margin-bottom: 10px;
+    }
+
+    .policy-card a {
+        color: #a64d79;
+        font-weight: 600;
+        text-decoration: none;
+        border-bottom: 1px solid transparent;
+        transition: all 0.3s;
+    }
+
+    .policy-card a:hover {
+        border-bottom-color: #a64d79;
+    }
+</style>
+{% endblock %}
+
+{% block content %}
+<div class="page-header-luxury">
+    <div class="container reveal">
+        <h1>Return Policy</h1>
+        <ul class="breadcrumb-luxury">
+            <li><a href="{{ url_for('pages_bp.home') }}">Home</a></li>
+            <li>/</li>
+            <li><span>Return Policy</span></li>
+        </ul>
+    </div>
+</div>
+
+<div class="policy-content">
+    <div class="container">
+        <div class="row">
+            <div class="col-lg-10 mx-auto reveal" data-reveal="bottom">
+                <div class="policy-card">
+                    <h4>1. Returns</h4>
+                    <p>We accept returns within 3 days of purchase. To be eligible for a return, your item must be unused
+                        and in the same condition that you received it.
+                        It must also be in the original packaging.</p>
+                        
+                    <h4>2. Non-Returnable Items</h4>
+                    <p>The following items are non-returnable:</p>
+                    <ul>
+                        <li>Gift cards</li>
+                        <li>Customised or personalised products</li>
+                        <li>Items on sale or purchased at a discount</li>
+                    </ul>
+
+                    <h4>3. Refunds</h4>
+                    <p>Once we receive your returned item and inspect it, we will notify you about the approval or rejection
+                        of your refund. If approved, your refund will be processed and a credit will be applied to your
+                        original method of payment within 7-10 business days.</p>
+
+                    <h4>4. Exchanges</h4>
+                    <p>We only replace items if they are defective or damaged. If you need to exchange an item for the same
+                        product, please contact us at <a href="mailto:{{ company_info.email or 'info@example.com' }}">{{ company_info.email or 'info@example.com' }}</a>.</p>
+
+                    <h4>5. Return Shipping</h4>
+                    <p>You will be responsible for paying for your own shipping costs for returning your item. Shipping
+                        costs are non-refundable. If you receive a refund, the cost of return shipping will be deducted from
+                        your refund.</p>
+
+                    <h4>6. Approval</h4>
+                    <p>We will approve return/exchange within 2 days from request raise. If any exchange approved, it will
+                        delivered within 3-4 working days.</p>
+
+                    <h4>7. How to Initiate a Return</h4>
+                    <p>To initiate a return, please contact us at <a href="mailto:{{ company_info.email or 'info@example.com' }}">{{ company_info.email or 'info@example.com' }}</a> or
+                        call us at {{ company_info.phone or '+91 9555144442' }} with your order details. We will guide you through the return process.</p>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}

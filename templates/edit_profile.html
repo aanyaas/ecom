@@ -1,0 +1,298 @@
+{% extends "base.html" %}
+
+{% block styles %}
+{{ super() }}
+<style>
+    .edit-profile-container {
+        padding: 80px 0 100px;
+        background: linear-gradient(135deg, #fff 0%, #fdf6f0 100%);
+    }
+
+    .edit-card {
+        background: #fff;
+        border-radius: 20px;
+        border: none;
+        box-shadow: 0 12px 40px rgba(166, 77, 121, 0.08);
+        overflow: hidden;
+    }
+
+    .edit-card-header {
+        background: #fff;
+        padding: 35px;
+        text-align: center;
+        border-bottom: 1px solid rgba(0, 0, 0, 0.04);
+    }
+
+    .edit-card-header h2 {
+        font-family: var(--font-heading, 'Playfair Display', serif);
+        font-weight: 700;
+        margin-bottom: 0;
+        color: var(--dark-color, #1a1a1a);
+    }
+
+    .edit-card-body {
+        padding: 50px;
+    }
+
+    .profile-upload-section {
+        display: flex;
+        align-items: center;
+        gap: 30px;
+        margin-bottom: 40px;
+        padding-bottom: 30px;
+        border-bottom: 1px dashed rgba(0, 0, 0, 0.05);
+    }
+
+    .profile-preview-lg {
+        width: 100px;
+        height: 100px;
+        border-radius: 50%;
+        object-fit: cover;
+        border: 4px solid #fff;
+        box-shadow: 0 8px 25px rgba(166, 77, 121, 0.15);
+    }
+
+    .profile-placeholder-lg {
+        width: 100px;
+        height: 100px;
+        border-radius: 50%;
+        background: linear-gradient(135deg, #fdfcfd, #f9f5f7);
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        color: var(--primary-color, #a64d79);
+        font-size: 2.8rem;
+        font-family: var(--font-heading, 'Playfair Display', serif);
+        border: 4px solid #fff;
+        box-shadow: 0 8px 25px rgba(166, 77, 121, 0.15);
+    }
+
+    .custom-file-upload {
+        display: inline-block;
+        padding: 10px 24px;
+        cursor: pointer;
+        background: rgba(166, 77, 121, 0.05);
+        color: var(--primary-color, #a64d79);
+        border: 1.5px dashed var(--primary-color, #a64d79);
+        border-radius: 50px;
+        font-weight: 600;
+        font-size: 0.85rem;
+        transition: all 0.3s ease;
+        margin-bottom: 5px;
+    }
+
+    .custom-file-upload:hover {
+        background: var(--primary-color, #a64d79);
+        color: #fff;
+        transform: translateY(-2px);
+    }
+
+    input[type="file"] {
+        display: none;
+    }
+
+    .form-label-luxury {
+        font-size: 0.72rem;
+        text-transform: uppercase;
+        letter-spacing: 1.2px;
+        color: #888;
+        font-weight: 700;
+        margin-bottom: 8px;
+        display: flex;
+        align-items: center;
+    }
+
+    .form-label-luxury i {
+        color: var(--primary-color, #a64d79);
+        margin-right: 8px;
+        font-size: 0.9rem;
+        opacity: 0.8;
+    }
+
+    .form-control-luxury {
+        border: 1px solid rgba(0, 0, 0, 0.08);
+        border-radius: 14px;
+        padding: 12px 20px;
+        height: 52px;
+        font-size: 0.95rem;
+        transition: all 0.3s ease;
+        background: #fcfcfc;
+    }
+
+    .form-control-luxury:focus {
+        border-color: var(--primary-color, #a64d79);
+        box-shadow: 0 0 0 3px rgba(166, 77, 121, 0.1);
+        background: #fff;
+    }
+
+    .form-control-luxury[readonly] {
+        background: #f9f9f9;
+        cursor: not-allowed;
+        opacity: 0.7;
+    }
+
+    .btn-save {
+        background: linear-gradient(135deg, var(--primary-color, #a64d79), var(--secondary-color, #ba6286));
+        color: #fff;
+        padding: 16px;
+        border-radius: 50px;
+        font-weight: 700;
+        text-transform: uppercase;
+        letter-spacing: 2px;
+        font-size: 0.9rem;
+        border: none;
+        transition: all 0.3s ease;
+        margin-top: 25px;
+        box-shadow: 0 8px 25px rgba(166, 77, 121, 0.2);
+    }
+
+    .btn-save:hover {
+        background: linear-gradient(135deg, var(--secondary-color, #ba6286), var(--primary-color, #a64d79));
+        transform: translateY(-3px);
+        box-shadow: 0 12px 35px rgba(166, 77, 121, 0.3);
+        color: #fff;
+    }
+</style>
+{% endblock %}
+
+{% block content %}
+
+<div class="edit-profile-container">
+    <div class="container">
+        <div class="row justify-content-center">
+            <div class="col-lg-8" data-reveal="bottom">
+                <div class="edit-card">
+                    <div class="edit-card-header">
+                        <h2>Personal Details</h2>
+                    </div>
+                    <div class="edit-card-body">
+                        <form method="POST" enctype="multipart/form-data">
+                            <input type="hidden" name="csrf_token" value="{{ csrf_token() }}" />
+
+                            <div class="profile-upload-section">
+                                {% if user.profile_picture %}
+                                <img src="{{ url_for('static', filename='img/profiles/' ~ user.profile_picture) }}"
+                                    alt="Profile" class="profile-preview-lg">
+                                {% else %}
+                                <div class="profile-placeholder-lg">
+                                    {{ user.first_name[0]|upper if user.first_name else user.username[0]|upper }}
+                                </div>
+                                {% endif %}
+
+                                <div class="flex-grow-1">
+                                    <label class="form-label-luxury"><i class="fas fa-camera"></i> Profile
+                                        Photograph</label>
+                                    <label for="profileUpload" class="custom-file-upload">
+                                        <i class="fas fa-cloud-upload-alt mr-2"></i> Choose File
+                                    </label>
+                                    <input id="profileUpload" type="file" name="profile_picture" accept="image/*"
+                                        onchange="updateFileName(this)">
+                                    <div id="fileNameDisplay" class="small text-muted mt-1" style="font-size: 0.75rem;">
+                                        JPG, PNG or WEBP. Max 2MB.</div>
+                                </div>
+                            </div>
+
+                            <div class="form-group mb-4">
+                                <label class="form-label-luxury"><i class="fas fa-id-badge"></i> Username</label>
+                                <input type="text" class="form-control form-control-luxury" value="{{ user.username }}"
+                                    readonly>
+                                <small class="text-muted" style="font-size: 0.75rem;">Unique identifier for your
+                                    collector account.</small>
+                            </div>
+
+                            <div class="row">
+                                <div class="col-md-6 mb-4">
+                                    <label class="form-label-luxury"><i class="far fa-user"></i> First Name</label>
+                                    <input type="text" name="first_name"
+                                        class="form-control form-control-luxury text-capitalize"
+                                        value="{{ user.first_name or '' }}" placeholder="Enter first name">
+                                </div>
+                                <div class="col-md-6 mb-4">
+                                    <label class="form-label-luxury"><i class="far fa-user"></i> Last Name</label>
+                                    <input type="text" name="last_name"
+                                        class="form-control form-control-luxury text-capitalize"
+                                        value="{{ user.last_name or '' }}" placeholder="Enter last name">
+                                </div>
+                            </div>
+
+                            <div class="row">
+                                <div class="col-md-6 mb-4">
+                                    <label class="form-label-luxury"><i class="far fa-envelope"></i> Email
+                                        Address</label>
+                                    <input type="email" name="email" class="form-control form-control-luxury"
+                                        value="{{ user.email or '' }}" placeholder="Email for notifications">
+                                </div>
+                                <div class="col-md-6 mb-4">
+                                    <label class="form-label-luxury"><i class="fas fa-venus-mars"></i> Gender</label>
+                                    <select name="gender" class="form-control form-control-luxury custom-select">
+                                        <option value="">Prefer not to say</option>
+                                        <option value="male" {% if user.gender=='male' %}selected{% endif %}>Male
+                                        </option>
+                                        <option value="female" {% if user.gender=='female' %}selected{% endif %}>Female
+                                        </option>
+                                        <option value="other" {% if user.gender=='other' %}selected{% endif %}>Other
+                                        </option>
+                                    </select>
+                                </div>
+                            </div>
+
+                            <div class="row">
+                                <div class="col-md-6 mb-4">
+                                    <label class="form-label-luxury"><i class="fas fa-mobile-alt"></i> Primary
+                                        Mobile</label>
+                                    <input type="tel" name="mobile_number" class="form-control form-control-luxury"
+                                        value="{{ user.mobile_number or '' }}" placeholder="Primary contact">
+                                </div>
+                                <div class="col-md-6 mb-4">
+                                    <label class="form-label-luxury"><i class="fas fa-phone"></i> Alternate
+                                        Mobile</label>
+                                    <input type="tel" name="alternate_mobile" class="form-control form-control-luxury"
+                                        value="{{ user.alternate_mobile or '' }}" placeholder="Secondary contact">
+                                </div>
+                            </div>
+
+                            <div class="row">
+                                <div class="col-md-6 mb-4">
+                                    <label class="form-label-luxury"><i class="fas fa-birthday-cake"></i> Date of
+                                        Birth</label>
+                                    <input type="date" name="date_of_birth" class="form-control form-control-luxury"
+                                        value="{{ user.date_of_birth or '' }}">
+                                </div>
+                                <div class="col-md-6 mb-4">
+                                    <label class="form-label-luxury"><i class="fas fa-glass-cheers"></i>
+                                        Anniversary</label>
+                                    <input type="date" name="marriage_anniversary"
+                                        class="form-control form-control-luxury"
+                                        value="{{ user.marriage_anniversary or '' }}">
+                                </div>
+                            </div>
+
+                            <button type="submit" class="btn btn-save btn-block">
+                                <i class="fas fa-save mr-2"></i> Save Changes
+                            </button>
+
+                            <div class="text-center mt-4">
+                                <a href="{{ url_for('user_bp.profile') }}"
+                                    class="text-muted small text-uppercase font-weight-bold"
+                                    style="letter-spacing: 1px;"><i class="fas fa-arrow-left mr-1"></i> Back</a>
+                            </div>
+                        </form>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}
+
+{% block scripts %}
+{{ super() }}
+<script>
+    function updateFileName(input) {
+        var fileName = input.files && input.files.length > 0 ? input.files[0].name : "JPG, PNG or WEBP. Max 2MB.";
+        document.getElementById('fileNameDisplay').textContent = fileName;
+        document.getElementById('fileNameDisplay').style.color = '#a64d79';
+        document.getElementById('fileNameDisplay').style.fontWeight = '600';
+    }
+</script>
+{% endblock %}

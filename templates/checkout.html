@@ -1,0 +1,1125 @@
+{% extends "base.html" %}
+
+{% block title %}{{ company_name }} - Checkout{% endblock %}
+
+{% block styles %}
+<style>
+    /* Checkout Progress Modernization */
+    .checkout-progress {
+        padding: 50px 0;
+        margin-bottom: 40px;
+    }
+
+    .progress-steps {
+        display: flex;
+        justify-content: center;
+        align-items: center;
+        gap: 30px;
+        list-style: none;
+        padding: 0;
+    }
+
+    .step {
+        display: flex;
+        align-items: center;
+        gap: 15px;
+        color: #bbb;
+        font-weight: 700;
+        font-size: 0.85rem;
+        text-transform: uppercase;
+        letter-spacing: 2px;
+        transition: all 0.3s;
+    }
+
+    .step.active {
+        color: #1a1a1a;
+    }
+
+    .step-number {
+        width: 35px;
+        height: 35px;
+        border-radius: 50%;
+        border: 2px solid #eee;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        font-size: 0.9rem;
+        background: #fff;
+    }
+
+    .step.active .step-number {
+        border-color: #a64d79;
+        background: #a64d79;
+        color: #fff;
+        box-shadow: 0 5px 15px rgba(166, 77, 121, 0.3);
+    }
+
+    .step-line {
+        width: 60px;
+        height: 1px;
+        background: #eee;
+    }
+
+    /* Checkout Section Titles */
+    .checkout-section-title {
+        font-family: 'Playfair Display', serif;
+        font-weight: 700;
+        font-size: 1.6rem;
+        margin-bottom: 30px;
+        color: #1a1a1a;
+        position: relative;
+        padding-bottom: 15px;
+    }
+
+    .checkout-section-title::after {
+        content: '';
+        position: absolute;
+        bottom: 0;
+        left: 0;
+        width: 40px;
+        height: 2px;
+        background: #a64d79;
+    }
+
+    .form-control,
+    .custom-select {
+        border-radius: 12px !important;
+        padding: 15px 25px !important;
+        height: auto !important;
+        border: 1px solid #f0f0f0 !important;
+        background: #fff !important;
+        font-size: 0.95rem !important;
+        transition: all 0.3s !important;
+    }
+
+    .form-control:focus,
+    .custom-select:focus {
+        border-color: #a64d79 !important;
+        box-shadow: 0 10px 30px rgba(166, 77, 121, 0.05) !important;
+        background: #fff !important;
+    }
+
+    /* Payment Method Cards */
+    .payment-card {
+        border: 2px solid #f8f8f8;
+        border-radius: 20px;
+        padding: 25px;
+        margin-bottom: 20px;
+        cursor: pointer;
+        transition: all 0.3s cubic-bezier(0.165, 0.84, 0.44, 1);
+        display: flex;
+        align-items: center;
+        gap: 20px;
+        background: #fff;
+    }
+
+    .payment-card:hover {
+        border-color: #eee;
+        transform: translateY(-3px);
+        box-shadow: 0 10px 30px rgba(0, 0, 0, 0.04);
+    }
+
+    .payment-card.active {
+        border-color: #a64d79;
+        background: #fff;
+        box-shadow: 0 15px 40px rgba(166, 77, 121, 0.08);
+    }
+
+    .payment-card i {
+        font-size: 1.8rem;
+        color: #a64d79;
+    }
+
+    .check-icon {
+        color: #a64d79;
+        opacity: 0;
+        transform: scale(0.5);
+        transition: all 0.3s;
+    }
+
+    .check-icon[data-active="true"] {
+        opacity: 1;
+        transform: scale(1.2);
+    }
+
+    /* Summary Card Sticky fix */
+    .cart-summary-card {
+        position: sticky;
+        top: 120px;
+        border-radius: 25px;
+        background: var(--bg-secondary, #fff);
+        box-shadow: 0 20px 50px rgba(0, 0, 0, 0.05);
+        padding: 40px;
+        border: none;
+        z-index: 10;
+    }
+
+    /* Validation styles */
+    .is-invalid {
+        border-color: #dc3545 !important;
+    }
+
+    .invalid-feedback {
+        color: #dc3545;
+        display: none;
+        width: 100%;
+        margin-top: .25rem;
+        font-size: 80%;
+    }
+
+    .is-invalid~.invalid-feedback {
+        display: block;
+    }
+
+    #payment-method-error {
+        display: none;
+        color: #dc3545;
+        font-size: 80%;
+        margin-top: 10px;
+        margin-bottom: 10px;
+    }
+
+    .payment-method-group.is-invalid .custom-control-label:before {
+        border-color: #dc3545 !important;
+    }
+
+    .payment-method-group.is-invalid {
+        border: 1px solid #dc3545 !important;
+        border-radius: 4px;
+        padding: 10px;
+    }
+
+    .payment-options.is-invalid {
+        border: 1px solid #dc3545;
+        border-radius: 15px;
+        padding: 10px;
+        margin-bottom: 10px;
+    }
+
+    .address-form-container {
+        border: 1px solid #dee2e6;
+        border-radius: 0.25rem;
+        padding: 1.5rem;
+        margin-bottom: 1.5rem;
+    }
+
+    .payment-method-group {
+        padding: 1rem;
+        border: 1px solid #dee2e6;
+        border-radius: 0.25rem;
+        margin-bottom: 1rem;
+    }
+
+    .payment-method-group:hover {
+        border-color: #adb5bd;
+    }
+
+    .payment-method-group .custom-control-label {
+        display: flex;
+        align-items: center;
+        width: 100%;
+    }
+
+    .payment-method-group .custom-control-label i {
+        font-size: 1.2rem;
+        margin-right: 8px;
+        color: #6c757d;
+    }
+
+    .payment-method-group.is-invalid .custom-control-label {
+        color: #dc3545;
+    }
+
+    .loading {
+        background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='24' height='24' viewBox='0 0 24 24' fill='none' stroke='%23333' stroke-width='2' stroke-linecap='round' stroke-linejoin='round'%3E%3Cline x1='12' y1='2' x2='12' y2='6'%3E%3C/line%3E%3Cline x1='12' y1='18' x2='12' y2='22'%3E%3C/line%3E%3C/svg%3E");
+        background-repeat: no-repeat;
+        background-position: right 10px center;
+        background-size: 20px;
+        padding-right: 40px !important;
+    }
+</style>
+{% endblock %}
+{% block content %}
+<div class="container py-4">
+    <div class="checkout-progress reveal" aria-label="Checkout Progress">
+        <ul class="progress-steps" role="list">
+            <li class="step active" aria-current="step">
+                <span class="step-number" aria-hidden="true">1</span>
+                <span>Address</span>
+            </li>
+            <li class="step-line" aria-hidden="true"></li>
+            <li class="step">
+                <span class="step-number" aria-hidden="true">2</span>
+                <span>Payment</span>
+            </li>
+            <li class="step-line" aria-hidden="true"></li>
+            <li class="step">
+                <span class="step-number" aria-hidden="true">3</span>
+                <span>Confirm</span>
+            </li>
+        </ul>
+    </div>
+
+    <!-- Checkout Start -->
+    <div id="checkoutConfig" data-subtotal="{{ subtotal }}" data-shipping-threshold="{{ free_shipping_threshold }}"
+        data-shipping-charge="{{ default_shipping_charge }}"></div>
+
+    <div class="container-fluid pt-3">
+        <form method="POST" action="{{ url_for('checkout_bp.checkout') }}" id="checkout-form" novalidate>
+            <input type="hidden" name="csrf_token" value="{{ csrf_token() }}" />
+            <!-- Honeypot field -->
+            <input type="text" name="honeypot" style="display:none;">
+
+            <div class="row px-xl-5">
+                <div class="col-lg-7">
+                    <div class="mb-5 reveal">
+                        <h4 class="checkout-section-title">Delivery Information</h4>
+
+                        <div class="form-group">
+                            <select class="custom-select" name="shipping_address_id" id="shipping-address-select"
+                                required>
+                                <option value="">Select a delivery address</option>
+                                {% for address in user_addresses %}
+                                <option value="{{ address.id }}" data-address='{{ address|tojson }}' {% if
+                                    address.is_default and not request.form.shipping_address_id %}selected{% endif %} {%
+                                    if request.form.shipping_address_id==address.id|string %}selected{% endif %}>
+                                    {{ address.full_name }} - {{ address.address_line1 }}, {{ address.city }}, {{
+                                    address.state }}, {{ address.postal_code}}
+                                    {% if address.is_default %}(Default){% endif %}
+                                </option>
+                                {% endfor %}
+                                <option value="new" {% if not user_addresses %}selected{% endif %}>Add new address
+                                </option>
+                            </select>
+                            <div class="invalid-feedback">Please select a shipping address</div>
+                        </div>
+
+                        <!-- New shipping address form -->
+                        <div id="shipping-address-form"
+                            class="card border-secondary p-4 mb-4 {% if (request.form.shipping_address_id != 'new' and user_addresses) %}d-none{% endif %}">
+                            <div class="row">
+                                <div class="col-md-6 form-group">
+                                    <label>Pin Code <span class="text-danger">*</span> <small class="text-muted"> (Enter
+                                            pincode first to auto-fill city/state) </small></label>
+                                    <div class="input-group">
+                                        <input class="form-control" type="text" name="shipping_zip_code"
+                                            placeholder="123456" required
+                                            value="{{ request.form.shipping_zip_code or '' }}" pattern="[0-9]{6}"
+                                            minlength="6" maxlength="6" id="shipping-zip-code">
+                                        <div class="input-group-append">
+                                            <button class="btn btn-outline-secondary" type="button"
+                                                id="shipping-lookup-btn">
+                                                <i class="fas fa-search"></i> Fetch
+                                            </button>
+                                        </div>
+                                    </div>
+                                    <div class="invalid-feedback">Please enter a valid 6-digit pin code</div>
+                                </div>
+                                <div class="col-md-6 form-group">
+                                    <label></label>
+                                </div>
+                                <div class="col-md-6 form-group">
+                                    <label>State <span class="text-danger">*</span></label>
+                                    <input class="form-control" type="text" name="shipping_state" placeholder="State"
+                                        required value="{{ request.form.shipping_state or '' }}" minlength="2"
+                                        maxlength="50" id="shipping-state">
+                                    <div class="invalid-feedback">Please enter your state</div>
+                                    <input type="hidden" name="shipping_state_code" id="shipping-state-code"
+                                        value="{{ request.form.shipping_state_code or '' }}">
+                                </div>
+                                <div class="col-md-6 form-group">
+                                    <label>City <span class="text-danger">*</span></label>
+                                    <input class="form-control" type="text" name="shipping_city" placeholder="City"
+                                        required value="{{ request.form.shipping_city or '' }}" minlength="2"
+                                        maxlength="50" id="shipping-city">
+                                    <div class="invalid-feedback">Please enter your city</div>
+                                </div>
+                                <div class="col-md-6 form-group">
+                                    <label>Address Line 1 <span class="text-danger">*</span></label>
+                                    <input class="form-control" type="text" name="shipping_address1"
+                                        placeholder="Building/House No." required
+                                        value="{{ request.form.shipping_address1 or '' }}" minlength="5"
+                                        maxlength="100">
+                                    <div class="invalid-feedback">Please enter your address</div>
+                                </div>
+                                <div class="col-md-6 form-group">
+                                    <label>Address Line 2</label>
+                                    <input class="form-control" type="text" name="shipping_address2"
+                                        placeholder="Street/Locality" value="{{ request.form.shipping_address2 or '' }}"
+                                        maxlength="100">
+                                </div>
+                                <div class="col-md-6 form-group">
+                                    <label>Company Name (Optional)</label>
+                                    <input class="form-control" type="text" name="shipping_company_name"
+                                        placeholder="Company Name" value="{{ request.form.shipping_company_name or '' }}"
+                                        maxlength="100">
+                                </div>
+                                <div class="col-md-6 form-group">
+                                    <label>GST Number (Optional)</label>
+                                    <input class="form-control" type="text" name="shipping_gst_number"
+                                        placeholder="15-digit GSTIN" value="{{ request.form.shipping_gst_number or '' }}"
+                                        maxlength="15" pattern="^[0-9]{2}[A-Z]{5}[0-9]{4}[A-Z]{1}[1-9A-Z]{1}Z[0-9A-Z]{1}$">
+                                    <div class="invalid-feedback">Please enter a valid GST number</div>
+                                </div>
+                                <div class="col-md-6 form-group">
+                                    <label>First Name <span class="text-danger">*</span></label>
+                                    <input class="form-control" type="text" name="shipping_first_name"
+                                        placeholder="First Name" required
+                                        value="{{ (user.first_name or '') if user else '' }}" minlength="2"
+                                        maxlength="50" id="shipping-first-name">
+                                    <div class="invalid-feedback">Please enter your first name</div>
+                                </div>
+                                <div class="col-md-6 form-group">
+                                    <label>Last Name <span class="text-danger">*</span></label>
+                                    <input class="form-control" type="text" name="shipping_last_name"
+                                        placeholder="Last Name" required
+                                        value="{{ (user.last_name or '') if user else '' }}" minlength="2"
+                                        maxlength="50" id="shipping-last-name">
+                                    <div class="invalid-feedback">Please enter your last name</div>
+                                </div>
+                                <div class="col-md-6 form-group">
+                                    <label>E-mail <span class="text-danger">*</span></label>
+                                    <input class="form-control" type="email" name="shipping_email"
+                                        placeholder="email@example.com" required
+                                        value="{{ user.email if user else '' }}"
+                                        pattern="[a-z0-9._%+-]+@[a-z0-9.-]+\.[a-z]{2,}$" id="shipping-email">
+                                    <div class="invalid-feedback">Please enter a valid email address</div>
+                                </div>
+                                <div class="col-md-6 form-group">
+                                    <label>Mobile No. <span class="text-danger">*</span></label>
+                                    <input class="form-control" type="tel" name="shipping_phone"
+                                        placeholder="9876543210" required
+                                        value="{{ (user.mobile_number or '') if user else '' }}" pattern="[0-9]{10}"
+                                        minlength="10" maxlength="10" id="shipping-phone">
+                                    <div class="invalid-feedback">Please enter a valid 10-digit phone number</div>
+                                </div>
+                                <div class="col-12 form-group form-check">
+                                    <input type="checkbox" id="save_shipping_address" name="save_shipping_address"
+                                        value="1" class="form-check-input">
+                                    <label class="form-check-label" for="save_shipping_address">Save this shipping
+                                        address to my profile</label>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                    
+                    <!-- Hidden input to enforce same_as_shipping since we removed billing form -->
+                    <input type="hidden" name="same_as_shipping" value="on" id="same-as-shipping">
+                </div>
+                <div class="col-lg-5">
+                    <div class="cart-summary-card mb-1 reveal">
+                        <h4>Order Summary
+                        </h4>
+                        <div class="summary-items mb-4">
+                            {% for item in cart_items %}
+                            <div class="d-flex justify-content-between mb-2">
+                                <span class="small text-muted">{{ item['name'] }} (×{{ item.get('quantity', 1)
+                                    }})</span>
+                                <span class="small font-weight-bold">₹{{ "%.2f"|format(item['unit_price'] *
+                                    item.get('quantity', 1)) }}</span>
+                            </div>
+                            {% endfor %}
+                        </div>
+
+                        <div class="d-flex justify-content-between mb-2">
+                            <span class="text-muted">Subtotal</span>
+                            <span class="font-weight-bold" id="summary-subtotal">₹{{ "%.2f"|format(subtotal) }}</span>
+                        </div>
+                        <div class="d-flex justify-content-between mb-2">
+                            <span class="text-muted">Shipping</span>
+                            <span class="font-weight-bold text-success" id="summary-shipping">
+                                {% if subtotal >= free_shipping_threshold %}
+                                FREE
+                                {% else %}
+                                ₹{{ "%.2f"|format(default_shipping_charge) }}
+                                {% endif %}
+                            </span>
+                        </div>
+
+                        <div id="discount-row-container">
+                            {% if discount_amount > 0 %}
+                            <div class="d-flex justify-content-between mb-2 discount-row">
+                                <span class="text-muted">Discount</span>
+                                <span class="font-weight-bold text-danger" id="summary-discount">-₹{{
+                                    "%.2f"|format(discount_amount) }}</span>
+                            </div>
+                            {% endif %}
+                        </div>
+
+                        <hr class="my-4">
+
+                        <div class="d-flex justify-content-between mb-0">
+                            <span class="h5 mb-0 font-weight-bold">Total</span>
+                            <span class="h4 mb-0 font-weight-bold" style="color: #a64d79;" id="summary-total">₹{{
+                                "%.2f"|format(total) }}</span>
+                        </div>
+                    </div>
+
+                    <!-- Coupon Code Section -->
+                    <div class="mb-5 reveal">
+                        <h4 class="checkout-section-title" style="font-size: 1.2rem; margin-bottom: 20px;">Apply Coupon
+                        </h4>
+
+                        <div id="coupon-messages"></div>
+
+                        <div class="input-group">
+                            <input type="text" class="form-control" name="coupon_code" id="coupon-code-input"
+                                placeholder="Enter coupon code" value="{{ coupon_code or '' }}"
+                                style="border-top-right-radius: 0 !important; border-bottom-right-radius: 0 !important;">
+                            <div class="input-group-append">
+                                <button class="btn btn-primary" type="button" id="apply-coupon-btn"
+                                    style="border-radius: 0 !important; padding: 0 20px;">
+                                    Apply
+                                </button>
+                                <button class="btn btn-outline-danger {% if not coupon_code %}d-none{% endif %}"
+                                    type="button" id="remove-coupon-btn"
+                                    style="border-top-left-radius: 0 !important; border-bottom-left-radius: 0 !important;">
+                                    <i class="fas fa-times"></i>
+                                </button>
+                            </div>
+                        </div>
+
+                        <!-- Available Coupons List -->
+                        {% if available_coupons %}
+                        <div class="available-coupons mt-3">
+                            <div class="d-flex flex-wrap" style="gap: 0.5rem;">
+                                {% for code, details in available_coupons.items() %}
+                                <div class="coupon-badge border rounded p-2"
+                                    style="cursor: pointer; min-width: 60px; background: #fff; border: 1px dashed #a64d79 !important;"
+                                    data-coupon="{{ code }}">
+                                    <span class="font-weight-bold d-block text-uppercase"
+                                        style="color: #a64d79; font-size: 0.75rem;">{{ code }}</span>
+                                    <small class="text-muted d-block" style="font-size: 0.65rem;">
+                                        {% if details.type == 'percentage' %}
+                                        {{ details.discount }}% off
+                                        {% else %}
+                                        ₹{{ details.discount }} off
+                                        {% endif %}
+                                    </small>
+                                </div>
+                                {% endfor %}
+                            </div>
+                        </div>
+                        {% endif %}
+                    </div>
+
+                    <!-- Gift Card & Loyalty Points Section -->
+                    <div class="mb-5 reveal">
+                        <h4 class="checkout-section-title" style="font-size: 1.2rem; margin-bottom: 20px;">Gift Card & Loyalty Points</h4>
+                        
+                        <div class="input-group mb-3">
+                            <input type="text" class="form-control" name="gift_card_code" id="gift-card-code-input"
+                                placeholder="Enter Gift Card Code"
+                                style="border-top-right-radius: 0 !important; border-bottom-right-radius: 0 !important; text-transform: uppercase;">
+                        </div>
+                        
+                        {% if user and user_loyalty_points %}
+                        <div class="mt-3 p-3 border rounded">
+                            <div class="form-check mb-2">
+                                <input class="form-check-input" type="checkbox" name="use_loyalty_points" id="use-loyalty-points" value="1">
+                                <label class="form-check-label font-weight-bold" for="use-loyalty-points">
+                                    Use Loyalty Points
+                                </label>
+                            </div>
+                            <div class="small text-muted mb-2">
+                                Available: {{ user_loyalty_points }} points (₹{{ "%.2f"|format(user_loyalty_points / 4.0) }}) <br>
+                                <span class="text-info"><i class="fas fa-info-circle"></i> 4 points = ₹1</span>
+                            </div>
+                            <div class="points-input-container" style="display: none;">
+                                <label class="small mb-1">Points to redeem:</label>
+                                <input type="number" class="form-control form-control-sm" name="points_to_redeem" id="points-to-redeem" min="1" max="{{ user_loyalty_points }}" placeholder="Enter points">
+                            </div>
+                        </div>
+                        {% endif %}
+                    </div>
+
+                    <!-- Payment Method Section -->
+                    <div class="mb-5 reveal">
+                        <h4 class="checkout-section-title" style="font-size: 1.2rem; margin-bottom: 20px;">Payment
+                            Method</h4>
+
+                        <div class="payment-options" role="radiogroup" aria-label="Payment Methods">
+                            <label
+                                class="payment-card {% if not request.form.payment_method or request.form.payment_method == 'cod' %}active{% endif %}"
+                                for="cod" tabindex="0" role="radio" aria-checked="{% if not request.form.payment_method or request.form.payment_method == 'cod' %}true{% else %}false{% endif %}">
+                                <input type="radio" name="payment_method" id="cod" value="cod" style="display:none"
+                                    required {% if not request.form.payment_method or request.form.payment_method=='cod'
+                                    %}checked{% endif %}>
+                                <i class="fas fa-hand-holding-usd" aria-hidden="true"></i>
+                                <div>
+                                    <span class="d-block font-weight-bold">Cash on Delivery</span>
+                                    <small class="text-muted">Pay when your order arrives</small>
+                                </div>
+                                <i class="fas fa-check-circle ml-auto check-icon"
+                                    data-active="{% if not request.form.payment_method or request.form.payment_method == 'cod' %}true{% else %}false{% endif %}"
+                                    style="font-size: 1rem;" aria-hidden="true"></i>
+                            </label>
+
+                            <label
+                                class="payment-card {% if request.form.payment_method == 'online' %}active{% endif %}"
+                                for="online" tabindex="0" role="radio" aria-checked="{% if request.form.payment_method == 'online' %}true{% else %}false{% endif %}">
+                                <input type="radio" name="payment_method" id="online" value="online"
+                                    style="display:none" {% if request.form.payment_method=='online' %}checked{% endif
+                                    %}>
+                                <i class="fas fa-credit-card" aria-hidden="true"></i>
+                                <div>
+                                    <span class="d-block font-weight-bold">Online Payment</span>
+                                    <small class="text-muted">Credit/Debit Card, UPI, Netbanking</small>
+                                </div>
+                                <i class="fas fa-check-circle ml-auto check-icon"
+                                    data-active="{% if request.form.payment_method == 'online' %}true{% else %}false{% endif %}"
+                                    style="font-size: 1rem;" aria-hidden="true"></i>
+                            </label>
+                        </div>
+
+                        <div id="payment-method-error" class="invalid-feedback text-center mb-3">
+                            Please select a payment method
+                        </div>
+
+                        <button class="btn btn-lg btn-block btn-primary py-3 mt-4" type="submit"
+                            id="complete-order-btn">
+                            Place Order
+                        </button>
+
+                        <div class="text-center mt-3">
+                            <p class="small text-muted mb-0">Secure checkout powered by PhonePe</p>
+                            <small class="text-muted">Agree to <a href="{{ url_for('pages_bp.terms') }}">Terms &
+                                    Conditions</a></small>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </form>
+    </div>
+    <!-- Checkout End -->
+    {% endblock %}
+
+    {% block scripts %}
+    <script>
+        $(document).ready(function () {
+            /* Payment Card Interaction */
+            $('.payment-card').on('click', function () {
+                $('.payment-card').removeClass('active');
+                $('.payment-card').find('.check-icon').attr('data-active', 'false');
+
+                $(this).addClass('active');
+                $(this).find('.check-icon').attr('data-active', 'true');
+                $(this).find('input[type="radio"]').prop('checked', true);
+            });
+
+            // Get user data from template
+            const userData = {
+                first_name: "{{ (user.first_name or '') if user else '' }}",
+                last_name: "{{ (user.last_name or '') if user else '' }}",
+                email: "{{ user.email if user else '' }}",
+                mobile_number: "{{ (user.mobile_number or '') if user else '' }}"
+            };
+
+            // Enable/disable all inputs, selects, and textareas inside the shipping address form
+            function setShippingFormDisabled(disabled) {
+                $('#shipping-address-form input, #shipping-address-form select, #shipping-address-form textarea').prop('disabled', disabled);
+            }
+
+            // Handle shipping address selection
+            $('#shipping-address-select').change(function () {
+                const selectedValue = $(this).val();
+                if (selectedValue === 'new') {
+                    $('#shipping-address-form').removeClass('d-none');
+
+                    // Only auto-fill if fields are empty
+                    if (!$('#shipping-first-name').val()) {
+                        $('#shipping-first-name').val(userData.first_name || '');
+                    }
+                    if (!$('#shipping-last-name').val()) {
+                        $('#shipping-last-name').val(userData.last_name || '');
+                    }
+                    if (!$('#shipping-email').val()) {
+                        $('#shipping-email').val(userData.email || '');
+                    }
+                    if (!$('#shipping-phone').val()) {
+                        $('#shipping-phone').val(userData.mobile_number || '');
+                    }
+                } else if (selectedValue !== '') {
+                    // Populate from saved address
+                    const address = JSON.parse($(this).find('option:selected').data('address'));
+                    $('#shipping-address-form').addClass('d-none');
+                } else {
+                    $('#shipping-address-form').addClass('d-none');
+                }
+            });
+
+            // Initialize forms based on current selections
+            if ($('#shipping-address-select').val() === 'new') {
+                $('#shipping-address-form').removeClass('d-none');
+                // Auto-fill user data on initial load if new address is selected
+                $('#shipping-first-name').val(userData.first_name || '');
+                $('#shipping-last-name').val(userData.last_name || '');
+                $('#shipping-email').val(userData.email || '');
+                $('#shipping-phone').val(userData.mobile_number || '');
+            }
+
+            // Add event listener for state changes to update state code
+            $(document).on('change', '#shipping-state, #billing-state', function () {
+                const prefix = this.id.split('-')[0];
+                const state = $(this).val();
+                if (state) {
+                    // Fetch state code
+                    $.ajax({
+                        url: '{{ url_for("get_state_code") }}',
+                        method: 'POST',
+                        data: {
+                            state: state,
+                            csrf_token: $('input[name="csrf_token"]').val()
+                        },
+                        success: function (response) {
+                            if (response.success) {
+                                $(`#${prefix}-state-code`).val(response.state_code);
+                            }
+                        }
+                    });
+
+                    // Fetch cities for this state (if needed)
+                    if (typeof fetchCitiesByState === 'function') {
+                        fetchCitiesByState(state, prefix);
+                    }
+                }
+            });
+
+            // Enhanced form validation with real-time feedback
+            $('input, select').on('blur', function () {
+                validateField($(this));
+            });
+
+            function validateField($field) {
+                if ($field.prop('required')) {
+                    if (!$field.val()) {
+                        $field.addClass('is-invalid');
+                        return false;
+                    }
+
+                    // Pattern validation
+                    if ($field.attr('pattern') && !new RegExp($field.attr('pattern')).test($field.val())) {
+                        $field.addClass('is-invalid');
+                        return false;
+                    }
+
+                    // Length validation
+                    if ($field.attr('minlength') && $field.val().length < $field.attr('minlength')) {
+                        $field.addClass('is-invalid');
+                        return false;
+                    }
+                }
+
+                $field.removeClass('is-invalid');
+                return true;
+            }
+
+            // Setup pincode lookup functionality
+            function setupPincodeLookup() {
+                // Shipping address lookup
+                $('#shipping-lookup-btn').on('click', function () {
+                    const pincode = $('#shipping-zip-code').val().trim();
+                    if (pincode.length === 6 && /^\d+$/.test(pincode)) {
+                        fetchAddressFromPincode(pincode, 'shipping');
+                    } else {
+                        flashMessage('Please enter a valid 6-digit pincode', 'error');
+                        $('#shipping-zip-code').addClass('is-invalid');
+                    }
+                });
+            }
+
+            function fetchAddressFromPincode(pincode, prefix) {
+                const $zipInput = $(`#${prefix}-zip-code`);
+                $zipInput.addClass('loading');
+
+                // Get CSRF token
+                const csrfToken = $('input[name="csrf_token"]').val();
+
+                $.ajax({
+                    url: '{{ url_for("get_pincode_details") }}',
+                    method: 'POST',
+                    data: {
+                        pincode: pincode,
+                        csrf_token: csrfToken
+                    },
+                    headers: {
+                        'X-CSRFToken': csrfToken
+                    },
+                    success: function (response) {
+                        if (response.success) {
+                            $(`#${prefix}-city`).val(response.city).trigger('change');
+                            $(`#${prefix}-state`).val(response.state).trigger('change');
+                            $(`#${prefix}-state-code`).val(response.state_code);
+                            flashMessage('Address details auto-filled from pincode', 'success');
+                        } else {
+                            // Pincode not found - show error but allow manual entry
+                            flashMessage(response.message, 'warning');
+
+                            // If states are returned, populate state dropdown
+                            if (response.states && response.states.length > 0) {
+                                const stateSelect = $(`<select class="form-control" id="${prefix}-state" name="${prefix}_state" required>
+                                <option value="">Select State</option>
+                            `);
+                                response.states.forEach(state => {
+                                    stateSelect.append(`<option value="${state}">${state}</option>`);
+                                });
+                                $(`#${prefix}-state`).replaceWith(stateSelect);
+
+                                // Inherit disabled state from the current form
+                                const isDisabled = $(`#${prefix}-address-form`).hasClass('d-none') ||
+                                    $(`#${prefix}-address-form input`).first().prop('disabled');
+                                stateSelect.prop('disabled', isDisabled);
+                            }
+                        }
+                    },
+                    error: function (xhr) {
+                        console.error("AJAX Error:", xhr.responseText);
+                        let errorMsg = 'Error fetching address details. Please enter manually.';
+                        if (xhr.responseJSON && xhr.responseJSON.message) {
+                            errorMsg = xhr.responseJSON.message;
+                        }
+                        flashMessage(errorMsg, 'error');
+                    },
+                    complete: function () {
+                        $zipInput.removeClass('loading');
+                    }
+                });
+            }
+
+            function fetchCitiesByState(state, prefix) {
+                $.ajax({
+                    url: '{{ url_for("get_cities_by_state") }}',
+                    method: 'POST',
+                    data: {
+                        state: state,
+                        csrf_token: $('input[name="csrf_token"]').val()
+                    },
+                    success: function (response) {
+                        // Capture current state of the city field BEFORE replacement
+                        const oldCity = $(`#${prefix}-city`);
+                        const wasDisabled = oldCity.prop('disabled');
+                        const currentCityValue = oldCity.val();   // 👈 capture the value
+
+                        if (response.success && response.cities && response.cities.length > 0) {
+                            const citySelect = $(`<select class="form-control" name="${prefix}_city" id="${prefix}-city" required>
+                            <option value="">Select City</option>
+                        `);
+
+                            response.cities.forEach(city => {
+                                citySelect.append(`<option value="${city}">${city}</option>`);
+                            });
+
+                            // Replace the old element
+                            oldCity.replaceWith(citySelect);
+
+                            // Restore disabled state
+                            citySelect.prop('disabled', wasDisabled);
+
+                            // 👇 Restore the value (select the matching option if it exists)
+                            if (currentCityValue) {
+                                citySelect.val(currentCityValue);
+                            }
+                        } else {
+                            // No cities – keep a text input
+                            const cityInput = $(`<input class="form-control" type="text" name="${prefix}_city" id="${prefix}-city" placeholder="City" required>`);
+                            oldCity.replaceWith(cityInput);
+                            cityInput.prop('disabled', wasDisabled);
+                            cityInput.val(currentCityValue);   // 👈 restore value
+                        }
+                    },
+                    error: function () {
+                        // On error, keep a text input
+                        const oldCity = $(`#${prefix}-city`);
+                        const wasDisabled = oldCity.prop('disabled');
+                        const currentCityValue = oldCity.val();   // capture
+
+                        const cityInput = $(`<input class="form-control" type="text" name="${prefix}_city" id="${prefix}-city" placeholder="City" required>`);
+                        oldCity.replaceWith(cityInput);
+                        cityInput.prop('disabled', wasDisabled);
+                        cityInput.val(currentCityValue);           // restore
+                    }
+                });
+            }
+
+            // Initialize pincode lookup functionality
+            setupPincodeLookup();
+
+            // Handle form submission
+            $('#checkout-form').on('submit', function (e) {
+                e.preventDefault();
+                var form = $(this);
+
+                // Reset previous error states
+                $('.is-invalid').removeClass('is-invalid');
+                $('.invalid-feedback').remove();
+                $('#payment-method-error').hide();
+                $('.payment-method-group').removeClass('is-invalid');
+
+                // Validate form
+                if (!validateForm()) {
+                    return false;
+                }
+
+                // Disable button to prevent duplicate submissions
+                $('#complete-order-btn').prop('disabled', true)
+                    .html('<i class="fas fa-spinner fa-spin mr-2"></i>Processing...');
+
+                // Get CSRF token
+                const csrfToken = $('input[name="csrf_token"]').val();
+
+                // Submit form via AJAX with proper headers
+                $.ajax({
+                    url: form.attr('action'),
+                    method: 'POST',
+                    data: form.serialize(),
+                    headers: {
+                        'X-CSRFToken': csrfToken
+                    },
+                    success: function (response) {
+                        if (response.redirect) {
+                            window.location.href = response.redirect;
+                        }
+                    },
+                    error: function (xhr) {
+                        $('#complete-order-btn').prop('disabled', false)
+                            .html('<i class="fas fa-credit-card mr-2"></i>Place Order');
+
+                        try {
+                            var errors = JSON.parse(xhr.responseText);
+                            flashMessage(errors.message || 'Checkout failed. Please try again.', 'error');
+
+                            if (errors.errors) {
+                                $.each(errors.errors, function (field, message) {
+                                    const $field = $('[name="' + field + '"]');
+                                    $field.addClass('is-invalid');
+                                    // Only add message if not already there
+                                    if (!$field.next('.invalid-feedback').length) {
+                                        $field.after(`<div class="invalid-feedback">${message}</div>`);
+                                    }
+                                });
+
+                                // Scroll to first error
+                                const firstInvalid = $('.is-invalid').first();
+                                if (firstInvalid.length) {
+                                    $('html, body').animate({
+                                        scrollTop: firstInvalid.offset().top - 100
+                                    }, 500);
+                                }
+                            }
+                        } catch (e) {
+                            console.error("Error parsing response:", e);
+                            flashMessage('An unexpected error occurred. Please try again.', 'error');
+                        }
+                    }
+                });
+            });
+
+            function updateOrderTotals(discountAmount) {
+                const config = document.getElementById('checkoutConfig').dataset;
+                const subtotal = parseFloat(config.subtotal);
+                const threshold = parseFloat(config.shippingThreshold);
+                const charge = parseFloat(config.shippingCharge);
+
+                const shippingCharge = subtotal >= threshold ? 0 : charge;
+                const total = subtotal + shippingCharge - discountAmount;
+
+                // Update the UI
+                if (discountAmount > 0) {
+                    // Show discount row
+                    $('#discount-row-container').html(`
+                    <div class="d-flex justify-content-between mb-2 discount-row">
+                        <span class="text-muted">Discount</span>
+                        <span class="font-weight-bold text-danger" id="summary-discount">-₹${discountAmount.toFixed(2)}</span>
+                    </div>
+                `);
+                    $('#remove-coupon-btn').removeClass('d-none');
+                } else {
+                    // Hide discount row
+                    $('#discount-row-container').empty();
+                    $('#remove-coupon-btn').addClass('d-none');
+                }
+
+                // Update total
+                let newTotal = total;
+                const configStr = document.getElementById('checkoutConfig').dataset;
+                const baseTotal = parseFloat(configStr.subtotal) + (parseFloat(configStr.subtotal) >= parseFloat(configStr.shippingThreshold) ? 0 : parseFloat(configStr.shippingCharge));
+                
+                // Add loyalty calculation
+                if ($('#use-loyalty-points').is(':checked')) {
+                    let maxPoints = parseInt("{{ user_loyalty_points if user_loyalty_points else 0 }}");
+                    let pointsToRedeem = parseInt($('#points-to-redeem').val()) || maxPoints;
+                    if (pointsToRedeem > maxPoints) pointsToRedeem = maxPoints;
+                    
+                    let maxAllowedPoints = Math.floor(baseTotal * 4);
+                    if (pointsToRedeem > maxAllowedPoints) pointsToRedeem = maxAllowedPoints;
+                    
+                    let loyaltyDiscount = pointsToRedeem / 4.0;
+                    newTotal -= loyaltyDiscount;
+                }
+                
+                $('#summary-total').text(`₹${newTotal.toFixed(2)}`);
+            }
+
+            // Loyalty Points UI handling
+            $('#use-loyalty-points').on('change', function() {
+                if ($(this).is(':checked')) {
+                    $('.points-input-container').slideDown();
+                    // Set default to max allowed
+                    let maxPoints = parseInt("{{ user_loyalty_points if user_loyalty_points else 0 }}");
+                    $('#points-to-redeem').val(maxPoints);
+                } else {
+                    $('.points-input-container').slideUp();
+                    $('#points-to-redeem').val('');
+                }
+                updateOrderTotals(parseFloat(document.getElementById('checkoutConfig').dataset.discountAmount || 0));
+            });
+
+            $('#points-to-redeem').on('input', function() {
+                updateOrderTotals(parseFloat(document.getElementById('checkoutConfig').dataset.discountAmount || 0));
+            });
+
+            function validateForm() {
+                let isValid = true;
+
+                // Validate delivery address selection
+                const $deliverySelect = $('#shipping-address-select');
+                if (!$deliverySelect.val()) {
+                    $deliverySelect.addClass('is-invalid');
+                    isValid = false;
+                } else if ($deliverySelect.val() === 'new') {
+                    const deliveryFields = [
+                        'shipping_zip_code', 'shipping_state', 'shipping_city',
+                        'shipping_address1', 'shipping_first_name', 'shipping_last_name',
+                        'shipping_email', 'shipping_phone'
+                    ];
+
+                    deliveryFields.forEach(field => {
+                        const $field = $(`[name="${field}"]`);
+                        if (!validateField($field)) {
+                            isValid = false;
+                        }
+                    });
+                }
+
+                // Validate payment method
+                if (!$('input[name="payment_method"]:checked').length) {
+                    $('#payment-method-error').show();
+                    $('.payment-options').addClass('is-invalid');
+                    isValid = false;
+                }
+
+                if (!isValid) {
+                    // Scroll to first invalid field
+                    const firstInvalid = $('.is-invalid').first();
+                    if (firstInvalid.length) {
+                        $('html, body').animate({
+                            scrollTop: firstInvalid.offset().top - 100
+                        }, 500);
+                    }
+                    flashMessage('Please fill in all required fields', 'error');
+                }
+
+                return isValid;
+            }
+            // Show coupon messages inside the coupon card
+            function showCouponMessage(message, type) {
+                const alertClass = type === 'error' ? 'alert-danger' : 'alert-success';
+                const icon = type === 'error' ? 'exclamation-triangle' : 'check-circle';
+
+                const alert = $(`
+                <div class="alert ${alertClass} alert-dismissible fade show" role="alert">
+                    <i class="fas fa-${icon} mr-2"></i>
+                    ${message}
+                    <button type="button" class="close" data-dismiss="alert" aria-label="Close">
+                        <span aria-hidden="true">&times;</span>
+                    </button>
+                </div>
+            `);
+
+                $('#coupon-messages').empty().prepend(alert);
+
+                setTimeout(() => {
+                    alert.alert('close');
+                }, 5000);
+            }
+
+            // Update the apply coupon handler to use showCouponMessage
+            $('#apply-coupon-btn').on('click', function () {
+                const couponCode = $('#coupon-code-input').val().trim();
+                if (!couponCode) {
+                    showCouponMessage('Please enter a coupon code', 'error');
+                    return;
+                }
+
+                const subtotal = parseFloat(document.getElementById('checkoutConfig').dataset.subtotal);
+                const csrfToken = $('input[name="csrf_token"]').val();
+
+                $.ajax({
+                    url: '{{ url_for("validate_coupon") }}',
+                    method: 'POST',
+                    data: {
+                        coupon_code: couponCode,
+                        subtotal: subtotal,
+                        csrf_token: csrfToken
+                    },
+                    headers: { 'X-CSRFToken': csrfToken },
+                    success: function (response) {
+                        if (response.valid) {
+                            showCouponMessage(response.message, 'success');
+                            updateOrderTotals(response.discount_amount);
+                        } else {
+                            showCouponMessage(response.message, 'error');
+                        }
+                    },
+                    error: function (xhr) {
+                        try {
+                            const response = JSON.parse(xhr.responseText);
+                            showCouponMessage(response.message || 'Failed to apply coupon', 'error');
+                        } catch (e) {
+                            showCouponMessage('Failed to apply coupon. Please try again.', 'error');
+                        }
+                    }
+                });
+            });
+
+            // Remove coupon handler
+            $('#remove-coupon-btn').on('click', function () {
+                $('#coupon-code-input').val('');
+                updateOrderTotals(0);
+                showCouponMessage('Coupon removed', 'success');
+            });
+
+            // Also update the coupon tile click handler (it already triggers the apply button)
+            $('.coupon-badge').click(function () {
+                var couponCode = $(this).data('coupon');
+                $('#coupon-code-input').val(couponCode);
+                $('#apply-coupon-btn').click();
+            });
+
+            // Helper function for showing flash messages
+            function flashMessage(message, type) {
+                const alertClass = type === 'error' ? 'alert-danger' : 'alert-success';
+                const icon = type === 'error' ? 'exclamation-triangle' : 'check-circle';
+
+                // Create alert element
+                const alert = $(`
+                <div class="alert ${alertClass} alert-dismissible fade show" role="alert">
+                    <i class="fas fa-${icon} mr-2"></i>
+                    ${message}
+                    <button type="button" class="close" data-dismiss="alert" aria-label="Close">
+                        <span aria-hidden="true">&times;</span>
+                    </button>
+                </div>
+            `);
+
+                // Add to the top of the page
+                $('.container-fluid:first').prepend(alert);
+
+                // Auto-dismiss after 5 seconds
+                setTimeout(() => {
+                    alert.alert('close');
+                }, 5000);
+            }
+        });
+    </script>
+    {% endblock %}

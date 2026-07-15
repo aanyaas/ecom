@@ -1,0 +1,728 @@
+{% extends "admin/base.html" %}
+
+{% block title %}Session Management - {{ brand_name }}{% endblock %}
+
+{% block styles %}
+<style>
+    /* Premium Glassmorphism Sessions Overhaul */
+    :root {
+        --glass-bg: rgba(255, 255, 255, 0.85);
+        --glass-border: rgba(255, 255, 255, 0.4);
+        --glass-shadow: 0 10px 30px rgba(0, 0, 0, 0.05);
+        --primary-accent: #a64d79;
+        --secondary-accent: #1a1a2e;
+        --text-dark: #2d3748;
+        --text-muted: #718096;
+    }
+
+    body {
+        background-color: #f4f7f6;
+        background-image:
+            radial-gradient(at 0% 0%, hsla(331, 65%, 85%, 1) 0, transparent 50%),
+            radial-gradient(at 100% 0%, hsla(236, 40%, 85%, 1) 0, transparent 50%);
+        background-attachment: fixed;
+        font-family: 'Inter', sans-serif;
+    }
+
+    @keyframes fadeUp {
+        from {
+            opacity: 0;
+            transform: translateY(20px);
+        }
+
+        to {
+            opacity: 1;
+            transform: translateY(0);
+        }
+    }
+
+    .info-card-luxury {
+        background: var(--glass-bg) !important;
+        backdrop-filter: blur(12px) !important;
+        -webkit-backdrop-filter: blur(12px);
+        border: 1px solid var(--glass-border) !important;
+        border-radius: 24px !important;
+        box-shadow: var(--glass-shadow) !important;
+        overflow: hidden;
+        animation: fadeUp 0.7s ease-out backwards;
+    }
+
+    .session-card {
+        border: none;
+        border-radius: 24px;
+        transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+        overflow: hidden;
+        background: var(--glass-bg) !important;
+        backdrop-filter: blur(12px) !important;
+        -webkit-backdrop-filter: blur(12px);
+        border: 1px solid var(--glass-border) !important;
+        box-shadow: var(--glass-shadow) !important;
+        animation: fadeUp 0.7s ease-out backwards;
+    }
+
+    .session-card:hover {
+        transform: translateY(-5px);
+        box-shadow: 0 15px 35px rgba(0, 0, 0, 0.1) !important;
+    }
+
+    .status-indicator {
+        width: 8px;
+        height: 100%;
+        position: absolute;
+        left: 0;
+        top: 0;
+    }
+
+    .bg-active {
+        background-color: #1cc88a;
+    }
+
+    .bg-logged-out {
+        background-color: #e74a3b;
+    }
+
+    .bg-guest {
+        background-color: #f6c23e;
+    }
+
+    .bg-suspicious {
+        background-color: #f6c23e;
+    }
+
+    .stats-card-premium {
+        border: none;
+        border-radius: 24px;
+        padding: 20px;
+        transition: all 0.3s;
+        background: var(--glass-bg) !important;
+        backdrop-filter: blur(12px) !important;
+        -webkit-backdrop-filter: blur(12px);
+        border: 1px solid var(--glass-border) !important;
+        box-shadow: var(--glass-shadow) !important;
+        animation: fadeUp 0.6s ease-out backwards;
+    }
+
+    .stats-card-premium:hover {
+        transform: translateY(-5px);
+        box-shadow: 0 15px 30px rgba(0, 0, 0, 0.08) !important;
+    }
+
+    .stats-icon-box {
+        width: 50px;
+        height: 50px;
+        border-radius: 14px;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        margin-bottom: 15px;
+    }
+
+    .filter-tabs .nav-link {
+        color: var(--text-muted);
+        border: none;
+        font-weight: 600;
+        padding: 10px 20px;
+        border-radius: 12px;
+        margin-right: 5px;
+        transition: all 0.2s;
+    }
+
+    .filter-tabs .nav-link:hover {
+        background-color: rgba(255, 255, 255, 0.5);
+        color: var(--primary-accent);
+    }
+
+    .filter-tabs .nav-link.active {
+        background-color: var(--primary-accent);
+        color: white !important;
+        box-shadow: 0 4px 15px rgba(166, 77, 121, 0.4);
+    }
+
+    .device-icon-box {
+        width: 32px;
+        height: 32px;
+        border-radius: 10px;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        margin-right: 12px;
+    }
+
+    .action-btn-soft {
+        padding: 6px 14px;
+        border-radius: 10px;
+        font-size: 0.75rem;
+        font-weight: 700;
+        border: 1px solid transparent;
+        transition: all 0.2s ease;
+    }
+
+    .btn-terminate {
+        background-color: #fff1f0;
+        color: #e74a3b;
+        border-color: #ffd8d6;
+    }
+
+    .btn-terminate:hover {
+        background-color: #e74a3b;
+        color: white;
+        transform: translateY(-2px);
+        box-shadow: 0 4px 10px rgba(231, 74, 59, 0.2);
+    }
+
+    .btn-details {
+        background-color: #f0f5ff;
+        color: #4e73df;
+        border-color: #d6e4ff;
+    }
+
+    .btn-details:hover {
+        background-color: #4e73df;
+        color: white;
+        transform: translateY(-2px);
+        box-shadow: 0 4px 10px rgba(78, 115, 223, 0.2);
+    }
+
+    .btn-block-ip {
+        background-color: #fffbe6;
+        color: #f6c23e;
+        border-color: #fff1b8;
+    }
+
+    .btn-block-ip:hover {
+        background-color: #f6c23e;
+        color: white;
+        transform: translateY(-2px);
+        box-shadow: 0 4px 10px rgba(246, 194, 62, 0.2);
+    }
+
+    .badge-soft {
+        padding: 5px 12px;
+        border-radius: 8px;
+        font-weight: 700;
+        text-transform: uppercase;
+        font-size: 0.65rem;
+    }
+
+    .badge-soft-success {
+        background-color: rgba(28, 200, 138, 0.15);
+        color: #1cc88a;
+    }
+
+    .badge-soft-danger {
+        background-color: rgba(231, 74, 59, 0.15);
+        color: #e74a3b;
+    }
+
+    .badge-soft-warning {
+        background-color: rgba(246, 194, 62, 0.15);
+        color: #f6c23e;
+    }
+
+    /* Modals Glassmorphism */
+    .modal-content {
+        background: var(--glass-bg);
+        backdrop-filter: blur(16px);
+        -webkit-backdrop-filter: blur(16px);
+        border: 1px solid var(--glass-border);
+    }
+</style>
+{% endblock %}
+
+{% block content %}
+<div class="d-flex justify-content-between align-items-center mb-5 mt-2">
+    <div>
+        <h2 class="font-weight-bold mb-1">Session Management</h2>
+        <p class="text-muted small mb-0">Monitor real-time user activity and manage security permissions</p>
+    </div>
+    <div class="d-flex">
+        <button class="btn btn-white border shadow-sm mr-2 rounded-pill px-4" onclick="refreshSessions()">
+            <i class="fas fa-sync-alt mr-2 text-primary"></i> Refresh
+        </button>
+        <button class="btn btn-primary rounded-pill px-4 shadow" data-toggle="modal" data-target="#cleanupModal">
+            <i class="fas fa-broom mr-2"></i> Cleanup Old Sessions
+        </button>
+    </div>
+</div>
+
+<!-- Statistics Cards -->
+<div class="row mb-5">
+    <div class="col-md-3">
+        <div class="stats-card-premium shadow-sm">
+            <div class="stats-icon-box bg-soft-primary">
+                <i class="fas fa-users text-primary"></i>
+            </div>
+            <div class="h4 font-weight-bold mb-0">{{ total_sessions or 0 }}</div>
+            <div class="x-small font-weight-700 text-muted text-uppercase">Total Sessions</div>
+        </div>
+    </div>
+    <div class="col-md-3">
+        <div class="stats-card-premium shadow-sm">
+            <div class="stats-icon-box bg-soft-success">
+                <i class="fas fa-satellite text-success"></i>
+            </div>
+            <div class="h4 font-weight-bold mb-0">{{ active_sessions or 0 }}</div>
+            <div class="x-small font-weight-700 text-muted text-uppercase">Active Sessions</div>
+        </div>
+    </div>
+    <div class="col-md-3">
+        <div class="stats-card-premium shadow-sm">
+            <div class="stats-icon-box bg-soft-warning">
+                <i class="fas fa-user-secret text-warning"></i>
+            </div>
+            <div class="h4 font-weight-bold mb-0">{{ guest_sessions or 0 }}</div>
+            <div class="x-small font-weight-700 text-muted text-uppercase">Guest Sessions</div>
+        </div>
+    </div>
+    <div class="col-md-3">
+        <div class="stats-card-premium shadow-sm">
+            <div class="stats-icon-box bg-soft-danger">
+                <i class="fas fa-door-open text-danger"></i>
+            </div>
+            <div class="h4 font-weight-bold mb-0">{{ logged_out_sessions or 0 }}</div>
+            <div class="x-small font-weight-700 text-muted text-uppercase">Logged Out</div>
+        </div>
+    </div>
+</div>
+
+<!-- Search and Filter Bar -->
+<div class="card info-card-luxury mb-4" style="animation-delay: 0.2s;">
+    <div class="card-body p-4">
+        <div class="row align-items-center">
+            <div class="col-md-6">
+                <div class="input-group shadow-sm" style="border-radius: 10px; overflow: hidden;">
+                    <div class="input-group-prepend">
+                        <span class="input-group-text bg-light border-0"><i class="fas fa-search text-muted"></i></span>
+                    </div>
+                    <input type="text" class="form-control bg-light border-0" id="sessionSearch"
+                        placeholder="Search by username, IP, or session ID...">
+                </div>
+            </div>
+            <div class="col-md-3">
+                <select class="form-control border-0 bg-light shadow-sm" id="deviceFilter" style="border-radius: 10px;">
+                    <option value="">All Devices</option>
+                    <option value="Desktop">Desktop</option>
+                    <option value="Mobile">Mobile</option>
+                    <option value="Tablet">Tablet</option>
+                    <option value="Bot">Bot</option>
+                </select>
+            </div>
+            <div class="col-md-3">
+                <select class="form-control border-0 bg-light shadow-sm" id="locationFilter"
+                    style="border-radius: 10px;">
+                    <option value="">All Locations</option>
+                    {% for country in countries %}
+                    <option value="{{ country }}">{{ country }}</option>
+                    {% endfor %}
+                </select>
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- Filter Tabs -->
+<div class="d-flex align-items-center mb-4 overflow-auto pb-2">
+    <div class="nav nav-pills filter-tabs flex-nowrap">
+        <a class="nav-link {{ 'active' if filter_type == 'all' or not filter_type else '' }}"
+            href="{{ url_for('admin_bp.admin_sessions', filter='all') }}">
+            <i class="fas fa-layer-group mr-2"></i>All Sessions
+        </a>
+        <a class="nav-link {{ 'active' if filter_type == 'active' else '' }}"
+            href="{{ url_for('admin_bp.admin_sessions', filter='active') }}">
+            <i class="fas fa-bolt mr-2"></i>Active Now
+        </a>
+        <a class="nav-link {{ 'active' if filter_type == 'logged_in' else '' }}"
+            href="{{ url_for('admin_bp.admin_sessions', filter='logged_in') }}">
+            <i class="fas fa-user-check mr-2"></i>Logged In
+        </a>
+        <a class="nav-link {{ 'active' if filter_type == 'logged_out' else '' }}"
+            href="{{ url_for('admin_bp.admin_sessions', filter='logged_out') }}">
+            <i class="fas fa-sign-out-alt mr-2"></i>History
+        </a>
+        <a class="nav-link {{ 'active' if filter_type == 'suspicious' else '' }}"
+            href="{{ url_for('admin_bp.admin_sessions', filter='suspicious') }}">
+            <i class="fas fa-shield-virus mr-2"></i>Suspicious
+        </a>
+    </div>
+</div>
+
+{% if suspicious_sessions %}
+<div class="alert bg-soft-warning border-0 shadow-sm mb-4 d-flex align-items-center" role="alert"
+    style="border-radius: 12px;">
+    <i class="fas fa-exclamation-shield fa-lg mr-3 text-warning"></i>
+    <div>
+        <strong class="text-dark">Security Alert!</strong>
+        <span class="text-muted">{{ suspicious_sessions|length }} suspicious sessions detected.</span>
+        <a href="{{ url_for('admin_bp.admin_sessions', filter='suspicious') }}"
+            class="alert-link font-weight-bold ml-2">Review Activities</a>
+    </div>
+    <button type="button" class="close ml-auto" data-dismiss="alert">
+        <span>&times;</span>
+    </button>
+</div>
+{% endif %}
+
+<!-- Sessions Grid -->
+<div class="row" id="sessionsContainer">
+    {% for session in sessions %}
+    <div class="col-lg-6 col-xl-4 mb-4 session-item" data-username="{{ session.username|lower }}"
+        data-ip="{{ session.ip_address }}" data-device="{{ session.device_type }}"
+        data-country="{{ session.country or '' }}">
+        <div class="card session-card h-100 shadow-sm position-relative">
+            <!-- Status Indicator Strip -->
+            <div class="status-indicator 
+                {% if session.logout_time %}bg-logged-out
+                {% elif session.login_successful %}bg-active
+                {% else %}bg-guest{% endif %}"></div>
+
+            <div class="card-body p-4">
+                <div class="d-flex justify-content-between align-items-start mb-3">
+                    <div class="d-flex align-items-center">
+                        <div class="device-icon-box bg-light">
+                            {% if session.device_type == 'Mobile' %}
+                            <i class="fas fa-mobile-alt text-primary"></i>
+                            {% elif session.device_type == 'Tablet' %}
+                            <i class="fas fa-tablet-alt text-info"></i>
+                            {% elif session.device_type == 'Desktop' %}
+                            <i class="fas fa-desktop text-success"></i>
+                            {% elif session.device_type == 'Bot' %}
+                            <i class="fas fa-robot text-warning"></i>
+                            {% else %}
+                            <i class="fas fa-laptop-code text-secondary"></i>
+                            {% endif %}
+                        </div>
+                        <div>
+                            <h6 class="mb-0 font-weight-bold text-dark">{{ session.username or 'Guest User' }}</h6>
+                            <span class="x-small text-muted">{{ session.device_type or 'Unknown Device' }}</span>
+                        </div>
+                    </div>
+
+                    {% if session.logout_time %}
+                    <span class="badge-soft badge-soft-danger">Ended</span>
+                    {% elif session.login_successful %}
+                    <span class="badge-soft badge-soft-success">Live</span>
+                    {% else %}
+                    <span class="badge-soft badge-soft-warning">Browsing</span>
+                    {% endif %}
+                </div>
+
+                <div class="row no-gutters mb-3">
+                    <div class="col-6 pr-2">
+                        <label class="x-small text-muted text-uppercase font-weight-700 mb-1">Network</label>
+                        <div class="small font-weight-bold text-dark"><code>{{ session.ip_address or '0.0.0.0' }}</code>
+                        </div>
+                    </div>
+                    <div class="col-6 pl-2">
+                        <label class="x-small text-muted text-uppercase font-weight-700 mb-1">Origin</label>
+                        <div class="small text-dark font-weight-500">
+                            {% if session.country %}
+                            <img src="https://flagcdn.com/16x12/{{ session.country_code|lower }}.png" class="mr-1"
+                                style="vertical-align: middle;" alt="">
+                            {{ session.city or 'Unknown' }}, {{ session.country }}
+                            {% else %}
+                            <i class="fas fa-globe-americas mr-1 text-muted"></i>Unknown
+                            {% endif %}
+                        </div>
+                    </div>
+                </div>
+
+                <div class="row no-gutters mb-3">
+                    <div class="col-6 pr-2">
+                        <label class="x-small text-muted text-uppercase font-weight-700 mb-1">OS / Platform</label>
+                        <div class="small text-dark">{{ session.platform or 'Unknown' }}</div>
+                    </div>
+                    <div class="col-6 pl-2">
+                        <label class="x-small text-muted text-uppercase font-weight-700 mb-1">Browser</label>
+                        <div class="small text-dark">{{ session.browser or 'Unknown' }}</div>
+                    </div>
+                </div>
+
+                <div class="bg-light p-2 rounded mb-3">
+                    <label class="x-small text-muted text-uppercase font-weight-700 mb-1">Timeline</label>
+                    <div class="d-flex justify-content-between small text-muted">
+                        <span><i class="fas fa-play-circle mr-1"></i>{{ session.created_at.strftime('%d %b, %H:%M') if
+                            session.created_at else 'N/A' }}</span>
+                        <span><i class="fas fa-clock mr-1"></i>{{ session.last_activity.strftime('%H:%M') if
+                            session.last_activity else 'N/A' }}</span>
+                    </div>
+                </div>
+
+                <div class="d-flex justify-content-between align-items-center mt-3">
+                    <div class="session-actions">
+                        {% if not session.logout_time %}
+                        <button class="action-btn-soft btn-terminate shadow-sm"
+                            onclick="terminateSession('{{ session.session_id }}')">
+                            Terminate
+                        </button>
+                        {% endif %}
+                        <button class="action-btn-soft btn-details shadow-sm"
+                            onclick="viewSessionDetails('{{ session.session_id }}')">
+                            Details
+                        </button>
+                        {% if session.ip_address %}
+                        <button class="action-btn-soft btn-block-ip shadow-sm ml-1"
+                            onclick="blockIP('{{ session.ip_address }}')">
+                            <i class="fas fa-ban mr-1"></i>Block
+                        </button>
+                        {% endif %}
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+    {% else %}
+    <div class="col-12 text-center py-5">
+        <img src="https://illustrations.popsy.co/gray/data-report.svg" style="width: 200px; opacity: 0.5;" alt="">
+        <h4 class="text-muted mt-4">No Active Sessions</h4>
+        <p class="text-muted">Your server is currently quiet. Check back later.</p>
+    </div>
+    {% endfor %}
+</div>
+
+<!-- Pagination -->
+{% if pagination and pagination.pages > 1 %}
+<div class="py-5">
+    <nav aria-label="Sessions pagination">
+        <ul class="pagination justify-content-center">
+            {% if pagination.has_prev %}
+            <li class="page-item">
+                <a class="page-link border-0 shadow-sm mx-1 rounded"
+                    href="{{ url_for('admin_bp.admin_sessions', page=pagination.prev_num, filter=filter_type) }}">
+                    <i class="fas fa-chevron-left"></i>
+                </a>
+            </li>
+            {% endif %}
+
+            {% for page_num in pagination.iter_pages() %}
+            {% if page_num %}
+            <li class="page-item {% if page_num == pagination.page %}active{% endif %}">
+                <a class="page-link border-0 shadow-sm mx-1 rounded"
+                    href="{{ url_for('admin_bp.admin_sessions', page=page_num, filter=filter_type) }}">
+                    {{ page_num }}
+                </a>
+            </li>
+            {% else %}
+            <li class="page-item disabled"><span class="page-link border-0 bg-transparent">...</span></li>
+            {% endif %}
+            {% endfor %}
+
+            {% if pagination.has_next %}
+            <li class="page-item">
+                <a class="page-link border-0 shadow-sm mx-1 rounded"
+                    href="{{ url_for('admin_bp.admin_sessions', page=pagination.next_num, filter=filter_type) }}">
+                    <i class="fas fa-chevron-right"></i>
+                </a>
+            </li>
+            {% endif %}
+        </ul>
+    </nav>
+</div>
+{% endif %}
+
+<!-- Modals with Modern Style -->
+<!-- Cleanup Modal -->
+<div class="modal fade" id="cleanupModal" tabindex="-1" role="dialog">
+    <div class="modal-dialog modal-dialog-centered" role="document">
+        <div class="modal-content border-0 shadow" style="border-radius: 20px;">
+            <div class="modal-header border-0 p-4">
+                <h5 class="modal-title font-weight-bold">System Maintenance</h5>
+                <button type="button" class="close" data-dismiss="modal"><span>&times;</span></button>
+            </div>
+            <div class="modal-body p-4 pt-0">
+                <p class="text-muted small mb-4">Select the criteria for session database cleanup. This action is
+                    irreversible.</p>
+                <div class="custom-control custom-checkbox mb-3">
+                    <input type="checkbox" class="custom-control-input" id="cleanupLoggedOut" checked>
+                    <label class="custom-control-label font-weight-bold small" for="cleanupLoggedOut">Remove ended
+                        sessions (> 7 days)</label>
+                </div>
+                <div class="custom-control custom-checkbox mb-3">
+                    <input type="checkbox" class="custom-control-input" id="cleanupInactive">
+                    <label class="custom-control-label font-weight-bold small" for="cleanupInactive">Remove inactive
+                        sessions (> 30 days)</label>
+                </div>
+                <div class="custom-control custom-checkbox mb-3">
+                    <input type="checkbox" class="custom-control-input" id="cleanupGuest">
+                    <label class="custom-control-label font-weight-bold small" for="cleanupGuest">Remove guest sessions
+                        (> 24 hours)</label>
+                </div>
+            </div>
+            <div class="modal-footer border-0 p-4 pt-0">
+                <button type="button" class="btn btn-light rounded-pill px-4" data-dismiss="modal">Cancel</button>
+                <button type="button" class="btn btn-danger rounded-pill px-4 shadow" onclick="performCleanup()">Run
+                    Cleanup</button>
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- Details Modal -->
+<div class="modal fade" id="sessionDetailsModal" tabindex="-1" role="dialog">
+    <div class="modal-dialog modal-lg modal-dialog-centered" role="document">
+        <div class="modal-content border-0 shadow" style="border-radius: 20px;">
+            <div class="modal-header border-0 p-4">
+                <h5 class="modal-title font-weight-bold">Detailed Activity Log</h5>
+                <button type="button" class="close" data-dismiss="modal"><span>&times;</span></button>
+            </div>
+            <div class="modal-body p-4 pt-0" id="sessionDetailsContent">
+                <!-- Loaded via JS -->
+            </div>
+        </div>
+    </div>
+</div>
+
+{% endblock %}
+
+{% block scripts %}
+<script>
+    // Existing JS logic remains the same, but wrapped in document.ready for safety
+    $(document).ready(function () {
+        // Search functionality
+        $('#sessionSearch').on('input', function () {
+            filterSessions();
+        });
+
+        // Filter functionality
+        $('#deviceFilter, #locationFilter').on('change', function () {
+            filterSessions();
+        });
+
+        window.filterSessions = function () {
+            const searchTerm = $('#sessionSearch').val().toLowerCase();
+            const deviceFilter = $('#deviceFilter').val();
+            const locationFilter = $('#locationFilter').val();
+
+            $('.session-item').each(function () {
+                const $item = $(this);
+                const username = $item.data('username') || '';
+                const ip = $item.data('ip') || '';
+                const device = $item.data('device') || '';
+                const country = $item.data('country') || '';
+
+                const matchesSearch = !searchTerm ||
+                    username.includes(searchTerm) ||
+                    ip.toString().includes(searchTerm);
+
+                const matchesDevice = !deviceFilter || device === deviceFilter;
+                const matchesLocation = !locationFilter || country === locationFilter;
+
+                if (matchesSearch && matchesDevice && matchesLocation) {
+                    $item.fadeIn(200);
+                } else {
+                    $item.hide();
+                }
+            });
+        };
+
+        window.refreshSessions = function () {
+            location.reload();
+        };
+
+        window.terminateSession = function (sessionId) {
+            Swal.fire({
+                title: 'Terminate Session?',
+                text: "This will log the user out immediately.",
+                icon: 'warning',
+                showCancelButton: true,
+                confirmButtonColor: '#e74a3b',
+                cancelButtonColor: '#858796',
+                confirmButtonText: 'Yes, terminate it!'
+            }).then((result) => {
+                if (result.isConfirmed) {
+                    $.ajax({
+                        url: `/admin/sessions/${sessionId}/terminate`,
+                        method: 'POST',
+                        headers: { 'X-CSRFToken': "{{ csrf_token() }}" },
+                        success: function (data) {
+                            if (data.success) { 
+                                Swal.fire('Terminated!', 'Session has been ended.', 'success').then(() => location.reload());
+                            } else { 
+                                Swal.fire('Error', data.message, 'error'); 
+                            }
+                        }
+                    });
+                }
+            });
+        };
+
+        window.blockIP = function (ipAddress) {
+            Swal.fire({
+                title: 'Block IP Address?',
+                text: `Are you sure you want to block ${ipAddress}? They will be denied access.`,
+                icon: 'warning',
+                showCancelButton: true,
+                confirmButtonColor: '#f6c23e',
+                cancelButtonColor: '#858796',
+                confirmButtonText: 'Yes, block it!'
+            }).then((result) => {
+                if (result.isConfirmed) {
+                    $.ajax({
+                        url: '/admin/sessions/block-ip',
+                        method: 'POST',
+                        headers: { 'Content-Type': 'application/json', 'X-CSRFToken': "{{ csrf_token() }}" },
+                        data: JSON.stringify({ ip_address: ipAddress }),
+                        success: function (data) {
+                            if (data.success) { 
+                                Swal.fire('Blocked!', 'IP has been blocked.', 'success').then(() => location.reload());
+                            } else {
+                                Swal.fire('Error', data.message || 'Error blocking IP', 'error');
+                            }
+                        }
+                    });
+                }
+            });
+        };
+
+        window.viewSessionDetails = function (sessionId) {
+            $.ajax({
+                url: `/admin/sessions/${sessionId}/details`,
+                method: 'GET',
+                success: function (data) {
+                    if (data.success) {
+                        $('#sessionDetailsContent').html(data.html);
+                        $('#sessionDetailsModal').modal('show');
+                    }
+                }
+            });
+        };
+
+        window.performCleanup = function () {
+            const cleanupOptions = {
+                logged_out: $('#cleanupLoggedOut').is(':checked'),
+                inactive: $('#cleanupInactive').is(':checked'),
+                guest: $('#cleanupGuest').is(':checked')
+            };
+
+            const btn = document.querySelector('#cleanupModal .btn-danger');
+            const originalText = btn.innerHTML;
+            btn.innerHTML = '<i class="fas fa-spinner fa-spin mr-2"></i>Cleaning...';
+            btn.disabled = true;
+
+            $.ajax({
+                url: '/admin/sessions/cleanup',
+                method: 'POST',
+                headers: { 'Content-Type': 'application/json', 'X-CSRFToken': "{{ csrf_token() }}" },
+                data: JSON.stringify(cleanupOptions),
+                success: function (data) {
+                    $('#cleanupModal').modal('hide');
+                    if (data.success) { 
+                        Swal.fire({
+                            icon: 'success',
+                            title: 'Cleanup Complete',
+                            text: `Successfully removed ${data.deleted} old sessions.`,
+                            timer: 2500,
+                            showConfirmButton: false
+                        }).then(() => location.reload());
+                    } else {
+                        Swal.fire('Error', data.message || 'Error during cleanup', 'error');
+                    }
+                },
+                complete: function() {
+                    btn.innerHTML = originalText;
+                    btn.disabled = false;
+                }
+            });
+        };
+    });
+</script>
+{% endblock %}

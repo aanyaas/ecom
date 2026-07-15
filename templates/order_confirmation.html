@@ -1,0 +1,872 @@
+{% extends "base.html" %}
+
+{% block title %}{{ company_name }} - Order Confirmation{% endblock %}
+
+{% block content %}
+<style>
+    .btn-return-disabled {
+        cursor: not-allowed !important;
+        opacity: 0.65 !important;
+    }
+</style>
+<div class="order-confirmation-wrapper">
+    <div class="container">
+        <!-- Order Success Banner -->
+        <div
+            class="order-success-banner {% if order.payment_method == 'online' and order.payment_status != 'paid' %}payment-pending{% endif %}">
+            <div>
+                {% if order.payment_method == 'online' and order.payment_status != 'paid' %}
+                <h1><i class="fas fa-clock mr-2"></i>Payment Pending</h1>
+                <p>Your order #{{ order.id }} was placed on <strong>{{ order_date.strftime('%d %b %Y %I:%M %p') }}</strong> but payment is not yet confirmed. Please retry payment or contact support.</p>
+                {% else %}
+                <h1><i class="fas fa-check-circle mr-2"></i>Order Confirmed</h1>
+                <p>Thank you for your order #{{ order.id }} placed on <strong>{{ order_date.strftime('%d %b %Y %I:%M %p') }}</strong>, {{ shipping_address.first_name }} {{ shipping_address.last_name }}!</p>
+                {% endif %}
+            </div>
+            <div class="d-flex align-items-center">
+                {% if order.invoice_number and order.status == 'delivered' %}
+                <a href="{{ url_for('checkout_bp.download_invoice', order_id=order.id) }}" id="download-invoice-btn"
+                    class="btn-banner-action mr-3" style="position: static;">
+                    <i class="fas fa-file-pdf mr-1"></i> Invoice
+                </a>
+                {% endif %}
+                <a href="{{ url_for('checkout_bp.order_history') }}" class="btn-banner-action"
+                    style="position: static;">
+                    <i class="fas fa-list-alt mr-1"></i> Back to Orders
+                </a>
+            </div>
+        </div>
+
+        <!-- Order Tracker -->
+        <div class="order-tracker">
+            <div class="tracker-steps">
+                <div class="tracker-step completed">
+                    <div class="step-icon-wrap"><i class="fas fa-shopping-cart"></i></div>
+                    <span class="step-label">Order Placed</span>
+                    <span class="step-date">{{ order_date.strftime('%d %b %Y') }}</span>
+                </div>
+                <div class="tracker-step {% if status_steps.accepted %}completed active{% endif %}">
+                    <div class="step-icon-wrap"><i class="fas fa-cog"></i></div>
+                    <span class="step-label">Processing</span>
+                    <span class="step-date">{{ accepted_date }}</span>
+                </div>
+                <div class="tracker-step {% if status_steps.shipped %}completed active{% endif %}">
+                    <div class="step-icon-wrap"><i class="fas fa-truck"></i></div>
+                    <span class="step-label">Shipped</span>
+                    <span class="step-date">{{ shipping_date }}</span>
+                </div>
+                <div class="tracker-step {% if status_steps.delivered %}completed active{% endif %}">
+                    <div class="step-icon-wrap"><i class="fas fa-box-open"></i></div>
+                    <span class="step-label">Delivered</span>
+                    <span class="step-date">{{ delivery_date }}</span>
+                </div>
+            </div>
+        </div>
+
+        <div class="row">
+            <!-- Order Summary -->
+            <div class="col-lg-6 mb-4">
+                <div class="info-card">
+                    <div class="info-card-header">
+                        <i class="fas fa-file-invoice"></i>
+                        <h5>Order Summary</h5>
+                    </div>
+                    <div class="info-card-body">
+                        <dl class="row info-list mb-0">
+                            <dt class="col-6">Payment Method</dt>
+                            <dd class="col-6 text-right">
+                                {{ order.payment_method|replace('_', ' ')|upper }}
+                                <span class="badge {% if order.payment_status == 'paid' %}badge-success{% else %}badge-warning{% endif %} ml-1">
+                                    {{ order.payment_status|title if order.payment_status else '-' }}
+                                </span>
+                            </dd>
+
+                                                        <dt class="col-6">Order Total Amount</dt>
+                            <dd class="col-6 text-right text-primary font-weight-bold">₹{{
+                                "%.2f"|format(order.total_amount) }}</dd>
+
+                            {% set points_earned = (order.total_amount|float / 100)|int %}
+                            {% if points_earned > 0 %}
+                            <dt class="col-6 mt-3 text-success"><i class="fas fa-star text-warning mr-1"></i>Loyalty Points Earned</dt>
+                            <dd class="col-6 text-right mt-3 text-success font-weight-bold">+{{ points_earned }}</dd>
+                            {% endif %}
+                            
+                            {% if order.loyalty_points_used and order.loyalty_points_used|int > 0 %}
+                            <dt class="col-6 text-danger"><i class="fas fa-coins mr-1"></i>Loyalty Points Used</dt>
+                            <dd class="col-6 text-right text-danger font-weight-bold">-{{ order.loyalty_points_used }}</dd>
+                            {% endif %}
+                        </dl>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Delivery Address -->
+            <div class="col-lg-6 mb-4">
+                <div class="info-card">
+                    <div class="info-card-header">
+                        <i class="fas fa-map-marker-alt"></i>
+                        <h5>Delivery Address</h5>
+                    </div>
+                    <div class="info-card-body">
+                        <address>
+                            <strong>{{ shipping_address.first_name }} {{ shipping_address.last_name }}</strong><br>
+                            {% if shipping_address.company_name %}
+                            <span class="text-muted">{{ shipping_address.company_name }}</span><br>
+                            {% endif %}
+                            {{ shipping_address.address1 }}<br>
+                            {% if shipping_address.address2 %}{{ shipping_address.address2 }}<br>{% endif %}
+                            {{ shipping_address.city }}, {{ shipping_address.state }} {{ shipping_address.zip_code
+                            }}<br>
+                            <div class="mt-2">
+                                <i class="fas fa-phone mr-1 text-muted"></i> {{ shipping_address.phone }}<br>
+                                <i class="fas fa-envelope mr-1 text-muted"></i> {{ shipping_address.email }}
+                                {% if shipping_address.gst_number %}
+                                <br><i class="fas fa-file-invoice mr-1 text-muted"></i> GSTIN: {{
+                                shipping_address.gst_number }}
+                                {% endif %}
+                            </div>
+                        </address>
+                    </div>
+                </div>
+            </div>
+            <p class="mb-0 text-muted">We've sent a confirmation email to <strong>{{ order.user_email or
+                    billing_address.email or 'your email' }}</strong> with your order details. Your piece will be
+                shipped within 2-3 business days.</p>
+        </div>
+    </div>
+
+    <!-- GST Details Table -->
+    {% set has_discount = gst_breakdown['items'] | selectattr('item_discount', 'gt', 0) | list | length > 0 %}
+    <div class="gst-table-wrapper">
+        <h4 class="mb-4"><i class="fas fa-file-invoice-dollar mr-2 text-primary"></i>Order Details</h4>
+        <div class="table-responsive gst-table">
+            <table class="table table-hover mb-0">
+                <thead>
+                    <tr>
+                        <th>Image</th>
+                        <th>Item</th>
+                        <th class="text-center">Qty</th>
+                        <th class="text-right">Unit Price</th>
+                        {% if has_discount %}
+                        <th class="text-right">Discount</th>
+                        {% endif %}
+                        <th class="text-right">Taxable Value</th>
+                        <th class="text-center">GST Rate</th>
+                        <th class="text-right">{{ 'IGST' if not gst_breakdown.is_intra_state else 'CGST+SGST' }}</th>
+                        <th class="text-right">Total</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    {% for item in gst_breakdown['items'] %}
+                    <tr>
+                        <td class="text-center">
+                            <img src="{{ url_for('static', filename='img/thumbs/' + (item.product_image or 'default.jpg')) }}" alt="{{ item.product_name }}" style="width: 50px; height: 50px; object-fit: cover; border-radius: 5px; border: 1px solid #eee;">
+                        </td>
+                        <td>
+                            <strong><a href="{{ url_for('shop_bp.detail', product_id=item.product_id, _external=True) }}" class="text-dark">{{ item.product_name }}</a></strong>
+                            <div class="small text-muted mt-1">HSN: {{ item.hsn_code }}</div>
+                        </td>
+                        <td class="text-center">{{ "%.1f"|format(item.quantity) }}</td>
+                        <td class="text-right">₹{{ "%.2f"|format(item.unit_price) }}</td>
+                        {% if has_discount %}
+                        <td class="text-right text-danger">-₹{{ "%.2f"|format(item.item_discount) }}</td>
+                        {% endif %}
+                        <td class="text-right">₹{{ "%.2f"|format(item.taxable_value) }}</td>
+                        <td class="text-center">{{ "%.2f"|format(item.gst_rate) }}%</td>
+                        <td class="text-right">
+                            {% if gst_breakdown.is_intra_state %}
+                            ₹{{ "%.2f"|format(item.cgst + item.sgst) }}
+                            {% else %}
+                            ₹{{ "%.2f"|format(item.igst) }}
+                            {% endif %}
+                        </td>
+                        <td class="text-right"><strong>₹{{ "%.2f"|format(item.total_value) }}</strong></td>
+                    </tr>
+                    {% endfor %}
+                </tbody>
+                <tfoot>
+                    <tr class="font-weight-bold">
+                        <td colspan="2" class="text-right">Sub Total:</td>
+                        <td class="text-center">{{ "%.1f"|format(gst_breakdown.total_item_quantity) }}</td>
+                        <td class="text-right">₹{{ "%.2f"|format(gst_breakdown.total_price) }}</td>
+                        {% if has_discount %}
+                        <td class="text-right">₹{{ "%.2f"|format(gst_breakdown.total_item_discount) }}</td>
+                        {% endif %}
+                        <td class="text-right">₹{{ "%.2f"|format(gst_breakdown.total_taxable_value) }}</td>
+                        <td></td>
+                        <td class="text-right">₹{{ "%.2f"|format(gst_breakdown.total_gst) }}</td>
+                        <td class="text-right">₹{{ "%.2f"|format(gst_breakdown.total_taxable_value + gst_breakdown.total_gst) }}</td>
+                    </tr>
+                    {% if order.shipping_charge > 0 %}
+                    <tr>
+                        <td colspan="{{ 8 if has_discount else 7 }}" class="text-right text-muted">Shipping Charges:
+                        </td>
+                        <td class="text-right">₹{{ "%.2f"|format(order.shipping_charge) }}</td>
+                    </tr>
+                    {% endif %}
+                    <tr class="grand-total-row">
+                        <td colspan="{{ 8 if has_discount else 7 }}" class="text-right grand-total-label">Grand Total:
+                        </td>
+                        <td class="text-right grand-total-amount">₹{{ "%.2f"|format(order.total_amount) }}</td>
+                    </tr>
+                    <tr>
+                        <td colspan="{{ 9 if has_discount else 8 }}" class="small text-muted py-3">
+                            <strong>Transaction Type:</strong> {{ 'Intra-State (CGST + SGST)' if
+                            gst_breakdown.is_intra_state else 'Inter-State (IGST)' }}
+                        </td>
+                    </tr>
+                </tfoot>
+            </table>
+        </div>
+    </div>
+
+    <!-- Footer Status -->
+    <div class="status-alert">
+        <div class="status-alert-icon">
+            <i class="fas fa-info-circle"></i>
+        </div>
+        <div>
+            <h5 class="font-weight-bold mb-1">Order Status: {{ order.status|title }}</h5>
+            <p class="mb-0 text-muted">We've sent a confirmation email to <strong>{{ order.user_email or
+                    billing_address.email or 'your email' }}</strong> with your order details. Your piece will be
+                shipped within 2-3 business days.</p>
+        </div>
+    </div>
+
+    <div class="d-flex flex-wrap justify-content-between gap-3 mt-5 pt-4 border-top">
+        <a href="{{ url_for('pages_bp.home') }}" class="btn btn-outline-secondary px-4 py-2 mb-2"
+            style="border-radius: 50px;">
+            <i class="fas fa-home mr-2"></i> Return to Home
+        </a>
+
+        {% if order.status == 'pending' or order.status == 'processing' %}
+        <button class="btn btn-outline-danger px-4 py-2 mb-2 cancel-order-btn" data-order-id="{{ order.id }}"
+            style="border-radius: 50px;">
+            <i class="fas fa-times-circle mr-2"></i> Cancel Order
+        </button>
+        {% endif %}
+
+        {% if (order.status == 'delivered' or order.status == 'refunded' or order.status == 'partial refunded' or
+        order.status == 'returned') and is_returnable %}
+        {% set product_ids_list = [] %}
+        {% set product_names_list = [] %}
+        {% set product_images_list = [] %}
+        {% set product_quantities_list = [] %}
+        {% set returned_quantities_list = [] %}
+        {% for item in items %}
+        {% set _ = product_ids_list.append(item.product_id|string) %}
+        {% set _ = product_names_list.append(item.name) %}
+        {% set _ = product_images_list.append(item.image or 'default.jpg') %}
+        {% set _ = product_quantities_list.append(item.quantity|string) %}
+        {% set _ = returned_quantities_list.append(item.returned_qty|string) %}
+        {% endfor %}
+        <button
+            class="btn btn-outline-warning px-4 py-2 mb-2 return-order-btn{% if has_active_return %} btn-return-disabled{% endif %}"
+            {% if has_active_return %}disabled title="Return request already raised and is being processed." {% endif %}
+            data-order-id="{{ order.id }}" data-product-ids="{{ product_ids_list|join(',') }}"
+            data-product-names="{{ product_names_list|join('|') }}"
+            data-product-images="{{ product_images_list|join(',') }}"
+            data-product-quantities="{{ product_quantities_list|join(',') }}"
+            data-returned-quantities="{{ returned_quantities_list|join(',') }}" style="border-radius: 50px;">
+            <i class="fas fa-undo mr-2"></i> {% if has_active_return %}Return Pending Approval{% else %}Return /
+            Replace{% endif %}
+        </button>
+        {% endif %}
+
+        <a href="{{ url_for('shop_bp.shop') }}" class="btn btn-primary px-4 py-2 mb-2" style="border-radius: 50px;">
+            <i class="fas fa-shopping-bag mr-2"></i> Continue Shopping
+        </a>
+    </div>
+</div>
+</div>
+
+<!-- Cancel Order Modal (Premium) -->
+<div class="modal fade" id="cancelOrderModal" tabindex="-1" role="dialog">
+    <div class="modal-dialog modal-dialog-centered" role="document">
+        <div class="modal-content border-0 shadow-lg" style="border-radius: 24px; overflow: hidden;">
+            <div class="modal-header border-0 p-4 pb-0 flex-column align-items-center position-relative">
+                <button type="button" class="close position-absolute" data-dismiss="modal" style="top: 20px; right: 20px;"><span>&times;</span></button>
+                <div class="mb-3 d-flex align-items-center justify-content-center bg-light text-danger rounded-circle" style="width: 70px; height: 70px;">
+                    <i class="fas fa-exclamation-triangle fa-2x"></i>
+                </div>
+                <h4 class="modal-title font-weight-bold text-center w-100 mb-1" style="color: #2c3e50;">Cancel Order</h4>
+                <p class="text-muted text-center small mb-0 px-3">We're sorry to see you cancel. Please let us know why.</p>
+            </div>
+            <div class="modal-body p-4 pt-3">
+                <form id="cancelOrderForm">
+                    <input type="hidden" id="cancelOrderId" name="order_id">
+                    
+                    <div class="form-group mb-3">
+                        <label class="small font-weight-bold text-muted">Reason for Cancellation</label>
+                        <select class="form-control bg-light border-0" id="cancelReasonSelect" required style="border-radius: 12px; height: 45px;">
+                            <option value="" disabled selected>Select a reason...</option>
+                            <option value="Changed my mind">Changed my mind</option>
+                            <option value="Ordered by mistake">Ordered by mistake</option>
+                            <option value="Found a better price elsewhere">Found a better price elsewhere</option>
+                            <option value="Shipping takes too long">Shipping takes too long</option>
+                            <option value="Other">Other</option>
+                        </select>
+                    </div>
+
+                    <div class="form-group mb-0" id="cancelReasonTextGroup">
+                        <label class="small font-weight-bold text-muted">Additional Remarks (Optional)</label>
+                        <textarea class="form-control bg-light border-0" id="cancelReasonText" rows="2"
+                            placeholder="Please tell us more..."
+                            style="border-radius: 12px; resize: none;"></textarea>
+                    </div>
+                </form>
+            </div>
+            <div class="modal-footer border-0 p-4 pt-0 d-flex justify-content-between gap-2">
+                <button type="button" class="btn btn-light rounded-pill px-4 flex-grow-1" data-dismiss="modal" style="font-weight: 600;">Keep Order</button>
+                <button type="button" class="btn btn-danger rounded-pill px-4 flex-grow-1 d-flex align-items-center justify-content-center" id="confirmCancel" style="font-weight: 600;">
+                    <span class="btn-text">Cancel Order</span>
+                    <span class="spinner-border spinner-border-sm ml-2 d-none" role="status" aria-hidden="true"></span>
+                </button>
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- Return Order Modal -->
+<div class="modal fade" id="returnOrderModal" tabindex="-1" role="dialog">
+    <div class="modal-dialog modal-dialog-centered" role="document">
+        <div class="modal-content border-0 shadow-lg" style="border-radius: 20px;">
+            <div class="modal-header border-0 p-4">
+                <h5 class="modal-title font-weight-bold">Request Return</h5>
+                <button type="button" class="close" data-dismiss="modal"><span>&times;</span></button>
+            </div>
+            <div class="modal-body p-4 pt-0">
+                <form id="returnOrderForm" enctype="multipart/form-data">
+                    <input type="hidden" id="returnOrderId" name="order_id">
+                    <input type="hidden" name="csrf_token" value="{{ csrf_token() }}">
+                    <div id="returnItemsList" class="mb-4">
+                        <label class="small font-weight-bold mb-2">Select Items to Return</label>
+                        <div class="list-group list-group-flush border rounded"
+                            style="max-height: 250px; overflow-y: auto;">
+                            <!-- Items will be populated here via JS -->
+                        </div>
+                    </div>
+                    <div class="form-group mb-3">
+                        <label class="small font-weight-bold">Reason for Return</label>
+                        <select class="form-control bg-light border-0" name="return_reason" required
+                            style="border-radius: 12px;">
+                            <option value="">Select a reason</option>
+                            <option value="Damaged Product">Damaged Product</option>
+                            <option value="Wrong Item Received">Wrong Item Received</option>
+                            <option value="Quality not as expected">Quality not as expected</option>
+                            <option value="Changed my mind">Changed my mind</option>
+                            <option value="Other">Other</option>
+                        </select>
+                    </div>
+                    <div class="form-group mb-3">
+                        <label class="small font-weight-bold">Additional Remarks</label>
+                        <textarea class="form-control bg-light border-0" name="remarks" rows="3"
+                            placeholder="Explain the issue..." style="border-radius: 12px;"></textarea>
+                    </div>
+                    <div class="form-group">
+                        <label class="small font-weight-bold">Evidence Photos (Optional)</label>
+                        <input type="file" class="form-control-file" name="evidence" multiple>
+                    </div>
+                </form>
+            </div>
+            <div class="modal-footer border-0 p-4 pt-0">
+                <button type="button" class="btn btn-light rounded-pill px-4" data-dismiss="modal">Cancel</button>
+                <button type="button" class="btn btn-primary rounded-pill px-4" id="confirmReturn">Submit
+                    Request</button>
+            </div>
+        </div>
+    </div>
+</div>
+
+{% endblock %}
+{% block scripts %}
+<script>
+    $(document).ready(function () {
+        // Initialize tooltips
+        $('[data-toggle="tooltip"]').tooltip();
+
+                // Cancel Order Premium Logic
+        $('.cancel-order-btn').click(function () {
+            $('#cancelOrderId').val($(this).data('order-id'));
+            $('#cancelReasonSelect').val('');
+            $('#cancelReasonText').val('');
+            $('#cancelReasonTextGroup').show();
+            $('#cancelOrderModal').modal('show');
+        });
+
+        $('#confirmCancel').click(function () {
+            let reasonSelect = $('#cancelReasonSelect').val();
+            if (!reasonSelect) { showToast('warning', 'Please select a reason for cancellation.'); return; }
+            
+            let finalReason = reasonSelect;
+            let remarks = $('#cancelReasonText').val().trim();
+            if (remarks) {
+                finalReason += " - " + remarks;
+            } else if (reasonSelect === 'Other') {
+                showToast('warning', 'Please provide details for cancellation in the remarks box.'); return;
+            }
+
+            const btn = $(this);
+            const originalText = btn.find('.btn-text').text();
+            
+            // UI Feedback (Loading state)
+            btn.prop('disabled', true);
+            btn.find('.btn-text').text('Processing...');
+            btn.find('.spinner-border').removeClass('d-none');
+
+            const formData = new FormData();
+            formData.append('order_id', $('#cancelOrderId').val());
+            formData.append('reason', finalReason);
+            formData.append('csrf_token', '{{ csrf_token() }}');
+
+            $.ajax({
+                url: '{{ url_for("checkout_bp.cancel_order") }}',
+                method: 'POST',
+                processData: false,
+                contentType: false,
+                data: formData,
+                success: function (data) {
+                    if (data.success) {
+                        showToast('success', 'Order cancelled successfully!');
+                        $('#cancelOrderModal').modal('hide');
+                        setTimeout(() => location.reload(), 1500);
+                    } else {
+                        showToast('error', data.message || 'Error cancelling order');
+                        // Reset button
+                        btn.prop('disabled', false);
+                        btn.find('.btn-text').text(originalText);
+                        btn.find('.spinner-border').addClass('d-none');
+                    }
+                },
+                error: function() {
+                    showToast('error', 'Network error. Please try again.');
+                    // Reset button
+                    btn.prop('disabled', false);
+                    btn.find('.btn-text').text(originalText);
+                    btn.find('.spinner-border').addClass('d-none');
+                }
+            });
+        });
+
+        $('.return-order-btn').click(function () {
+            const orderId = $(this).data('order-id');
+            const productIds = $(this).data('product-ids').toString().split(',');
+            const productNames = $(this).data('product-names').split('|');
+            const productImages = $(this).data('product-images').split(',');
+            const productQuantities = $(this).data('product-quantities').toString().split(',');
+            const returnedQuantities = $(this).data('returned-quantities').toString().split(',');
+
+            $('#returnOrderId').val(orderId);
+            const itemsList = $('#returnItemsList .list-group');
+            itemsList.empty();
+
+            let hasAvailableItems = false;
+            productIds.forEach((id, index) => {
+                const orderedQty = parseInt(productQuantities[index]);
+                const returnedQty = parseInt(returnedQuantities[index]);
+                const availableQty = orderedQty - returnedQty;
+
+                if (availableQty > 0) {
+                    hasAvailableItems = true;
+                    const html = `
+                        <div class="list-group-item d-flex align-items-center py-2 px-3">
+                            <div class="custom-control custom-checkbox mr-3">
+                                <input type="checkbox" class="custom-control-input item-checkbox" id="item_${id}" name="item_ids" value="${id}">
+                                <label class="custom-control-label" for="item_${id}"></label>
+                            </div>
+                            <img src="/static/img/thumbs/${productImages[index]}" alt="Product Image" class="rounded mr-3" style="width: 40px; height: 50px; object-fit: cover;">
+                            <div class="flex-grow-1 overflow-hidden">
+                                <h6 class="mb-0 text-truncate small font-weight-bold">${productNames[index]}</h6>
+                                <div class="d-flex align-items-center mt-1">
+                                    <span class="small text-muted mr-2">Qty to Return:</span>
+                                    <input type="number" class="form-control form-control-sm item-qty" name="qty_${id}" value="${availableQty}" min="1" max="${availableQty}" disabled style="width: 60px; height: 24px; padding: 0 5px;">
+                                    <span class="small text-muted ml-2">(Max ${availableQty})</span>
+                                </div>
+                            </div>
+                        </div>
+                    `;
+                    itemsList.append(html);
+                }
+            });
+
+            if (!hasAvailableItems) {
+                showToast('info', 'All items in this order have already been returned or are being processed.');
+                return;
+            }
+
+            $('#returnOrderModal').modal('show');
+        });
+
+        $(document).on('change', '.item-checkbox', function () {
+            const id = $(this).val();
+            $(`input[name="qty_${id}"]`).prop('disabled', !$(this).is(':checked'));
+        });
+
+        $('#confirmReturn').click(function () {
+            const form = document.getElementById('returnOrderForm');
+            const formData = new FormData(form);
+
+            const selectedItems = $('.item-checkbox:checked');
+            if (selectedItems.length === 0) {
+                showToast('warning', 'Please select at least one item to return');
+                return;
+            }
+
+            let qtyValid = true;
+            selectedItems.each(function () {
+                const id = $(this).val();
+                const qtyInput = $(`input[name="qty_${id}"]`);
+                const qty = parseInt(qtyInput.val());
+                const max = parseInt(qtyInput.attr('max'));
+                if (qty > max || qty <= 0 || isNaN(qty)) {
+                    showToast('error', 'Invalid quantity selected for ' + $(this).closest('.list-group-item').find('h6').text());
+                    qtyValid = false;
+                    return false;
+                }
+            });
+            if (!qtyValid) return;
+
+            if (!$('select[name="return_reason"]').val()) {
+                showToast('warning', 'Please select a reason for return');
+                return;
+            }
+
+            $.ajax({
+                url: '{{ url_for("checkout_bp.request_return") }}',
+                method: 'POST',
+                processData: false,
+                contentType: false,
+                data: formData,
+                success: function (data) {
+                    if (data.success) {
+                        showToast('success', 'Return request submitted successfully');
+                        $('#returnOrderModal').modal('hide');
+                        setTimeout(() => location.reload(), 2000);
+                    } else {
+                        showToast('error', data.message || 'Error submitting return request');
+                    }
+                },
+                error: function () {
+                    showToast('error', 'An error occurred while processing your request.');
+                }
+            });
+        });
+    });
+
+</script>
+{% endblock %}
+{% block styles %}
+<style>
+    /* Luxury Order Confirmation Styles */
+    .order-confirmation-wrapper {
+        padding: 40px 0 100px;
+        background: #fff;
+    }
+
+    .order-success-banner {
+        background: #fff;
+        color: #1a1a1a;
+        padding: 60px;
+        border-radius: 30px;
+        margin-bottom: 40px;
+        text-align: center;
+        border: 1px solid #f0f0f0;
+        box-shadow: 0 30px 70px rgba(0, 0, 0, 0.05);
+        display: flex;
+        flex-direction: column;
+        align-items: center;
+        gap: 30px;
+    }
+
+    .order-success-banner.payment-pending {
+        border-top: 5px solid #f39c12;
+    }
+
+    .order-success-banner:not(.payment-pending) {
+        border-top: 5px solid #a64d79;
+    }
+
+    .order-success-banner h1 {
+        font-family: 'Playfair Display', serif;
+        font-weight: 700;
+        font-size: 2.8rem;
+        margin: 0;
+    }
+
+    .order-success-banner h1 i {
+        color: #a64d79;
+        display: block;
+        font-size: 4rem;
+        margin-bottom: 20px;
+    }
+
+    .order-success-banner p {
+        font-size: 1.2rem;
+        color: #666;
+        max-width: 600px;
+    }
+
+    .btn-banner-action {
+        background: #1a1a1a;
+        color: #fff !important;
+        border: none;
+        border-radius: 50px;
+        padding: 15px 35px;
+        font-weight: 700;
+        text-transform: uppercase;
+        letter-spacing: 1.5px;
+        font-size: 0.85rem;
+        transition: all 0.3s;
+        box-shadow: 0 10px 25px rgba(0, 0, 0, 0.1);
+    }
+
+    .btn-banner-action:hover {
+        background: #a64d79;
+        transform: translateY(-3px);
+        box-shadow: 0 15px 35px rgba(166, 77, 121, 0.2);
+    }
+
+    /* Refined Timeline Tracker */
+    .order-tracker {
+        background: #fdfcfd;
+        padding: 60px 40px;
+        border-radius: 30px;
+        margin-bottom: 40px;
+        border: 1px solid #f0f0f0;
+    }
+
+    .tracker-steps {
+        display: flex;
+        justify-content: space-between;
+        position: relative;
+        max-width: 1000px;
+        margin: 0 auto;
+    }
+
+    .tracker-steps::before {
+        content: '';
+        position: absolute;
+        top: 30px;
+        left: 0;
+        right: 0;
+        height: 2px;
+        background: #eee;
+        z-index: 1;
+    }
+
+    .tracker-step {
+        position: relative;
+        z-index: 2;
+        text-align: center;
+        width: 25%;
+    }
+
+    .step-icon-wrap {
+        width: 60px;
+        height: 60px;
+        background: #fff;
+        color: #ddd;
+        border-radius: 50%;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        margin: 0 auto 20px;
+        transition: all 0.4s cubic-bezier(0.165, 0.84, 0.44, 1);
+        border: 2px solid #eee;
+        font-size: 1.2rem;
+        box-shadow: 0 5px 15px rgba(0, 0, 0, 0.02);
+    }
+
+    .tracker-step.active .step-icon-wrap,
+    .tracker-step.completed .step-icon-wrap {
+        background: #a64d79;
+        color: white;
+        border-color: #a64d79;
+        box-shadow: 0 10px 25px rgba(166, 77, 121, 0.2);
+    }
+
+    .step-label {
+        font-family: 'Poppins', sans-serif;
+        font-weight: 700;
+        font-size: 0.85rem;
+        color: #1a1a1a;
+        text-transform: uppercase;
+        letter-spacing: 1px;
+        margin-bottom: 5px;
+    }
+
+    .step-date {
+        font-size: 0.75rem;
+        color: #888;
+    }
+
+    /* Section Cards */
+    .info-card {
+        background: #fff;
+        border: 1px solid #f0f0f0;
+        border-radius: 25px;
+        height: 100%;
+        box-shadow: 0 10px 30px rgba(0, 0, 0, 0.02);
+        overflow: hidden;
+    }
+
+    .info-card-header {
+        padding: 25px 30px;
+        border-bottom: 1px solid #f8f8f8;
+        background: #fdfcfd;
+        display: flex;
+        align-items: center;
+        gap: 15px;
+    }
+
+    .info-card-header h5 {
+        font-family: 'Playfair Display', serif;
+        font-size: 1.2rem;
+        font-weight: 700;
+        margin: 0;
+        color: #1a1a1a;
+    }
+
+    .info-card-header i {
+        color: #a64d79;
+        font-size: 1.1rem;
+    }
+
+    .info-card-body {
+        padding: 30px;
+    }
+
+    .info-list dt {
+        font-size: 0.75rem;
+        text-transform: uppercase;
+        letter-spacing: 1px;
+        color: #999;
+        margin-bottom: 5px;
+        font-weight: 700;
+    }
+
+    .info-list dd {
+        font-size: 1rem;
+        color: #1a1a1a;
+        margin-bottom: 25px;
+        font-weight: 600;
+    }
+
+    /* GST Table Enhancement */
+    .gst-table-wrapper {
+        margin-top: 60px;
+        background: #fff;
+        border-radius: 30px;
+        padding: 40px;
+        border: 1px solid #f0f0f0;
+        box-shadow: 0 20px 50px rgba(0, 0, 0, 0.04);
+    }
+
+    .gst-table-wrapper h4 {
+        font-family: 'Playfair Display', serif;
+        font-weight: 700;
+        font-size: 1.8rem;
+        margin-bottom: 30px;
+    }
+
+    .gst-table {
+        border: none;
+    }
+
+    .gst-table thead th {
+        background: #fdfcfd;
+        border: none;
+        font-size: 0.7rem;
+        text-transform: uppercase;
+        letter-spacing: 2px;
+        color: #888;
+        padding: 20px;
+        font-weight: 700;
+    }
+
+    .gst-table tbody td {
+        padding: 20px;
+        vertical-align: middle;
+        border-bottom: 1px solid #f8f8f8;
+        font-size: 0.9rem;
+    }
+
+    .grand-total-row {
+        background: #fdfcfd !important;
+        border-top: 2px solid #f0f0f0;
+    }
+
+    .grand-total-label {
+        font-family: 'Playfair Display', serif;
+        font-size: 1.4rem;
+        font-weight: 700;
+        color: #1a1a1a;
+        padding: 30px !important;
+    }
+
+    .grand-total-amount {
+        font-size: 1.8rem;
+        font-weight: 800;
+        color: #a64d79;
+        padding: 30px !important;
+    }
+
+    .status-alert {
+        background: #fdfcfd;
+        border: 1px solid #f0f0f0;
+        border-radius: 25px;
+        padding: 40px;
+        margin-top: 40px;
+        display: flex;
+        gap: 30px;
+        align-items: center;
+    }
+
+    .status-alert-icon {
+        width: 70px;
+        height: 70px;
+        background: #fff;
+        border-radius: 50%;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        color: #a64d79;
+        font-size: 1.8rem;
+        box-shadow: 0 10px 25px rgba(0, 0, 0, 0.05);
+        flex-shrink: 0;
+    }
+
+    @media (max-width: 768px) {
+        .tracker-steps {
+            flex-direction: column;
+            gap: 30px;
+            align-items: flex-start;
+        }
+
+        .tracker-steps::before {
+            display: none;
+        }
+
+        .tracker-step {
+            width: 100%;
+            text-align: left;
+            display: flex;
+            align-items: center;
+            gap: 20px;
+        }
+
+        .step-icon-wrap {
+            margin: 0;
+            flex-shrink: 0;
+        }
+
+        .order-success-banner {
+            padding: 40px 20px;
+        }
+
+        .order-success-banner h1 {
+            font-size: 2rem;
+        }
+    }
+</style>
+{% endblock %}

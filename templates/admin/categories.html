@@ -1,0 +1,206 @@
+{% extends "admin/base.html" %}
+
+{% block title %}Category Master- {{ brand_name }}{% endblock %}
+
+{% block content %}
+<style>
+    /* Premium Glassmorphism Categories Overhaul */
+    :root {
+        --glass-bg: rgba(255, 255, 255, 0.85);
+        --glass-border: rgba(255, 255, 255, 0.4);
+        --glass-shadow: 0 10px 30px rgba(0, 0, 0, 0.05);
+        --primary-accent: #a64d79;
+        --secondary-accent: #1a1a2e;
+        --text-dark: #2d3748;
+        --text-muted: #718096;
+    }
+
+    body {
+        background-color: #f4f7f6;
+        background-image:
+            radial-gradient(at 0% 0%, hsla(331, 65%, 85%, 1) 0, transparent 50%),
+            radial-gradient(at 100% 0%, hsla(236, 40%, 85%, 1) 0, transparent 50%);
+        background-attachment: fixed;
+        font-family: 'Inter', sans-serif;
+    }
+
+    /* Animated entrance */
+    @keyframes fadeUp {
+        from {
+            opacity: 0;
+            transform: translateY(20px);
+        }
+
+        to {
+            opacity: 1;
+            transform: translateY(0);
+        }
+    }
+
+    .card {
+        background: var(--glass-bg) !important;
+        backdrop-filter: blur(12px) !important;
+        -webkit-backdrop-filter: blur(12px);
+        border: 1px solid var(--glass-border) !important;
+        border-radius: 24px !important;
+        box-shadow: var(--glass-shadow) !important;
+        animation: fadeUp 0.7s ease-out backwards;
+    }
+
+    .card-header {
+        background: transparent !important;
+        border-bottom: 1px solid rgba(0, 0, 0, 0.05) !important;
+        padding: 25px 30px !important;
+    }
+
+    .btn {
+        border-radius: 12px;
+    }
+
+    .btn-primary {
+        background: linear-gradient(135deg, var(--primary-accent), #c26792);
+        border: none;
+        box-shadow: 0 4px 15px rgba(166, 77, 121, 0.3);
+        transition: transform 0.3s ease, box-shadow 0.3s ease;
+    }
+
+    .btn-primary:hover {
+        transform: translateY(-2px);
+        box-shadow: 0 6px 20px rgba(166, 77, 121, 0.4);
+    }
+
+    .table {
+        color: var(--text-dark);
+        margin-bottom: 0;
+    }
+
+    .table thead th {
+        border-bottom: 2px solid rgba(0, 0, 0, 0.05);
+        border-top: none;
+        color: var(--text-muted);
+        font-weight: 600;
+        text-transform: uppercase;
+        font-size: 0.75rem;
+        letter-spacing: 1px;
+        padding: 20px 25px;
+    }
+
+    .table tbody td {
+        padding: 20px 25px;
+        vertical-align: middle;
+        border-bottom: 1px solid rgba(0, 0, 0, 0.03);
+    }
+
+    .table-hover tbody tr:hover {
+        background-color: rgba(255, 255, 255, 0.6);
+        transform: scale(1.002);
+        box-shadow: 0 5px 15px rgba(0, 0, 0, 0.03);
+        transition: all 0.3s ease;
+    }
+
+    .badge {
+        padding: 6px 12px;
+        border-radius: 8px;
+        font-weight: 600;
+        letter-spacing: 0.5px;
+    }
+</style>
+
+<div class="d-flex justify-content-between align-items-center mb-1 mt-2">
+    <div style="animation: fadeUp 0.5s ease-out;">
+        <h2 class="font-weight-bold mb-1" style="color: var(--text-dark);">Category Master</h2>
+    </div>
+    <div class="btn-toolbar mb-2 mb-md-0" style="animation: fadeUp 0.6s ease-out;">
+        <a href="{{ url_for('admin_bp.add_category') }}" class="btn btn-primary shadow-sm">
+            <i class="fas fa-plus mr-2"></i> Add New Category
+        </a>
+    </div>
+</div>
+
+<div class="card border-0 shadow-sm mb-4">
+    <div class="card-header py-3 d-flex align-items-center justify-content-between">
+        <h6 class="m-0 font-weight-bold" style="color: var(--primary-accent);">All Categories</h6>
+    </div>
+    <div class="card-body p-0">
+        <div class="table-responsive">
+            <table class="table table-hover align-items-center mb-0" id="categoriesTable">
+                <thead>
+                    <tr>
+                        <th class="border-top-0 px-4 py-3 text-muted text-uppercase x-small font-weight-700">ID</th>
+                        <th class="border-top-0 py-3 text-muted text-uppercase x-small font-weight-700">Name</th>
+                        <th class="border-top-0 py-3 text-muted text-uppercase x-small font-weight-700">Slug</th>
+                        <th class="border-top-0 py-3 text-muted text-uppercase x-small font-weight-700">Parent Category
+                        </th>
+                        <th class="border-top-0 py-3 text-muted text-uppercase x-small font-weight-700">Order</th>
+                        <th class="border-top-0 py-3 text-muted text-uppercase x-small font-weight-700">Status</th>
+                        <th class="border-top-0 px-4 py-3 text-right text-muted text-uppercase x-small font-weight-700">
+                            Actions</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    {% for cat in categories %}
+                    <tr>
+                        <td class="px-4">{{ cat.id }}</td>
+                        <td>
+                            {% if cat.parent_id %}
+                            <span class="text-muted"><i class="fas fa-level-up-alt fa-rotate-90 mr-2 ml-2"></i></span>
+                            {% endif %}
+                            <span class="font-weight-600 text-dark">{{ cat.name }}</span>
+                        </td>
+                        <td><span class="text-danger small font-weight-500">{{ cat.slug }}</span></td>
+                        <td>
+                            {% if cat.parent_name %}
+                            <span class="badge badge-soft-info px-2 py-1">{{ cat.parent_name }}</span>
+                            {% else %}
+                            <span class="text-muted small">Top Level</span>
+                            {% endif %}
+                        </td>
+                        <td><span class="text-muted">{{ cat.sort_order }}</span></td>
+                        <td>
+                            {% if cat.is_active %}
+                            <span class="badge badge-soft-success px-2 py-1">Active</span>
+                            {% else %}
+                            <span class="badge badge-soft-danger px-2 py-1">Inactive</span>
+                            {% endif %}
+                        </td>
+                        <td class="px-4 text-right">
+                            <a href="{{ url_for('admin_bp.edit_category', category_id=cat.id) }}"
+                                class="btn btn-sm btn-soft-info border mr-1" title="Edit">
+                                <i class="fas fa-edit"></i>
+                            </a>
+                            <button type="button" class="btn btn-sm btn-soft-danger border delete-cat"
+                                data-id="{{ cat.id }}" data-name="{{ cat.name }}" title="Delete">
+                                <i class="fas fa-trash"></i>
+                            </button>
+                            <form id="delete-form-{{ cat.id }}"
+                                action="{{ url_for('admin_bp.delete_category', category_id=cat.id) }}" method="POST"
+                                style="display:none;">
+                                <input type="hidden" name="csrf_token" value="{{ csrf_token() }}">
+                            </form>
+                        </td>
+                    </tr>
+                    {% else %}
+                    <tr>
+                        <td colspan="7" class="text-center">No categories found.</td>
+                    </tr>
+                    {% endfor %}
+                </tbody>
+            </table>
+        </div>
+    </div>
+</div>
+{% endblock %}
+
+{% block scripts %}
+<script>
+    $(document).ready(function () {
+        $('.delete-cat').click(function () {
+            const id = $(this).data('id');
+            const name = $(this).data('name');
+            if (confirm(`Are you sure you want to delete category "${name}"?`)) {
+                $(`#delete-form-${id}`).submit();
+            }
+        });
+    });
+</script>
+{% endblock %}

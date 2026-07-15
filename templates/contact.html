@@ -1,0 +1,318 @@
+{% extends "base.html" %}
+{% block title %}{{ company_name }} - Contact Us{% endblock %}
+
+{% block styles %}
+{{ super() }}
+<style>
+    .contact-hero {
+        padding: 80px 0 40px;
+        background: #fff;
+        text-align: center;
+    }
+    .contact-hero h1 {
+        font-family: 'Playfair Display', serif;
+        font-weight: 700;
+        font-size: 3rem;
+        letter-spacing: 4px;
+        color: #1a1a1a;
+        margin-bottom: 15px;
+    }
+    .contact-hero p {
+        font-size: 1.1rem;
+        color: #888;
+        letter-spacing: 2px;
+        text-transform: uppercase;
+    }
+
+    .contact-section {
+        background: #fdfcfd;
+        padding: 60px 0 100px;
+    }
+    .contact-card {
+        background: #fff;
+        border-radius: 30px;
+        box-shadow: 0 30px 70px rgba(0,0,0,0.07);
+        overflow: hidden;
+        border: none;
+    }
+
+    .contact-form-side {
+        padding: 60px;
+    }
+    .contact-form-side h2 {
+        font-family: 'Playfair Display', serif;
+        font-weight: 700;
+        color: #1a1a1a;
+        font-size: 2rem;
+        margin-bottom: 15px;
+    }
+    .contact-form-side p {
+        color: #888;
+        margin-bottom: 40px;
+        font-size: 1rem;
+    }
+
+    .form-group-icon {
+        position: relative;
+        margin-bottom: 25px;
+    }
+    .form-group-icon .icon {
+        position: absolute;
+        left: 20px;
+        top: 50%;
+        transform: translateY(-50%);
+        color: #a64d79;
+        font-size: 1rem;
+    }
+    .form-group-icon.textarea-group .icon {
+        top: 20px;
+        transform: none;
+    }
+
+    .form-group-icon input,
+    .form-group-icon textarea {
+        width: 100%;
+        padding: 15px 25px 15px 50px;
+        border: 1px solid #f0f0f0;
+        border-radius: 15px;
+        font-size: 0.95rem;
+        color: #1a1a1a;
+        background: #fdfcfd;
+        transition: all 0.3s;
+    }
+    .form-group-icon input:focus,
+    .form-group-icon textarea:focus {
+        border-color: #a64d79;
+        background: #fff;
+        box-shadow: 0 10px 30px rgba(166, 77, 121, 0.05);
+        outline: none;
+    }
+
+    .btn-send {
+        background: #a64d79;
+        color: #fff;
+        border: none;
+        padding: 18px 45px;
+        border-radius: 50px;
+        font-weight: 700;
+        letter-spacing: 1.5px;
+        text-transform: uppercase;
+        font-size: 0.85rem;
+        transition: all 0.3s;
+        box-shadow: 0 10px 25px rgba(166, 77, 121, 0.3);
+        display: inline-flex;
+        align-items: center;
+        gap: 12px;
+    }
+    .btn-send:hover {
+        background: #1a1a1a;
+        transform: translateY(-3px);
+        box-shadow: 0 15px 35px rgba(0,0,0,0.2);
+        color: #fff;
+    }
+
+    .contact-info-side {
+        background: #1a1a1a;
+        padding: 60px 50px;
+        color: #fff;
+        height: 100%;
+    }
+    .contact-info-side h3 {
+        font-family: 'Playfair Display', serif;
+        font-weight: 700;
+        font-size: 1.8rem;
+        margin-bottom: 15px;
+        color: #fff;
+    }
+    .contact-info-side p.sub {
+        color: #888;
+        font-size: 0.95rem;
+        margin-bottom: 40px;
+    }
+
+    .info-item {
+        display: flex;
+        align-items: center;
+        margin-bottom: 30px;
+    }
+    .info-icon {
+        width: 50px;
+        height: 50px;
+        border-radius: 15px;
+        background: rgba(166, 77, 121, 0.15);
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        color: #a64d79;
+        font-size: 1.2rem;
+        margin-right: 20px;
+        flex-shrink: 0;
+    }
+    .info-text .label {
+        font-size: 0.7rem;
+        text-transform: uppercase;
+        letter-spacing: 2px;
+        color: #666;
+        margin-bottom: 5px;
+        font-weight: 700;
+    }
+    .info-text .value {
+        font-size: 1rem;
+        line-height: 1.6;
+        font-weight: 500;
+    }
+    .info-text .value a {
+        color: #fff;
+        text-decoration: none;
+        transition: color 0.3s;
+    }
+    .info-text .value a:hover {
+        color: #a64d79;
+    }
+
+    .divider-line {
+        border-top: 1px solid #333;
+        margin: 40px 0;
+    }
+    .working-hours {
+        background: rgba(255,255,255,0.03);
+        border-radius: 20px;
+        padding: 25px;
+        border: 1px solid #333;
+    }
+    .working-hours h5 {
+        font-size: 0.9rem;
+        letter-spacing: 1px;
+        margin-bottom: 20px;
+        color: #a64d79;
+    }
+    .wh-row {
+        display: flex;
+        justify-content: space-between;
+        margin-bottom: 10px;
+        font-size: 0.85rem;
+    }
+    .wh-row span:first-child { color: #888; }
+    .wh-row span:last-child { color: #fff; font-weight: 600; }
+
+    .map-section {
+        padding: 0;
+    }
+    .map-section iframe {
+        width: 100%;
+        height: 300px;
+        border: none;
+        display: block;
+    }
+
+    @media (max-width: 768px) {
+
+        .contact-form-side,
+        .contact-info-side {
+            padding: 30px 20px;
+        }
+
+        .contact-hero h1 {
+            font-size: 26px;
+        }
+    }
+</style>
+{% endblock %}
+
+{% block content %}
+<!-- Contact -->
+<div class="contact-hero">
+    <h1>CONTACT US</h1>
+    <p>&#x2728; We'd love to hear from you &#x2728;</p>
+</div>
+
+<!-- Contact Section -->
+<div class="contact-section">
+    <div class="container">
+        <div class="contact-card">
+            <div class="row no-gutters">
+                <!-- Form Side -->
+                <div class="col-lg-7">
+                    <div class="contact-form-side">
+                        <h2>Send Us a Message</h2>
+                        <p>Fill in the form below and we'll get back to you within 24-48 hours.</p>
+                        <form action="{{ url_for('pages_bp.contact') }}" method="POST">
+                            <input type="hidden" name="csrf_token" value="{{ csrf_token() }}">
+                            <div class="form-group-icon">
+                                <span class="icon"><i class="fa fa-user"></i></span>
+                                <input type="text" name="name" placeholder="Your Full Name" required
+                                    value="{% if request.method == 'POST' %}{{ request.form.get('name','') }}{% endif %}">
+                            </div>
+                            <div class="form-group-icon">
+                                <span class="icon"><i class="fa fa-envelope"></i></span>
+                                <input type="email" name="email" placeholder="Your Email Address" required
+                                    value="{% if request.method == 'POST' %}{{ request.form.get('email','') }}{% endif %}">
+                            </div>
+                            <div class="form-group-icon">
+                                <span class="icon"><i class="fa fa-tag"></i></span>
+                                <input type="text" name="subject" placeholder="Subject" required
+                                    value="{% if request.method == 'POST' %}{{ request.form.get('subject','') }}{% endif %}">
+                            </div>
+                            <div class="form-group-icon textarea-group">
+                                <span class="icon"><i class="fa fa-comment"></i></span>
+                                <textarea name="message" placeholder="Your Message..."
+                                    required>{% if request.method == 'POST' %}{{ request.form.get('message','') }}{% endif %}</textarea>
+                            </div>
+                            <button type="submit" class="btn-send">
+                                <i class="fa fa-paper-plane"></i> Send Message
+                            </button>
+                        </form>
+                    </div>
+                </div>
+                <!-- Info Side -->
+                <div class="col-lg-5">
+                    <div class="contact-info-side">
+                        <h3>Get In Touch</h3>
+                        <p class="sub">We're here to help with any questions about our handmade products.</p>
+                        <div class="info-item">
+                            <div class="info-icon"><i class="fa fa-file-invoice"></i></div>
+                            <div class="info-text">
+                                <div class="label">GST No.</div>
+                                <div class="value">06ASWPV7266R1Z6</div>
+                            </div>
+                        </div>
+                        <div class="info-item">
+                            <div class="info-icon"><i class="fa fa-map-marker-alt"></i></div>
+                            <div class="info-text">
+                                <div class="label">Our Address</div>
+                                <div class="value">Plot No.: 243, Sector 10, Gurugram, Haryana- 122001, India</div>
+                            </div>
+                        </div>
+                        <div class="info-item">
+                            <div class="info-icon"><i class="fa fa-phone"></i></div>
+                            <div class="info-text">
+                                <div class="label">WhatsApp</div>
+                                <div class="value"><a href="tel:{{ company_info.phone or '+919555144442' }}">{{ company_info.phone or '+91 9555 144 442' }}</a></div>
+                            </div>
+                        </div>
+                        <div class="info-item">
+                            <div class="info-icon"><i class="fa fa-envelope"></i></div>
+                            <div class="info-text">
+                                <div class="label">Email</div>
+                                <div class="value"><a href="mailto:aanyaasenterprises@gmail.com">aanyaase@gmail.com</a>
+                                </div>
+                            </div>
+                        </div>
+                        <hr class="divider-line">
+                        <div class="working-hours">
+                            <h5><i class="fa fa-clock mr-2"></i>Working Hours</h5>
+                            <div class="wh-row"><span>Monday - Friday</span><span>10:00 AM - 7:00 PM</span></div>
+                            <div class="wh-row"><span>Saturday & Sunday</span><span>10:00 AM - 5:00 PM</span></div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+            <!-- Map Section -->
+            <div class="map-section">
+                <iframe src="https://www.google.com/maps/embed?pb=!1m18!1m12!1m3!1d3509.303350266023!2d76.99342537554906!3d28.404554375790583!2m3!1f0!2f0!3f0!3m2!1i1024!2i768!4f13.1!3m3!1m2!1s0x390d3d3e69634567%3A0x1234567890abcdef!2sSector%2010%2C%20Gurugram%2C%20Haryana!5e0!3m2!1sen!2sin!4v1715760000000!5m2!1sen!2sin" 
+                    allowfullscreen="" loading="lazy" referrerpolicy="no-referrer-when-downgrade"></iframe>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}

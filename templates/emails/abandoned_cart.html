@@ -1,0 +1,130 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Your Cart is Waiting!</title>
+    <style>
+        body {
+            font-family: 'Inter', Arial, sans-serif;
+            background-color: #f8f9fa;
+            margin: 0;
+            padding: 0;
+            color: #333333;
+        }
+        .container {
+            max-width: 600px;
+            margin: 40px auto;
+            background: #ffffff;
+            border-radius: 12px;
+            box-shadow: 0 4px 15px rgba(0, 0, 0, 0.05);
+            overflow: hidden;
+        }
+        .header {
+            background-color: #a64d79;
+            color: white;
+            text-align: center;
+            padding: 30px 20px;
+        }
+        .header h1 {
+            margin: 0;
+            font-size: 24px;
+            font-weight: 600;
+        }
+        .content {
+            padding: 40px 30px;
+            text-align: center;
+        }
+        .content p {
+            font-size: 16px;
+            line-height: 1.6;
+            margin-bottom: 25px;
+            color: #555555;
+        }
+        .cart-items {
+            margin: 30px 0;
+            text-align: left;
+            border-top: 1px solid #eeeeee;
+            padding-top: 20px;
+        }
+        .item {
+            display: flex;
+            align-items: center;
+            margin-bottom: 15px;
+            padding-bottom: 15px;
+            border-bottom: 1px dashed #eeeeee;
+        }
+        .item img {
+            width: 70px;
+            height: 70px;
+            object-fit: cover;
+            border-radius: 8px;
+            margin-right: 15px;
+            background: #f0f0f0;
+        }
+        .item-details {
+            flex-grow: 1;
+        }
+        .item-name {
+            font-weight: 600;
+            margin: 0 0 5px 0;
+            font-size: 15px;
+        }
+        .item-price {
+            margin: 0;
+            color: #a64d79;
+            font-weight: 700;
+        }
+        .cta-button {
+            display: inline-block;
+            background-color: #a64d79;
+            color: #ffffff !important;
+            text-decoration: none;
+            padding: 14px 30px;
+            border-radius: 50px;
+            font-weight: 600;
+            font-size: 16px;
+            margin-top: 20px;
+            box-shadow: 0 4px 10px rgba(166, 77, 121, 0.3);
+        }
+        .footer {
+            background-color: #f1f1f1;
+            padding: 20px;
+            text-align: center;
+            font-size: 12px;
+            color: #888888;
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <div class="header">
+            <h1>Did you forget something? 🛍️</h1>
+        </div>
+        <div class="content">
+            <p>Hi {{ customer_name }},</p>
+            <p>We noticed you left some great items in your cart. They're still waiting for you, but they might sell out soon!</p>
+            
+            <div class="cart-items">
+                {% for item in cart_items %}
+                <div class="item">
+                    <img src="{{ url_for('static', filename='img/thumbs/' + (item.image if item.image else 'default.jpg'), _external=True) }}" alt="{{ item.name }}">
+                    <div class="item-details">
+                        <h4 class="item-name">{{ item.name }}</h4>
+                        <p class="item-price">Qty: {{ item.quantity }} | ₹{{ item.price }}</p>
+                    </div>
+                </div>
+                {% endendfor %}
+            </div>
+
+            <p style="font-weight: 600; font-size: 18px; margin-bottom: 5px;">Total: ₹{{ cart_total }}</p>
+
+            <a href="{{ url_for('checkout_bp.checkout', _external=True) }}" class="cta-button">Complete Your Purchase</a>
+        </div>
+        <div class="footer">
+            <p>If you have any questions, reply to this email or contact our support team.</p>
+            <p>&copy; {{ now.year if now else '2026' }} {{ company_name }}. All rights reserved.</p>
+        </div>
+    </div>
+</body>
+</html>

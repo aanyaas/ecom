@@ -1,0 +1,29 @@
+{% extends "base.html" %}
+
+{% block title %}500 - Internal Server Error- {{ brand_name }}{% endblock %}
+
+{% block content %}
+<div class="container py-5 text-center"
+    style="min-height: 60vh; display: flex; flex-direction: column; justify-content: center; align-items: center;">
+    <div class="glass-card p-5" style="max-width: 600px; width: 100%; border-radius: 20px;">
+        <div class="mb-4 text-danger">
+            <i class="fas fa-tools fa-5x" style="opacity: 0.8;"></i>
+        </div>
+        <h1 class="display-4 font-weight-bold mb-3" style="font-size: 3rem;">500</h1>
+        <h2 class="h4 mb-4">Something went wrong</h2>
+        <p class="text-muted mb-5">
+            Our servers encountered an unexpected hiccup. We are looking into it right away. Please try again in a few
+            minutes.
+        </p>
+        <div class="d-flex justify-content-center gap-3">
+            <a href="{{ url_for('pages_bp.home') }}" class="btn btn-primary px-4 py-2" style="border-radius: 50px;">
+                <i class="fas fa-home mr-2"></i> Go Home
+            </a>
+            <button onclick="window.location.reload();" class="btn btn-outline-primary px-4 py-2"
+                style="border-radius: 50px; margin-left: 10px;">
+                <i class="fas fa-sync-alt mr-2"></i> Try Again
+            </button>
+        </div>
+    </div>
+</div>
+{% endblock %}

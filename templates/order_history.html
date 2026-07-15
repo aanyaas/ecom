@@ -1,0 +1,864 @@
+{% extends "base.html" %}
+
+{% block title %}Order History - {{ company_name }}{% endblock %}
+
+{% block styles %}
+<style>
+    /* Modern & Premium Order History Styling */
+    .order-history-header {
+        padding: 60px 0 40px;
+        background: linear-gradient(135deg, #fdfbfb 0%, #ebedee 100%);
+        border-bottom: 1px solid #eaeaea;
+        margin-bottom: 40px;
+    }
+    
+    .page-title {
+        font-family: 'Playfair Display', serif;
+        font-weight: 800;
+        color: #2c3e50;
+        margin-bottom: 10px;
+    }
+
+    .order-card {
+        border: none;
+        border-radius: 16px;
+        margin-bottom: 30px;
+        transition: all 0.3s ease;
+        background: #fff;
+        box-shadow: 0 4px 20px rgba(0, 0, 0, 0.05);
+        position: relative;
+    }
+
+    .order-card:hover {
+        transform: translateY(-4px);
+        box-shadow: 0 12px 30px rgba(166, 77, 121, 0.15);
+    }
+
+    .order-card-header {
+        background: #fdfafb;
+        padding: 20px 30px;
+        border-bottom: 1px solid #f0e6eb;
+        border-radius: 16px 16px 0 0;
+        display: flex;
+        justify-content: space-between;
+        align-items: center;
+        flex-wrap: wrap;
+        gap: 15px;
+    }
+
+    .order-id {
+        font-family: 'Poppins', sans-serif;
+        font-weight: 700;
+        color: #a64d79;
+        font-size: 1.15rem;
+    }
+
+    .order-date {
+        color: #7f8c8d;
+        font-size: 0.9rem;
+        font-weight: 500;
+    }
+
+    .order-card-body {
+        padding: 30px;
+    }
+
+    .order-item {
+        display: flex;
+        align-items: flex-start;
+        margin-bottom: 25px;
+        padding-bottom: 25px;
+        border-bottom: 1px dashed #eee;
+    }
+
+    .order-item:last-child {
+        border-bottom: none;
+        margin-bottom: 0;
+        padding-bottom: 0;
+    }
+
+    .order-item img {
+        width: 90px;
+        height: 110px;
+        object-fit: cover;
+        border-radius: 10px;
+        margin-right: 25px;
+        box-shadow: 0 4px 10px rgba(0,0,0,0.08);
+        transition: transform 0.3s ease;
+    }
+    
+    .order-item:hover img {
+        transform: scale(1.05);
+    }
+
+    .order-item-info h6 {
+        margin-bottom: 8px;
+        font-weight: 600;
+        font-size: 1.1rem;
+        color: #2c3e50;
+        line-height: 1.4;
+    }
+
+    .status-badge {
+        font-size: 0.75rem;
+        text-transform: uppercase;
+        letter-spacing: 1px;
+        padding: 8px 16px;
+        border-radius: 30px;
+        font-weight: 700;
+        box-shadow: 0 2px 5px rgba(0,0,0,0.05);
+    }
+
+    .btn-action {
+        border-radius: 8px;
+        font-weight: 600;
+        font-size: 0.85rem;
+        padding: 10px 20px;
+        transition: all 0.3s;
+        text-transform: uppercase;
+        letter-spacing: 0.5px;
+        width: 100%;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+    }
+    
+    .btn-action:hover {
+        transform: translateY(-2px);
+        box-shadow: 0 4px 10px rgba(0,0,0,0.1);
+    }
+
+    /* Interactive Status Pills */
+    .filter-pill {
+        display: inline-block;
+        padding: 8px 20px;
+        background: #fff;
+        color: #6c757d;
+        border-radius: 30px;
+        font-weight: 600;
+        font-size: 0.85rem;
+        text-decoration: none !important;
+        transition: all 0.3s ease;
+        margin-right: 8px;
+        margin-bottom: 10px;
+        border: 1px solid #e9ecef;
+        box-shadow: 0 2px 5px rgba(0,0,0,0.02);
+    }
+    
+    .filter-pill:hover, .filter-pill.active {
+        background: #a64d79;
+        color: #fff !important;
+        border-color: #a64d79;
+        box-shadow: 0 4px 10px rgba(166, 77, 121, 0.3);
+        transform: translateY(-2px);
+    }
+
+    /* Account Sidebar */
+    .account-sidebar {
+        background: #fff;
+        border-radius: 16px;
+        padding: 25px 20px;
+        border: none;
+        box-shadow: 0 4px 20px rgba(0, 0, 0, 0.05);
+        position: sticky;
+        top: 90px;
+    }
+
+    .nav-account li a {
+        padding: 14px 20px;
+        border-radius: 12px;
+        display: flex;
+        align-items: center;
+        transition: all 0.3s;
+        font-weight: 500;
+        font-size: 0.95rem;
+        color: #555 !important;
+        margin-bottom: 8px;
+    }
+
+    .nav-account li a i {
+        width: 30px;
+        font-size: 1.1rem;
+        color: #888;
+        transition: all 0.3s;
+    }
+
+    .nav-account li a:hover,
+    .nav-account li a.active {
+        background: #fdfafb;
+        color: #a64d79 !important;
+        transform: translateX(5px);
+    }
+    
+    .nav-account li a:hover i,
+    .nav-account li a.active i {
+        color: #a64d79;
+    }
+
+    .nav-account li a.active {
+        background: rgba(166, 77, 121, 0.08);
+        font-weight: 700;
+    }
+
+    /* Summary Details */
+    .summary-title {
+        color: #7f8c8d;
+        font-size: 0.85rem;
+        text-transform: uppercase;
+        letter-spacing: 1px;
+        margin-bottom: 5px;
+    }
+    
+    .summary-amount {
+        color: #a64d79;
+        font-size: 1.8rem;
+        font-family: 'Poppins', sans-serif;
+    }
+</style>
+{% endblock %}
+
+{% block content %}
+<div class="order-history-header">
+    <div class="container text-center reveal">
+        <h1 class="display-4 page-title">Your Orders</h1>
+        <p class="lead" style="color: #6c757d; font-weight: 400;">Track and manage your past treasures</p>
+    </div>
+</div>
+
+<div class="container pb-5">
+    <div class="row">
+        <!-- Sidebar Navigation -->
+        <div class="col-lg-3 mb-4 reveal">
+            <div class="account-sidebar">
+                <ul class="nav-account list-unstyled mb-0">
+                    <li><a href="{{ url_for('user_bp.profile') }}#overview"><i class="fas fa-user-circle"></i> Overview</a></li>
+                    <li><a href="{{ url_for('user_bp.profile') }}#loyalty"><i class="fas fa-star text-warning"></i> Loyalty Points</a></li>
+                    <li><a href="{{ url_for('user_bp.profile') }}#addresses"><i class="fas fa-map-marker-alt text-success"></i> Addresses</a></li>
+                    <li><a href="{{ url_for('checkout_bp.order_history') }}" class="active"><i class="fas fa-shopping-bag"></i> Order History</a></li>
+                    <li><a href="#" class="change-password-trigger"><i class="fas fa-shield-alt"></i> Security</a></li>
+                    <li><hr class="my-3 border-light w-100"></li>
+                    <li><a href="{{ url_for('auth_bp.logout') }}" class="text-danger"><i class="fas fa-sign-out-alt"></i> Sign Out</a></li>
+                </ul>
+            </div>
+        </div>
+
+        <div class="col-lg-9">
+            <!-- Interactive Status Pills -->
+            <div class="mb-4 reveal">
+                <div class="d-flex flex-wrap gap-2">
+                    <a href="?status=all{% if search_query %}&q={{ search_query }}{% endif %}" class="filter-pill {% if status_filter == 'all' or not status_filter %}active{% endif %}">All Orders</a>
+                    <a href="?status=pending{% if search_query %}&q={{ search_query }}{% endif %}" class="filter-pill {% if status_filter == 'pending' %}active{% endif %}">Pending</a>
+                    <a href="?status=processing{% if search_query %}&q={{ search_query }}{% endif %}" class="filter-pill {% if status_filter == 'processing' %}active{% endif %}">Processing</a>
+                    <a href="?status=shipped{% if search_query %}&q={{ search_query }}{% endif %}" class="filter-pill {% if status_filter == 'shipped' %}active{% endif %}">Shipped</a>
+                    <a href="?status=delivered{% if search_query %}&q={{ search_query }}{% endif %}" class="filter-pill {% if status_filter == 'delivered' %}active{% endif %}">Delivered</a>
+                    <a href="?status=cancelled{% if search_query %}&q={{ search_query }}{% endif %}" class="filter-pill {% if status_filter == 'cancelled' %}active{% endif %}">Cancelled</a>
+                </div>
+            </div>
+
+            <!-- Search Bar -->
+            <div class="filter-bar reveal mb-4">
+                <form method="get" class="d-flex align-items-center w-100 m-0">
+                    <input type="hidden" name="status" value="{{ status_filter or 'all' }}">
+                    <div class="input-group" style="box-shadow: 0 4px 15px rgba(0,0,0,0.03); border-radius: 30px; overflow: hidden; border: 1px solid #eaeaea;">
+                        <input type="text" name="q" class="form-control border-0 pl-4"
+                            placeholder="Search by Order ID or product name..." value="{{ search_query }}" style="background: #fff; box-shadow: none; padding: 25px 20px;">
+                        <div class="input-group-append">
+                            <button type="submit" class="btn btn-primary px-4 border-0" style="background: #a64d79; border-radius: 0 30px 30px 0; font-weight: 600;">
+                                <i class="fas fa-search mr-2"></i> Search
+                            </button>
+                        </div>
+                    </div>
+                </form>
+            </div>
+
+            {% if orders %}
+            {% for order in orders %}
+            <div class="order-card reveal">
+                <div class="order-card-header">
+                    <div>
+                        <a href="{{ url_for('checkout_bp.order_confirmation', order_id=order.id) }}" class="order-id" style="text-decoration: none; transition: color 0.3s;" onmouseover="this.style.color='#a64d79';" onmouseout="this.style.color='';">Order #{{ order.id }}</a>
+                        <span class="mx-2 text-muted">|</span>
+                        <span class="order-date">Placed on {{ order.order_date.strftime('%d %B, %Y') if order.order_date
+                            else 'N/A' }}</span>
+                    </div>
+                    <div>
+                        {% set status_color = 'warning' if order.status == 'pending'
+                        else 'info' if order.status == 'processing'
+                        else 'primary' if order.status == 'shipped'
+                        else 'success' if order.status == 'delivered'
+                        else 'danger' if order.status == 'cancelled'
+                        else 'secondary' if order.status == 'refunded' or order.status == 'partial refunded'
+                        else 'secondary' %}
+                        <span class="badge badge-soft-{{ status_color }} status-badge">
+                            {{ order.status.replace('_', ' ')|upper }}
+                        </span>
+                    </div>
+                </div>
+                <div class="order-card-body">
+                    <div class="row align-items-center">
+                        <div class="col-md-8">
+                            <div class="order-items-list">
+                                {% for product_name in order.product_names_list %}
+                                <div class="order-item">
+                                    {% if order.product_images_list[loop.index0] %}
+                                    <img src="{{ url_for('static', filename='img/thumbs/' + order.product_images_list[loop.index0]) }}"
+                                        alt="{{ product_name }}">
+                                    {% else %}
+                                    <img src="{{ url_for('static', filename='img/thumbs/default.jpg') }}"
+                                        alt="Default product image" class="img-thumbnail" style="max-height: 50px;">
+                                    {% endif %}
+                                    <div class="order-item-info">
+                                        <a href="{{ url_for('shop_bp.detail', product_id=order.product_ids_list[loop.index0]) }}"
+                                            class="text-dark">
+                                            <h6>{{ product_name }}</h6>
+                                        </a>
+                                        <p class="small text-muted mb-0">
+                                            Qty: {{ order.product_quantities_list[loop.index0] }}
+                                            {% if order.returned_quantities_list[loop.index0]|int > 0 %}
+                                            <span class="text-danger">({{ order.returned_quantities_list[loop.index0] }}
+                                                Returned)</span>
+                                            {% endif %}
+                                            | Item ID: #{{ order.product_ids_list[loop.index0] }}
+                                        </p>
+                                        {% if order.status == 'delivered' %}
+                                        <div class="mt-2">
+                                            {% if order.reviewed_statuses_list[loop.index0] == '1' %}
+                                            <span class="badge badge-soft-success small">
+                                                <i class="fas fa-check-circle mr-1"></i> Already Reviewed
+                                            </span>
+                                            {% else %}
+                                            <a href="{{ url_for('checkout_bp.rate_product', order_id=order.id, product_id=order.product_ids_list[loop.index0]) }}"
+                                                class="btn btn-sm btn-outline-primary rounded-pill px-3 py-1 font-weight-bold"
+                                                style="font-size: 0.75rem;">
+                                                <i class="fas fa-star mr-1"></i> Rate & Review
+                                            </a>
+                                            {% endif %}
+                                        </div>
+                                        {% endif %}
+                                    </div>
+                                </div>
+                                {% endfor %}
+                            </div>
+                        </div>
+                        <div class="col-md-4 text-md-right border-left pl-md-4 mt-4 mt-md-0">
+                            <p class="summary-title">Total Amount Paid</p>
+                            <h4 class="summary-amount mb-4">₹{{ "%.2f"|format(order.total_amount) }}</h4>
+
+                            <div class="d-flex flex-column" style="gap: 12px;">
+                                <a href="{{ url_for('checkout_bp.order_confirmation', order_id=order.id) }}"
+                                    class="btn btn-primary btn-action mb-2">Track & Details</a>
+
+                                {% if order.invoice_number and order.status == 'delivered' %}
+                                <a href="{{ url_for('checkout_bp.download_invoice', order_id=order.id) }}"
+                                    class="btn btn-outline-secondary btn-action mb-2">
+                                    <i class="fas fa-file-pdf mr-1"></i> Invoice
+                                </a>
+                                {% endif %}
+                                {% if order.status == 'pending' or order.status == 'processing' %}
+                                <button class="btn btn-outline-danger btn-action mb-2 cancel-order-btn"
+                                    data-order-id="{{ order.id }}">
+                                    <i class="fas fa-times-circle mr-1"></i> Cancel Order
+                                </button>
+                                {% endif %}
+
+                                {% set is_returnable = false %}
+                                {% for qty in order.product_quantities_list %}
+                                {% set available = qty|int - order.returned_quantities_list[loop.index0]|int %}
+                                {% if available > 0 %}
+                                {% set is_returnable = true %}
+                                {% endif %}
+                                {% endfor %}
+
+                                {% set has_active_return = order.return_status in ['requested', 'approved',
+                                'processing'] %}
+                                {% if (order.status == 'delivered' or order.status == 'refunded' or order.status ==
+                                'partial refunded' or order.status == 'returned') and is_returnable %}
+                                <button
+                                    class="btn btn-outline-warning btn-action return-order-btn{% if has_active_return %} btn-return-disabled{% endif %}"
+                                    {% if has_active_return %}disabled
+                                    title="Return request already raised and is being processed." {% endif %}
+                                    data-order-id="{{ order.id }}"
+                                    data-product-ids="{{ order.product_ids_list|join(',') }}"
+                                    data-product-names="{{ order.product_names_list|join('|') }}"
+                                    data-product-images="{{ order.product_images_list|join(',') }}"
+                                    data-product-quantities="{{ order.product_quantities_list|join(',') }}"
+                                    data-returned-quantities="{{ order.returned_quantities_list|join(',') }}">
+                                    <i class="fas fa-undo mr-1"></i> {% if has_active_return %}Return Pending Approval{%
+                                    else %}Return Items{% endif %}
+                                </button>
+                                {% endif %}
+
+                                {% if order.return_amount and order.return_amount > 0 %}
+                                <div class="mt-3 p-3 bg-light rounded text-left"
+                                    style="border-left: 4px solid #a64d79;">
+                                    <div class="d-flex justify-content-between align-items-center mb-1">
+                                        <span class="small font-weight-bold text-muted">REFUNDED AMOUNT</span>
+                                        <span class="badge badge-success" style="background-color: #28a745;">₹{{
+                                            "%.2f"|format(order.return_amount) }}</span>
+                                    </div>
+                                    <div class="d-flex justify-content-between align-items-center mb-1">
+                                        <span class="small font-weight-bold text-muted">REFUND DATE</span>
+                                        <span class="small">{{ order.returned_at.strftime('%d %B, %Y') if
+                                            order.returned_at else 'Processing' }}</span>
+                                    </div>
+                                    {% if order.return_remarks %}
+                                    <div class="mt-2 small text-muted">
+                                        <strong>Note:</strong> {{ order.return_remarks }}
+                                    </div>
+                                    {% endif %}
+                                </div>
+                                {% elif order.return_status %}
+                                <div class="mt-3 p-3 bg-light rounded text-left"
+                                    style="border-left: 4px solid #ffc107;">
+                                    <div class="d-flex justify-content-between align-items-center mb-1">
+                                        <span class="small font-weight-bold text-muted">RETURN STATUS</span>
+                                        <span class="badge badge-warning text-dark">{{ order.return_status|upper
+                                            }}</span>
+                                    </div>
+                                    {% if order.return_remarks %}
+                                    <div class="mt-2 small text-muted">
+                                        <strong>Remarks:</strong> {{ order.return_remarks }}
+                                    </div>
+                                    {% endif %}
+                                </div>
+                                {% endif %}
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+            {% endfor %}
+            {% else %}
+            <div class="text-center py-5 reveal">
+                <div class="bg-light rounded-circle d-flex align-items-center justify-content-center mx-auto mb-4"
+                    style="width: 100px; height: 100px;">
+                    <i class="fas fa-shopping-bag fa-3x text-muted"></i>
+                </div>
+                <h3 class="font-weight-bold">No orders found</h3>
+                <p class="text-muted">You haven't placed any orders yet. Let's find something special for you.</p>
+                <a href="{{ url_for('shop_bp.shop') }}" class="btn btn-primary rounded-pill px-5 py-3 mt-3">Start Shopping</a>
+            </div>
+            {% endif %}
+        </div>
+    </div>
+</div>
+
+<!-- Cancel Order Modal (Premium) -->
+<div class="modal fade" id="cancelOrderModal" tabindex="-1" role="dialog">
+    <div class="modal-dialog modal-dialog-centered" role="document">
+        <div class="modal-content border-0 shadow-lg" style="border-radius: 24px; overflow: hidden;">
+            <div class="modal-header border-0 p-4 pb-0 flex-column align-items-center position-relative">
+                <button type="button" class="close position-absolute" data-dismiss="modal" style="top: 20px; right: 20px;"><span>&times;</span></button>
+                <div class="mb-3 d-flex align-items-center justify-content-center bg-light text-danger rounded-circle" style="width: 70px; height: 70px;">
+                    <i class="fas fa-exclamation-triangle fa-2x"></i>
+                </div>
+                <h4 class="modal-title font-weight-bold text-center w-100 mb-1" style="color: #2c3e50;">Cancel Order</h4>
+                <p class="text-muted text-center small mb-0 px-3">We're sorry to see you cancel. Please let us know why.</p>
+            </div>
+            <div class="modal-body p-4 pt-3">
+                <form id="cancelOrderForm">
+                    <input type="hidden" id="cancelOrderId" name="order_id">
+                    
+                    <div class="form-group mb-3">
+                        <label class="small font-weight-bold text-muted">Reason for Cancellation</label>
+                        <select class="form-control bg-light border-0" id="cancelReasonSelect" required style="border-radius: 12px; height: 45px;">
+                            <option value="" disabled selected>Select a reason...</option>
+                            <option value="Changed my mind">Changed my mind</option>
+                            <option value="Ordered by mistake">Ordered by mistake</option>
+                            <option value="Found a better price elsewhere">Found a better price elsewhere</option>
+                            <option value="Shipping takes too long">Shipping takes too long</option>
+                            <option value="Other">Other</option>
+                        </select>
+                    </div>
+
+                    <div class="form-group mb-0" id="cancelReasonTextGroup">
+                        <label class="small font-weight-bold text-muted">Additional Remarks (Optional)</label>
+                        <textarea class="form-control bg-light border-0" id="cancelReasonText" rows="2"
+                            placeholder="Please tell us more..."
+                            style="border-radius: 12px; resize: none;"></textarea>
+                    </div>
+                </form>
+            </div>
+            <div class="modal-footer border-0 p-4 pt-0 d-flex justify-content-between gap-2">
+                <button type="button" class="btn btn-light rounded-pill px-4 flex-grow-1" data-dismiss="modal" style="font-weight: 600;">Keep Order</button>
+                <button type="button" class="btn btn-danger rounded-pill px-4 flex-grow-1 d-flex align-items-center justify-content-center" id="confirmCancel" style="font-weight: 600;">
+                    <span class="btn-text">Cancel Order</span>
+                    <span class="spinner-border spinner-border-sm ml-2 d-none" role="status" aria-hidden="true"></span>
+                </button>
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- Return Order Modal -->
+<div class="modal fade" id="returnOrderModal" tabindex="-1" role="dialog">
+    <div class="modal-dialog modal-dialog-centered" role="document">
+        <div class="modal-content border-0 shadow-lg" style="border-radius: 20px;">
+            <div class="modal-header border-0 p-4">
+                <h5 class="modal-title font-weight-bold">Request Return</h5>
+                <button type="button" class="close" data-dismiss="modal"><span>&times;</span></button>
+            </div>
+            <div class="modal-body p-4 pt-0">
+                <form id="returnOrderForm" enctype="multipart/form-data">
+                    <input type="hidden" id="returnOrderId" name="order_id">
+                    <input type="hidden" name="csrf_token" value="{{ csrf_token() }}">
+                    <div id="returnItemsList" class="mb-4">
+                        <label class="small font-weight-bold mb-2">Select Items to Return</label>
+                        <div class="list-group list-group-flush border rounded"
+                            style="max-height: 250px; overflow-y: auto;">
+                            <!-- Items will be populated here via JS -->
+                        </div>
+                    </div>
+                    <div class="form-group mb-3">
+                        <label class="small font-weight-bold">Reason for Return</label>
+                        <select class="form-control bg-light border-0" name="return_reason" required
+                            style="border-radius: 12px;">
+                            <option value="">Select a reason</option>
+                            <option value="Damaged Product">Damaged Product</option>
+                            <option value="Wrong Item Received">Wrong Item Received</option>
+                            <option value="Quality not as expected">Quality not as expected</option>
+                            <option value="Changed my mind">Changed my mind</option>
+                            <option value="Other">Other</option>
+                        </select>
+                    </div>
+                    <div class="form-group mb-3">
+                        <label class="small font-weight-bold">Additional Remarks</label>
+                        <textarea class="form-control bg-light border-0" name="remarks" rows="3"
+                            placeholder="Explain the issue..." style="border-radius: 12px;"></textarea>
+                    </div>
+                    <div class="form-group">
+                        <label class="small font-weight-bold">Evidence Photos (Optional)</label>
+                        <input type="file" class="form-control-file" name="evidence" multiple>
+                    </div>
+                </form>
+            </div>
+            <div class="modal-footer border-0 p-4 pt-0">
+                <button type="button" class="btn btn-light rounded-pill px-4" data-dismiss="modal">Cancel</button>
+                <button type="button" class="btn btn-primary rounded-pill px-4" id="confirmReturn">Submit
+                    Request</button>
+            </div>
+        </div>
+    </div>
+</div>
+
+
+<!-- Change Password Modal -->
+<div class="modal fade" id="changePasswordModal" tabindex="-1" role="dialog">
+    <div class="modal-dialog modal-dialog-centered" role="document">
+        <div class="modal-content border-0 shadow-lg" style="border-radius: 24px; overflow: hidden;">
+            <div class="modal-header border-0 p-4 pb-0 flex-column align-items-center position-relative">
+                <button type="button" class="close position-absolute" data-dismiss="modal" style="top: 20px; right: 20px;"><span>&times;</span></button>
+                <div class="mb-3 d-flex align-items-center justify-content-center bg-light text-primary rounded-circle" style="width: 70px; height: 70px;">
+                    <i class="fas fa-shield-alt fa-2x"></i>
+                </div>
+                <h4 class="modal-title font-weight-bold text-center w-100 mb-1" style="color: #2c3e50;">Change Password</h4>
+                <p class="text-muted text-center small mb-0 px-3">Ensure your account stays secure.</p>
+            </div>
+                        <div class="modal-body p-4 pt-3">
+                <form id="changePasswordForm">
+                    <input type="hidden" name="csrf_token" value="{{ csrf_token() }}">
+                    
+                    <div class="form-group mb-3">
+                        <label class="small font-weight-bold text-muted">Current Password</label>
+                        <div class="input-group" style="border-radius: 12px; overflow: hidden; background: #f8f9fa;">
+                            <input type="password" id="cp_current" name="current_password" class="form-control bg-light border-0" placeholder="Enter current password" required style="height: 45px; box-shadow: none;">
+                            <div class="input-group-append bg-light border-0">
+                                <span class="input-group-text bg-transparent border-0 toggle-password" style="cursor: pointer; color: #6c757d; transition: 0.3s;" onmouseover="this.style.color='#a64d79'" onmouseout="this.style.color='#6c757d'">
+                                    <i class="fas fa-eye"></i>
+                                </span>
+                            </div>
+                        </div>
+                    </div>
+
+                    <div class="form-group mb-3">
+                        <label class="small font-weight-bold text-muted">New Password</label>
+                        <div class="input-group" style="border-radius: 12px; overflow: hidden; background: #f8f9fa;">
+                            <input type="password" id="cp_new" name="new_password" class="form-control bg-light border-0" placeholder="Enter new password (min 8 chars)" required minlength="8" style="height: 45px; box-shadow: none;">
+                            <div class="input-group-append bg-light border-0">
+                                <span class="input-group-text bg-transparent border-0 toggle-password" style="cursor: pointer; color: #6c757d; transition: 0.3s;" onmouseover="this.style.color='#a64d79'" onmouseout="this.style.color='#6c757d'">
+                                    <i class="fas fa-eye"></i>
+                                </span>
+                            </div>
+                        </div>
+                        <small class="form-text text-muted mt-2" style="font-size: 0.75rem;"><i class="fas fa-info-circle mr-1"></i> Use a mix of letters, numbers, and symbols.</small>
+                    </div>
+
+                    <div class="form-group mb-0">
+                        <label class="small font-weight-bold text-muted">Confirm New Password</label>
+                        <div class="input-group" style="border-radius: 12px; overflow: hidden; background: #f8f9fa;">
+                            <input type="password" id="cp_confirm" name="confirm_password" class="form-control bg-light border-0" placeholder="Confirm new password" required minlength="8" style="height: 45px; box-shadow: none;">
+                            <div class="input-group-append bg-light border-0">
+                                <span class="input-group-text bg-transparent border-0 toggle-password" style="cursor: pointer; color: #6c757d; transition: 0.3s;" onmouseover="this.style.color='#a64d79'" onmouseout="this.style.color='#6c757d'">
+                                    <i class="fas fa-eye"></i>
+                                </span>
+                            </div>
+                        </div>
+                    </div>
+                </form>
+            </div>
+            <div class="modal-footer border-0 p-4 pt-0 d-flex justify-content-between gap-2">
+                <button type="button" class="btn btn-light rounded-pill px-4 flex-grow-1" data-dismiss="modal" style="font-weight: 600;">Cancel</button>
+                <button type="button" class="btn btn-primary rounded-pill px-4 flex-grow-1 d-flex align-items-center justify-content-center" id="confirmChangePassword" style="font-weight: 600; background: #a64d79; border-color: #a64d79;">
+                    <span class="btn-text">Update Password</span>
+                    <span class="spinner-border spinner-border-sm ml-2 d-none" role="status" aria-hidden="true"></span>
+                </button>
+            </div>
+        </div>
+    </div>
+</div>
+
+
+{% endblock %}
+
+{% block scripts %}
+{{ super() }}
+<script>
+    $(document).ready(function () {
+        // Password Visibility Toggle Logic
+        $('.toggle-password').click(function() {
+            const icon = $(this).find('i');
+            icon.toggleClass('fa-eye fa-eye-slash');
+            
+            const input = $(this).closest('.input-group').find('input');
+            if (input.attr('type') === 'password') {
+                input.attr('type', 'text');
+                $(this).css('color', '#a64d79');
+            } else {
+                input.attr('type', 'password');
+                $(this).css('color', '#6c757d');
+            }
+        });
+
+        // Change Password Modal Logic
+        $('.change-password-trigger').click(function(e) {
+            e.preventDefault();
+            $('#changePasswordForm')[0].reset();
+            $('#changePasswordModal').modal('show');
+        });
+
+        $('#confirmChangePassword').click(function() {
+            const current = $('#cp_current').val();
+            const new_pass = $('#cp_new').val();
+            const confirm_pass = $('#cp_confirm').val();
+
+            if (!current || !new_pass || !confirm_pass) {
+                showToast('warning', 'All fields are required.');
+                return;
+            }
+            if (new_pass !== confirm_pass) {
+                showToast('warning', 'New passwords do not match.');
+                return;
+            }
+            if (new_pass.length < 8) {
+                showToast('warning', 'Password must be at least 8 characters.');
+                return;
+            }
+
+            const btn = $(this);
+            const originalText = btn.find('.btn-text').text();
+            
+            btn.prop('disabled', true);
+            btn.find('.btn-text').text('Updating...');
+            btn.find('.spinner-border').removeClass('d-none');
+
+            const formData = new FormData($('#changePasswordForm')[0]);
+
+            $.ajax({
+                url: '{{ url_for("user_bp.change_password") }}',
+                method: 'POST',
+                processData: false,
+                contentType: false,
+                data: formData,
+                success: function(data) {
+                    if (data.success) {
+                        showToast('success', data.message);
+                        $('#changePasswordModal').modal('hide');
+                    } else {
+                        showToast('error', data.message || 'Error updating password');
+                    }
+                    btn.prop('disabled', false);
+                    btn.find('.btn-text').text(originalText);
+                    btn.find('.spinner-border').addClass('d-none');
+                },
+                error: function() {
+                    showToast('error', 'Network error. Please try again.');
+                    btn.prop('disabled', false);
+                    btn.find('.btn-text').text(originalText);
+                    btn.find('.spinner-border').addClass('d-none');
+                }
+            });
+        });
+
+                // Cancel Order Premium Logic
+        $('.cancel-order-btn').click(function () {
+            $('#cancelOrderId').val($(this).data('order-id'));
+            $('#cancelReasonSelect').val('');
+            $('#cancelReasonText').val('');
+            $('#cancelReasonTextGroup').show();
+            $('#cancelOrderModal').modal('show');
+        });
+
+        $('#confirmCancel').click(function () {
+            let reasonSelect = $('#cancelReasonSelect').val();
+            if (!reasonSelect) { showToast('warning', 'Please select a reason for cancellation.'); return; }
+            
+            let finalReason = reasonSelect;
+            let remarks = $('#cancelReasonText').val().trim();
+            if (remarks) {
+                finalReason += " - " + remarks;
+            } else if (reasonSelect === 'Other') {
+                showToast('warning', 'Please provide details for cancellation in the remarks box.'); return;
+            }
+
+            const btn = $(this);
+            const originalText = btn.find('.btn-text').text();
+            
+            // UI Feedback (Loading state)
+            btn.prop('disabled', true);
+            btn.find('.btn-text').text('Processing...');
+            btn.find('.spinner-border').removeClass('d-none');
+
+            const formData = new FormData();
+            formData.append('order_id', $('#cancelOrderId').val());
+            formData.append('reason', finalReason);
+            formData.append('csrf_token', '{{ csrf_token() }}');
+
+            $.ajax({
+                url: '{{ url_for("checkout_bp.cancel_order") }}',
+                method: 'POST',
+                processData: false,
+                contentType: false,
+                data: formData,
+                success: function (data) {
+                    if (data.success) {
+                        showToast('success', 'Order cancelled successfully!');
+                        $('#cancelOrderModal').modal('hide');
+                        setTimeout(() => location.reload(), 1500);
+                    } else {
+                        showToast('error', data.message || 'Error cancelling order');
+                        // Reset button
+                        btn.prop('disabled', false);
+                        btn.find('.btn-text').text(originalText);
+                        btn.find('.spinner-border').addClass('d-none');
+                    }
+                },
+                error: function() {
+                    showToast('error', 'Network error. Please try again.');
+                    // Reset button
+                    btn.prop('disabled', false);
+                    btn.find('.btn-text').text(originalText);
+                    btn.find('.spinner-border').addClass('d-none');
+                }
+            });
+        });
+
+        $('.return-order-btn').click(function () {
+            const orderId = $(this).data('order-id');
+            const productIds = $(this).data('product-ids').toString().split(',');
+            const productNames = $(this).data('product-names').split('|');
+            const productImages = $(this).data('product-images').split(',');
+            const productQuantities = $(this).data('product-quantities').toString().split(',');
+            const returnedQuantities = $(this).data('returned-quantities').toString().split(',');
+
+            $('#returnOrderId').val(orderId);
+            const itemsList = $('#returnItemsList .list-group');
+            itemsList.empty();
+
+            let hasAvailableItems = false;
+            productIds.forEach((id, index) => {
+                const orderedQty = parseInt(productQuantities[index]);
+                const returnedQty = parseInt(returnedQuantities[index]);
+                const availableQty = orderedQty - returnedQty;
+
+                if (availableQty > 0) {
+                    hasAvailableItems = true;
+                    const html = `
+                    <div class="list-group-item d-flex align-items-center py-2 px-3">
+                        <div class="custom-control custom-checkbox mr-3">
+                            <input type="checkbox" class="custom-control-input item-checkbox" id="item_${id}" name="item_ids" value="${id}">
+                            <label class="custom-control-label" for="item_${id}"></label>
+                        </div>
+                        <img src="/static/img/thumbs/${productImages[index]}" alt="Product Image" class="rounded mr-3" style="width: 40px; height: 50px; object-fit: cover;">
+                        <div class="flex-grow-1 overflow-hidden">
+                            <h6 class="mb-0 text-truncate small font-weight-bold">${productNames[index]}</h6>
+                            <div class="d-flex align-items-center mt-1">
+                                <span class="small text-muted mr-2">Qty to Return:</span>
+                                <input type="number" class="form-control form-control-sm item-qty" name="qty_${id}" value="${availableQty}" min="1" max="${availableQty}" disabled style="width: 60px; height: 24px; padding: 0 5px;">
+                                <span class="small text-muted ml-2">(Max ${availableQty})</span>
+                            </div>
+                        </div>
+                    </div>
+                `;
+                    itemsList.append(html);
+                }
+            });
+
+            if (!hasAvailableItems) {
+                showToast('info', 'All items in this order have already been returned or are being processed.');
+                return;
+            }
+
+            $('#returnOrderModal').modal('show');
+        });
+
+        // Enable/disable quantity input based on checkbox
+        $(document).on('change', '.item-checkbox', function () {
+            const id = $(this).val();
+            $(`input[name="qty_${id}"]`).prop('disabled', !$(this).is(':checked'));
+        });
+
+        $('#confirmReturn').click(function () {
+            const form = document.getElementById('returnOrderForm');
+            const formData = new FormData(form);
+
+            // Check if at least one item is selected
+            const selectedItems = $('.item-checkbox:checked');
+            if (selectedItems.length === 0) {
+                showToast('warning', 'Please select at least one item to return');
+                return;
+            }
+
+            // Validate quantities
+            let qtyValid = true;
+            selectedItems.each(function () {
+                const id = $(this).val();
+                const qtyInput = $(`input[name="qty_${id}"]`);
+                const qty = parseInt(qtyInput.val());
+                const max = parseInt(qtyInput.attr('max'));
+                if (qty > max || qty <= 0 || isNaN(qty)) {
+                    showToast('error', 'Invalid quantity selected for ' + $(this).closest('.list-group-item').find('h6').text());
+                    qtyValid = false;
+                    return false;
+                }
+            });
+            if (!qtyValid) return;
+
+            // Reason check
+            if (!$('select[name="return_reason"]').val()) {
+                showToast('warning', 'Please select a reason for return');
+                return;
+            }
+
+            $.ajax({
+                url: '{{ url_for("checkout_bp.request_return") }}',
+                method: 'POST',
+                processData: false,
+                contentType: false,
+                data: formData,
+                success: function (data) {
+                    if (data.success) {
+                        showToast('success', 'Return request submitted successfully');
+                        $('#returnOrderModal').modal('hide');
+                        setTimeout(() => location.reload(), 2000);
+                    } else {
+                        showToast('error', data.message || 'Error submitting return request');
+                    }
+                },
+                error: function () {
+                    showToast('error', 'An error occurred while processing your request.');
+                }
+            });
+        });
+    });
+</script>
+{% endblock %}

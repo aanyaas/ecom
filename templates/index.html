@@ -1,0 +1,401 @@
+{% extends "base.html" %}
+
+{% block title %}Handmade Jewellery & Handicrafts{% endblock %}
+
+{% block styles %}
+{{ super() }}
+<link href="{{ url_for('static', filename='css/home.css') }}" rel="stylesheet">
+{% endblock %}
+
+{% block carousel %}
+<div id="header-carousel" class="carousel slide carousel-fade" data-ride="carousel">
+    <div class="carousel-inner">
+        {% for banner in ui_banners %}
+        <div class="carousel-item {% if loop.first %}active{% endif %}">
+            {% if banner.is_video %}
+            <video autoplay muted playsinline class="w-100 h-100" style="object-fit: cover;" width="1920" height="850">
+                <source src="{{ url_for('static', filename=banner.media_path) }}" type="video/webm">
+            </video>
+            {% else %}
+            <img src="{{ url_for('static', filename=banner.media_path) }}" alt="{{ banner.title }}" class="w-100 h-100"
+                style="object-fit: cover;" width="1920" height="850">
+            {% endif %}
+            <div class="carousel-caption">
+                <h4>{{ banner.title }}</h4>
+                <h3>{{ banner.subtitle }}</h3>
+                <a href="{{ banner.link_url }}" class="btn btn-primary">Discover More</a>
+            </div>
+        </div>
+        {% else %}
+        <div class="carousel-item active">
+            <div class="carousel-caption">
+                <h4>Welcome to {{ company_name }}</h4>
+                <h3>Discover the beauty of artisan-crafted jewelry</h3>
+            </div>
+        </div>
+        {% endfor %}
+    </div>
+    <div class="carousel-nav">
+        <a class="carousel-control-prev" href="#header-carousel" data-slide="prev"><i
+                class="fa fa-chevron-left"></i></a>
+        <a class="carousel-control-next" href="#header-carousel" data-slide="next"><i
+                class="fa fa-chevron-right"></i></a>
+    </div>
+</div>
+{% endblock %}
+
+{% block content %}
+<!-- Featured Start -->
+<div class="container-fluid pt-5">
+    <div class="row px-xl-5 pb-3">
+        <div class="col-lg-3 col-md-6 col-sm-12 pb-1">
+            <div class="feature-box d-flex align-items-center mb-4">
+                <h1 class="fa fa-shipping-fast text-primary m-0 mr-3"></h1>
+                <h5 class="font-weight-semi-bold m-0">Free Shipping *</h5>
+            </div>
+        </div>
+        <div class="col-lg-3 col-md-6 col-sm-12 pb-1">
+            <div class="feature-box d-flex align-items-center mb-4">
+                <h1 class="fa fa-check text-primary m-0 mr-3"></h1>
+                <h5 class="font-weight-semi-bold m-0">Quality Product</h5>
+            </div>
+        </div>
+        <div class="col-lg-3 col-md-6 col-sm-12 pb-1">
+            <div class="feature-box d-flex align-items-center mb-4">
+                <h1 class="fas fa-exchange-alt text-primary m-0 mr-3"></h1>
+                <h5 class="font-weight-semi-bold m-0">2-Day Return</h5>
+            </div>
+        </div>
+        <div class="col-lg-3 col-md-6 col-sm-12 pb-1">
+            <div class="feature-box d-flex align-items-center mb-4">
+                <h1 class="fa fa-phone-volume text-primary m-0 mr-3"></h1>
+                <h5 class="font-weight-semi-bold m-0">Free Support</h5>
+            </div>
+        </div>
+    </div>
+</div>
+<!-- Featured End -->
+
+<!-- Categories Start -->
+<div class="container-fluid pt-5">
+    <div class="row px-xl-5 pb-3 justify-content-center">
+        {% for cat_obj in ui_featured_categories %}
+        {% set cat_slug = cat_obj.slug if cat_obj is mapping else cat_obj %}
+        {% set cat_image = cat_obj.image if cat_obj is mapping else 'img/cat-' ~ loop.index ~ '.jpg' %}
+        <div class="col-lg-3 col-md-4 col-sm-6 pb-1">
+            <div class="cat-item">
+                <a href="{{ url_for('shop_bp.shop') }}?category={{ cat_slug }}" class="cat-img">
+                    <img src="{{ url_for('static', filename=cat_image) }}" alt="{{ cat_slug|capitalize }} collection"
+                        width="450" height="450" loading="lazy" onerror="this.src='/static/img/placeholder.png'">
+                    <div class="cat-overlay"></div>
+                    <div class="cat-info">
+                        <h5>{{ cat_slug|replace('-', ' ')|title }}</h5>
+                    </div>
+                </a>
+            </div>
+        </div>
+        {% endfor %}
+    </div>
+</div>
+<!-- Categories End -->
+
+<!-- Offer Start -->
+<div class="container-fluid reveal section-padding">
+    <div class="row px-xl-5">
+        {% for offer in ui_offers %}
+        <div class="col-md-6 mb-4">
+            <div class="offer-block" {{
+                ('style="background-image: url(\'' ~ url_for('static', filename=offer.bg_image) ~ '\');"')|safe }}>
+                <div class="offer-overlay"></div>
+                <div class="offer-content text-{{ offer.align|default(' center') }}">
+                <h5>{{ offer.subtitle }}</h5>
+                <h1>{{ offer.title }}</h1>
+                <p class="mb-4">{{ offer.text }}</p>
+                <a href="{{ offer.link_url }}" class="btn btn-primary">Shop Now</a>
+            </div>
+        </div>
+    </div>
+    {% endfor %}
+</div>
+</div>
+<!-- Offer End -->
+
+<!-- Products Start -->
+<div class="container-fluid pt-5">
+    <div class="text-center mb-5">
+        <div class="section-title">
+            <h2>What's New</h2>
+        </div>
+    </div>
+    <div class="row px-xl-5 pb-3">
+        {% for product in products %}
+        <div class="col-lg-3 col-md-4 col-sm-6 pb-1 reveal">
+            <div class="card product-item border-0">
+                <div class="card-header product-img position-relative overflow-hidden bg-transparent p-0">
+                    <a href="{{ url_for('shop_bp.detail', product_id=product.id) }}">
+                        <img src="{{ url_for('static', filename='img/thumbs/' ~ product.image|default('default.jpg')) }}"
+                            alt="{{ product.name }}" loading="lazy" width="320" height="320">
+                    </a>
+                    {% if product.discount %}
+                    <div class="product-discount-badge">
+                        <span>-{{ product.discount }}%</span>
+                    </div>
+                    {% endif %}
+                    {% if product.stock_quantity <= 0 %} <div class="product-soldout-badge">
+                        <span>SOLD OUT</span>
+                </div>
+                {% endif %}
+                <div class="product-action">
+                    <a class="btn" href="{{ url_for('shop_bp.detail', product_id=product.id) }}"
+                        aria-label="View product"><i class="fa fa-eye"></i></a>
+                    <button class="btn add-to-wishlist-btn" onclick="addToWishlist('{{ product.id }}')"
+                        aria-label="Add to Wishlist">
+                        <i
+                            class="{% if product.id in wishlist_product_ids %}fas text-danger{% else %}far{% endif %} fa-heart"></i>
+                    </button>
+                    {% if product.stock_quantity > 0 %}
+                    {% if product.id not in cart_product_ids %}
+                    <button class="btn add-to-cart-btn" data-product-id="{{ product.id }}">
+                        <i class="fa fa-shopping-bag"></i>
+                    </button>
+                    {% else %}
+                    <a href="{{ url_for('cart_bp.cart') }}" class="btn"
+                        style="background: #a64d79; color: #fff; border-color: #a64d79;">
+                        <i class="fa fa-check"></i>
+                    </a>
+                    {% endif %}
+                    {% endif %}
+                </div>
+            </div>
+            <div class="card-body product-details">
+                <a href="{{ url_for('shop_bp.detail', product_id=product.id) }}"
+                    class="product-name-link text-truncate d-block">{{ product.name }}</a>
+                <div class="d-flex align-items-baseline">
+                    <span class="price-tag">₹{{ product.price }}</span>
+                    {% if product.mrp > product.price %}
+                    <del class="text-muted small ml-2">₹{{ product.mrp }}</del>
+                    {% endif %}
+                </div>
+            </div>
+        </div>
+    </div>
+    {% endfor %}
+</div>
+</div>
+<!-- Products End -->
+<!-- Instagram Section Start -->
+<div class="container-fluid instagram-section reveal pt-5">
+    <div class="text-center mb-5">
+        <h2 class="font-weight-bold" style="letter-spacing: 2px; text-transform: uppercase; font-size: 1.8rem;">Follow
+            Us on Instagram</h2>
+        <div style="width: 60px; height: 3px; background: #a64d79; margin: 15px auto;"></div>
+    </div>
+    <div id="instagram-feed-container" class="instagram-grid px-xl-5">
+        <!-- Feed items will be loaded here via AJAX -->
+        <div class="col-12 text-center py-4">
+            <div class="spinner-border text-primary" role="status">
+                <span class="sr-only">Loading Instagram feed...</span>
+            </div>
+        </div>
+    </div>
+</div>
+<!-- Instagram Section End -->
+
+<!-- Lightbox Overlay -->
+<div id="testimonialLightbox" class="lightbox-overlay">
+    <img class="lightbox-content" id="lightboxImage">
+</div>
+
+<!-- Testimonials Start -->
+<div class="container-fluid py-5" style="background: linear-gradient(135deg, #fff8f5 0%, #fdf0f8 100%);">
+    <div class="text-center mb-4">
+        <h2 class="section-title px-5"><span class="px-2">Let Customers Speak For Us</span></h2>
+        <p class="text-muted mt-2">Real stories from our happy customers.</p>
+    </div>
+    <div class="row px-xl-5">
+        {% if testimonials %}
+        <div class="col">
+            <div class="owl-carousel vendor-carousel">
+                {% for t in testimonials %}
+                <div class="vendor-item p-4"
+                    style="background:#fff; border-radius:18px; border:1px solid rgba(186,98,134,0.12); box-shadow:0 6px 20px rgba(0,0,0,0.05);">
+                    {% if t.customer_photo %}
+                    <div class="testimonial-img-wrapper"
+                        data-photo="{{ url_for('static', filename='img/testimonials/' + t.customer_photo) }}"
+                        onclick="openLightbox($(this).data('photo'))">
+                        <img src="{{ url_for('static', filename='img/testimonials/' + t.customer_photo) }}"
+                            alt="Customer photo" width="80" height="80" loading="lazy">
+                    </div>
+                    {% endif %}
+                    <!-- Stars -->
+                    <div class="mb-2" style="color:#f5a623; font-size:0.9rem;">
+                        {% for i in range(1, 6) %}
+                        {% if i <= t.rating %}<i class="fas fa-star"></i>{% else %}<i class="far fa-star"></i>{% endif
+                            %}
+                            {% endfor %}
+                    </div>
+                    <!-- Feedback text -->
+                    <p class="mb-3" style="font-style:italic; color:#4a3f38; font-size:0.9rem; line-height:1.6;">"{{
+                        t.feedback[:180] }}{% if t.feedback|length > 180 %}...{% endif %}"</p>
+                    <!-- Customer info -->
+                    <div class="d-flex align-items-center">
+                        <div
+                            style="width:38px;height:38px;border-radius:50%;background:linear-gradient(135deg,#ba6286,#e2956a);display:flex;align-items:center;justify-content:center;color:#fff;font-weight:700;font-size:1rem;flex-shrink:0;">
+                            {{ t.customer_name[0]|upper }}
+                        </div>
+                        <div class="ml-2">
+                            <div style="font-weight:600;font-size:0.85rem;color:#2f2a26;">{{ t.customer_name }}</div>
+                            {% if t.city %}<div style="font-size:0.75rem;color:#9b8a80;">{{ t.city }}</div>{% endif %}
+                        </div>
+                    </div>
+                </div>
+                {% endfor %}
+            </div>
+        </div>
+        {% else %}
+        <div class="col text-center py-4">
+            <p class="text-muted">No testimonials yet. <a href="{{ url_for('pages_bp.testimonials') }}">Be the first to
+                    share
+                    your experience!</a></p>
+        </div>
+        {% endif %}
+    </div>
+    <div class="text-center mt-4">
+        <a href="{{ url_for('pages_bp.testimonials') }}" class="btn px-4 py-2"
+            style="background:linear-gradient(135deg,#ba6286,#d4786a);color:#fff;border-radius:50px;font-weight:600;">
+            <i class="fas fa-comments mr-2"></i>Share Your Experience
+        </a>
+    </div>
+</div>
+<!-- Testimonials End -->
+
+{% endblock %}
+
+{% block scripts %}
+{{ super() }}
+<script>
+
+    // ===== MANUAL CAROUSEL INITIALIZATION =====
+    $(document).ready(function () {
+        var $carousel = $('#header-carousel');
+        $carousel.carousel({
+            interval: 4000,
+            ride: 'carousel'
+        });
+
+        // Dynamically handle video slides
+        function handleVideo(slide) {
+            var $video = $(slide).find('video');
+            if ($video.length > 0) {
+                $carousel.carousel('pause'); // Pause standard interval
+                var videoEl = $video[0];
+
+                videoEl.onended = function () {
+                    $carousel.carousel('next');
+                };
+
+                // Fallback using timeupdate for some browsers/formats
+                videoEl.ontimeupdate = function () {
+                    if (videoEl.duration > 0 && videoEl.currentTime >= videoEl.duration - 0.2) {
+                        videoEl.ontimeupdate = null; // prevent multiple triggers
+                        $carousel.carousel('next');
+                    }
+                };
+
+                try { videoEl.currentTime = 0; } catch (e) { }
+
+                var playPromise = videoEl.play();
+                if (playPromise !== undefined) {
+                    playPromise.catch(function (error) {
+                        // If autoplay blocked, move on after standard interval
+                        setTimeout(function () { $carousel.carousel('next'); }, 4000);
+                    });
+                }
+            } else {
+                $carousel.carousel('cycle');
+            }
+        }
+
+        // Trigger on slide change
+        $carousel.on('slid.bs.carousel', function (e) {
+            handleVideo(e.relatedTarget);
+        });
+
+        // Trigger for the initial active slide
+        handleVideo($carousel.find('.carousel-item.active'));
+
+        // Apply data-bg backgrounds (offer blocks & swatches)
+        $('[data-bg]').each(function () {
+            $(this).css('background-image', "url('" + $(this).data('bg') + "')");
+        });
+    });
+
+    // Lightbox functions
+    window.openLightbox = function (src) {
+        $('#lightboxImage').attr('src', src);
+        $('#testimonialLightbox').css('display', 'flex').hide().fadeIn(300);
+        $('body').css('overflow', 'hidden');
+    };
+
+    $('#testimonialLightbox').on('click', function () {
+        $(this).fadeOut(300);
+        $('body').css('overflow', 'auto');
+    });
+
+    // Instagram Feed Dynamic Loading
+    function loadInstagramFeed() {
+        const container = $('#instagram-feed-container');
+        $.ajax({
+            url: "/api/instagram",
+            method: "GET",
+            success: function (response) {
+                if (response.success && response.data && response.data.length > 0) {
+                    container.empty();
+                    response.data.forEach(item => {
+                        const mediaUrl = item.media_type === 'VIDEO' ? item.thumbnail_url : item.media_url;
+                        const isVideo = item.media_type === 'VIDEO';
+                        const videoIcon = isVideo ? '<div class="insta-video-icon"><i class="fas fa-play-circle"></i></div>' : '';
+
+                        const html = `
+                            <div class="instagram-item shadow-sm" onclick="window.open('${item.permalink}', '_blank')">
+                                ${videoIcon}
+                                <img src="${mediaUrl}" alt="Instagram post" loading="lazy">
+                                <div class="instagram-overlay">
+                                    <i class="fab fa-instagram"></i>
+                                </div>
+                            </div>
+                        `;
+                        container.append(html);
+                    });
+                } else {
+                    showInstaFallback();
+                }
+            },
+            error: function () {
+                showInstaFallback();
+            }
+        });
+    }
+
+    function showInstaFallback() {
+        const container = $('#instagram-feed-container');
+        container.empty().append(`
+            <div class="col-12">
+                <div class="insta-error-state">
+                    <i class="fab fa-instagram fa-3x mb-3" style="color: #ba6286;"></i>
+                    <h5 class="font-weight-bold">See our latest updates on Instagram</h5>
+                    <p class="text-muted small mb-4">Follow us for behind-the-scenes, new arrivals, and styling tips.</p>
+                    <a href="{{ get_config('SOCIAL_INSTAGRAM', '#') }}" target="_blank" class="btn btn-primary px-4">
+                        Follow {{ company_name }} on Instagram
+                    </a>
+                </div>
+            </div>
+        `);
+    }
+
+    // Initialize Instagram feed
+    $(document).ready(function () {
+        loadInstagramFeed();
+    });
+</script>
+{% endblock %}

@@ -1,0 +1,538 @@
+{% extends "admin/base.html" %}
+
+{% block title %}Customer Testimonials - {{ brand_name }}{% endblock %}
+
+{% block styles %}
+<style>
+    /* Premium Glassmorphism Testimonials Overhaul */
+    :root {
+        --glass-bg: rgba(255, 255, 255, 0.85);
+        --glass-border: rgba(255, 255, 255, 0.4);
+        --glass-shadow: 0 10px 30px rgba(0, 0, 0, 0.05);
+        --primary-accent: #a64d79;
+        --secondary-accent: #1a1a2e;
+        --text-dark: #2d3748;
+        --text-muted: #718096;
+    }
+
+    body {
+        background-color: #f4f7f6;
+        background-image:
+            radial-gradient(at 0% 0%, hsla(331, 65%, 85%, 1) 0, transparent 50%),
+            radial-gradient(at 100% 0%, hsla(236, 40%, 85%, 1) 0, transparent 50%);
+        background-attachment: fixed;
+        font-family: 'Inter', sans-serif;
+    }
+
+    @keyframes fadeUp {
+        from {
+            opacity: 0;
+            transform: translateY(20px);
+        }
+
+        to {
+            opacity: 1;
+            transform: translateY(0);
+        }
+    }
+
+    .info-card-luxury {
+        background: var(--glass-bg) !important;
+        backdrop-filter: blur(12px) !important;
+        -webkit-backdrop-filter: blur(12px);
+        border: 1px solid var(--glass-border) !important;
+        border-radius: 24px !important;
+        box-shadow: var(--glass-shadow) !important;
+        overflow: hidden;
+        animation: fadeUp 0.7s ease-out backwards;
+    }
+
+    .testimonial-stats .card {
+        transition: transform 0.3s ease, box-shadow 0.3s ease;
+        border-radius: 24px;
+        background: var(--glass-bg) !important;
+        backdrop-filter: blur(12px) !important;
+        -webkit-backdrop-filter: blur(12px);
+        border: 1px solid var(--glass-border) !important;
+        box-shadow: var(--glass-shadow) !important;
+        animation: fadeUp 0.7s ease-out backwards;
+    }
+
+    .testimonial-stats .card:hover {
+        transform: translateY(-5px);
+        box-shadow: 0 15px 35px rgba(0, 0, 0, 0.1) !important;
+    }
+
+    .stat-icon {
+        width: 50px;
+        height: 50px;
+        border-radius: 16px;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        font-size: 1.5rem;
+    }
+
+    .bg-soft-pending {
+        background-color: rgba(255, 193, 7, 0.15);
+        color: #e0a800;
+    }
+
+    .bg-soft-approved {
+        background-color: rgba(25, 135, 84, 0.15);
+        color: #157347;
+    }
+
+    .bg-soft-rejected {
+        background-color: rgba(220, 53, 69, 0.15);
+        color: #c82333;
+    }
+
+    .nav-pills-custom .nav-link {
+        color: var(--text-muted);
+        font-weight: 600;
+        padding: 10px 20px;
+        border-radius: 12px;
+        margin-right: 10px;
+        transition: all 0.3s;
+    }
+
+    .nav-pills-custom .nav-link.active {
+        background-color: var(--primary-accent);
+        color: #fff;
+        box-shadow: 0 4px 15px rgba(166, 77, 121, 0.4);
+    }
+
+    .nav-pills-custom .nav-link:hover:not(.active) {
+        background-color: rgba(0, 0, 0, 0.05);
+    }
+
+    .testimonial-card {
+        border-radius: 16px;
+        overflow: hidden;
+        border: none;
+        box-shadow: 0 0.125rem 0.25rem rgba(0, 0, 0, 0.075);
+    }
+
+    .star-display {
+        color: #ffc107;
+        font-size: 0.9rem;
+    }
+
+    .feedback-text {
+        font-style: italic;
+        color: var(--text-dark);
+        line-height: 1.6;
+    }
+
+    .admin-testi-thumb {
+        width: 45px;
+        height: 45px;
+        object-fit: cover;
+        border-radius: 12px;
+        cursor: pointer;
+        border: 2px solid #fff;
+        box-shadow: 0 4px 10px rgba(0, 0, 0, 0.1);
+        transition: transform 0.3s cubic-bezier(0.175, 0.885, 0.32, 1.275);
+    }
+
+    .admin-testi-thumb:hover {
+        transform: scale(1.15);
+    }
+
+    .action-btn {
+        width: 35px;
+        height: 35px;
+        border-radius: 10px;
+        display: inline-flex;
+        align-items: center;
+        justify-content: center;
+        transition: all 0.2s ease;
+        border: none;
+    }
+
+    .btn-approve {
+        background: #d1e7dd;
+        color: #0f5132;
+    }
+
+    .btn-approve:hover {
+        background: #198754;
+        color: #fff;
+        transform: translateY(-2px);
+        box-shadow: 0 4px 10px rgba(25, 135, 84, 0.2);
+    }
+
+    .btn-reject {
+        background: #f8d7da;
+        color: #842029;
+    }
+
+    .btn-reject:hover {
+        background: #dc3545;
+        color: #fff;
+        transform: translateY(-2px);
+        box-shadow: 0 4px 10px rgba(220, 53, 69, 0.2);
+    }
+
+    .btn-delete {
+        background: rgba(0, 0, 0, 0.05);
+        color: #6c757d;
+    }
+
+    .btn-delete:hover {
+        background: #333;
+        color: #fff;
+        transform: translateY(-2px);
+        box-shadow: 0 4px 10px rgba(0, 0, 0, 0.2);
+    }
+
+    .table-hover tbody tr {
+        transition: all 0.3s ease;
+    }
+
+    .table-hover tbody tr:hover {
+        background-color: rgba(255, 255, 255, 0.5) !important;
+        transform: scale(1.002);
+        box-shadow: 0 5px 15px rgba(0, 0, 0, 0.03);
+    }
+
+    /* Lightbox */
+    .lightbox-overlay {
+        display: none;
+        position: fixed;
+        top: 0;
+        left: 0;
+        width: 100%;
+        height: 100%;
+        background: rgba(0, 0, 0, 0.85);
+        backdrop-filter: blur(8px);
+        -webkit-backdrop-filter: blur(8px);
+        z-index: 9999;
+        justify-content: center;
+        align-items: center;
+    }
+
+    .lightbox-content {
+        max-width: 80%;
+        max-height: 80%;
+        border-radius: 16px;
+        box-shadow: 0 20px 50px rgba(0, 0, 0, 0.5);
+    }
+</style>
+{% endblock %}
+
+{% block content %}
+<div class="container-fluid">
+    <div class="d-flex justify-content-between align-items-center mb-4 pb-2">
+        <div>
+            <h2 class="h3 font-weight-bold mb-1">Customer Testimonials</h2>
+            <p class="text-muted mb-0">Manage customer feedback and social proof for the storefront.</p>
+        </div>
+        <a href="{{ url_for('pages_bp.testimonials') }}" target="_blank" class="btn btn-outline-primary">
+            <i class="fas fa-external-link-alt mr-2"></i>Public Page
+        </a>
+    </div>
+
+    <!-- Stats Row -->
+    <div class="row testimonial-stats mb-4">
+        <div class="col-xl-4 col-md-6 mb-4">
+            <div class="card info-card-luxury h-100 py-2" style="animation-delay: 0.1s;">
+                <div class="card-body">
+                    <div class="row no-gutters align-items-center">
+                        <div class="col mr-2">
+                            <div class="text-xs font-weight-bold text-warning text-uppercase mb-1">Pending Review</div>
+                            <div class="h3 mb-0 font-weight-bold text-gray-800">{{ pending|length }}</div>
+                        </div>
+                        <div class="col-auto">
+                            <div class="stat-icon bg-soft-pending">
+                                <i class="fas fa-hourglass-half"></i>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+        <div class="col-xl-4 col-md-6 mb-4">
+            <div class="card info-card-luxury h-100 py-2" style="animation-delay: 0.2s;">
+                <div class="card-body">
+                    <div class="row no-gutters align-items-center">
+                        <div class="col mr-2">
+                            <div class="text-xs font-weight-bold text-success text-uppercase mb-1">Approved & Live</div>
+                            <div class="h3 mb-0 font-weight-bold text-gray-800">{{ approved|length }}</div>
+                        </div>
+                        <div class="col-auto">
+                            <div class="stat-icon bg-soft-approved">
+                                <i class="fas fa-check-double"></i>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+        <div class="col-xl-4 col-md-6 mb-4">
+            <div class="card info-card-luxury h-100 py-2" style="animation-delay: 0.3s;">
+                <div class="card-body">
+                    <div class="row no-gutters align-items-center">
+                        <div class="col mr-2">
+                            <div class="text-xs font-weight-bold text-danger text-uppercase mb-1">Rejected</div>
+                            <div class="h3 mb-0 font-weight-bold text-gray-800">{{ rejected|length }}</div>
+                        </div>
+                        <div class="col-auto">
+                            <div class="stat-icon bg-soft-rejected">
+                                <i class="fas fa-times-circle"></i>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Main Content -->
+    <div class="card info-card-luxury mb-4" style="animation-delay: 0.4s;">
+        <div class="card-header bg-transparent border-0 py-4 px-4">
+            <ul class="nav nav-pills nav-pills-custom" id="testimonialTab" role="tablist">
+                <li class="nav-item">
+                    <a class="nav-link active" id="pending-tab-link" data-toggle="pill" href="#pending" role="tab">
+                        Pending <span class="badge badge-pill badge-warning ml-1">{{ pending|length }}</span>
+                    </a>
+                </li>
+                <li class="nav-item">
+                    <a class="nav-link" id="approved-tab-link" data-toggle="pill" href="#approved" role="tab">
+                        Approved
+                    </a>
+                </li>
+                <li class="nav-item">
+                    <a class="nav-link" id="rejected-tab-link" data-toggle="pill" href="#rejected" role="tab">
+                        Rejected
+                    </a>
+                </li>
+            </ul>
+        </div>
+        <div class="card-body p-0">
+            <div class="tab-content" id="testimonialTabContent">
+
+                <!-- PENDING TAB -->
+                <div class="tab-pane fade show active" id="pending" role="tabpanel">
+                    <div class="table-responsive">
+                        <table class="table table-hover align-middle mb-0">
+                            <thead>
+                                <tr>
+                                    <th class="border-top-0 px-4">Customer</th>
+                                    <th class="border-top-0">Rating</th>
+                                    <th class="border-top-0">Feedback</th>
+                                    <th class="border-top-0">Date</th>
+                                    <th class="border-top-0 text-right px-4">Actions</th>
+                                </tr>
+                            </thead>
+                            <tbody>
+                                {% for t in pending %}
+                                <tr>
+                                    <td class="px-4">
+                                        <div class="d-flex align-items-center">
+                                            {% if t.customer_photo %}
+                                            <img src="{{ url_for('static', filename='img/testimonials/' + t.customer_photo) }}"
+                                                class="admin-testi-thumb mr-3" onclick="openLightbox(this.src)">
+                                            {% else %}
+                                            <div
+                                                class="admin-testi-thumb mr-3 bg-light d-flex align-items-center justify-content-center text-muted">
+                                                <i class="fas fa-user"></i>
+                                            </div>
+                                            {% endif %}
+                                            <div>
+                                                <div class="font-weight-bold">{{ t.customer_name }}</div>
+                                                <small class="text-muted">{{ t.city or 'No Location' }}</small>
+                                            </div>
+                                        </div>
+                                    </td>
+                                    <td>
+                                        <div class="star-display">
+                                            {% for i in range(5) %}<i
+                                                class="{% if i < t.rating %}fas{% else %}far{% endif %} fa-star"></i>{%
+                                            endfor %}
+                                        </div>
+                                    </td>
+                                    <td>
+                                        <div class="feedback-text text-truncate" style="max-width: 300px;"
+                                            title="{{ t.feedback }}">
+                                            "{{ t.feedback }}"
+                                        </div>
+                                    </td>
+                                    <td><small class="text-muted">{{ t.created_at.strftime('%d %b, %Y') }}</small></td>
+                                    <td class="text-right px-4">
+                                        <form method="POST"
+                                            action="{{ url_for('admin_bp.admin_approve_testimonial', testimonial_id=t.id) }}"
+                                            class="d-inline">
+                                            <input type="hidden" name="csrf_token" value="{{ csrf_token() }}">
+                                            <input type="hidden" name="action" value="approve">
+                                            <button class="action-btn btn-approve" type="submit" title="Approve">
+                                                <i class="fas fa-check"></i>
+                                            </button>
+                                        </form>
+                                        <form method="POST"
+                                            action="{{ url_for('admin_bp.admin_approve_testimonial', testimonial_id=t.id) }}"
+                                            class="d-inline ml-1">
+                                            <input type="hidden" name="csrf_token" value="{{ csrf_token() }}">
+                                            <input type="hidden" name="action" value="reject">
+                                            <button class="action-btn btn-reject" type="submit" title="Reject">
+                                                <i class="fas fa-times"></i>
+                                            </button>
+                                        </form>
+                                        <form method="POST"
+                                            action="{{ url_for('admin_bp.admin_approve_testimonial', testimonial_id=t.id) }}"
+                                            class="d-inline ml-1">
+                                            <input type="hidden" name="csrf_token" value="{{ csrf_token() }}">
+                                            <input type="hidden" name="action" value="delete">
+                                            <button class="action-btn btn-delete" type="submit" title="Delete"
+                                                onclick="return confirm('Permanently delete?')">
+                                                <i class="fas fa-trash-alt"></i>
+                                            </button>
+                                        </form>
+                                    </td>
+                                </tr>
+                                {% endfor %}
+                                {% if not pending %}
+                                <tr>
+                                    <td colspan="5" class="text-center py-5">
+                                        <img src="{{ url_for('static', filename='admin/img/empty-inbox.svg') }}"
+                                            style="width: 120px; opacity: 0.3;" class="mb-3">
+                                        <p class="text-muted">No pending testimonials to review.</p>
+                                    </td>
+                                </tr>
+                                {% endif %}
+                            </tbody>
+                        </table>
+                    </div>
+                </div>
+
+                <!-- APPROVED TAB -->
+                <div class="tab-pane fade" id="approved" role="tabpanel">
+                    <div class="table-responsive">
+                        <table class="table table-hover align-middle mb-0">
+                            <thead>
+                                <tr>
+                                    <th class="border-top-0 px-4">Customer</th>
+                                    <th class="border-top-0">Rating</th>
+                                    <th class="border-top-0">Feedback</th>
+                                    <th class="border-top-0">Status</th>
+                                    <th class="border-top-0 text-right px-4">Actions</th>
+                                </tr>
+                            </thead>
+                            <tbody>
+                                {% for t in approved %}
+                                <tr>
+                                    <td class="px-4">
+                                        <div class="d-flex align-items-center">
+                                            {% if t.customer_photo %}
+                                            <img src="{{ url_for('static', filename='img/testimonials/' + t.customer_photo) }}"
+                                                class="admin-testi-thumb mr-3" onclick="openLightbox(this.src)">
+                                            {% else %}
+                                            <div
+                                                class="admin-testi-thumb mr-3 bg-light d-flex align-items-center justify-content-center text-muted">
+                                                <i class="fas fa-user"></i>
+                                            </div>
+                                            {% endif %}
+                                            <div>
+                                                <div class="font-weight-bold">{{ t.customer_name }}</div>
+                                                <small class="text-muted">{{ t.city or 'No Location' }}</small>
+                                            </div>
+                                        </div>
+                                    </td>
+                                    <td>
+                                        <div class="star-display">
+                                            {% for i in range(5) %}<i
+                                                class="{% if i < t.rating %}fas{% else %}far{% endif %} fa-star"></i>{%
+                                            endfor %}
+                                        </div>
+                                    </td>
+                                    <td>
+                                        <div class="feedback-text text-truncate" style="max-width: 300px;">"{{
+                                            t.feedback }}"</div>
+                                    </td>
+                                    <td><span class="badge badge-pill bg-soft-approved px-3 py-2">Published</span></td>
+                                    <td class="text-right px-4">
+                                        <form method="POST"
+                                            action="{{ url_for('admin_bp.admin_approve_testimonial', testimonial_id=t.id) }}"
+                                            class="d-inline">
+                                            <input type="hidden" name="csrf_token" value="{{ csrf_token() }}">
+                                            <input type="hidden" name="action" value="reject">
+                                            <button class="btn btn-sm btn-outline-warning rounded-pill px-3"
+                                                type="submit">
+                                                Unpublish
+                                            </button>
+                                        </form>
+                                    </td>
+                                </tr>
+                                {% endfor %}
+                            </tbody>
+                        </table>
+                    </div>
+                </div>
+
+                <!-- REJECTED TAB -->
+                <div class="tab-pane fade" id="rejected" role="tabpanel">
+                    <div class="table-responsive">
+                        <table class="table table-hover align-middle mb-0">
+                            <thead>
+                                <tr>
+                                    <th class="border-top-0 px-4">Customer</th>
+                                    <th class="border-top-0">Rating</th>
+                                    <th class="border-top-0">Reason/Status</th>
+                                    <th class="border-top-0 text-right px-4">Actions</th>
+                                </tr>
+                            </thead>
+                            <tbody>
+                                {% for t in rejected %}
+                                <tr>
+                                    <td class="px-4">
+                                        <div class="font-weight-bold">{{ t.customer_name }}</div>
+                                    </td>
+                                    <td>
+                                        <div class="star-display">
+                                            {% for i in range(5) %}<i
+                                                class="{% if i < t.rating %}fas{% else %}far{% endif %} fa-star"></i>{%
+                                            endfor %}
+                                        </div>
+                                    </td>
+                                    <td><span class="badge badge-pill bg-soft-rejected px-3 py-2">Rejected</span></td>
+                                    <td class="text-right px-4">
+                                        <form method="POST"
+                                            action="{{ url_for('admin_bp.admin_approve_testimonial', testimonial_id=t.id) }}"
+                                            class="d-inline">
+                                            <input type="hidden" name="csrf_token" value="{{ csrf_token() }}">
+                                            <input type="hidden" name="action" value="approve">
+                                            <button class="btn btn-sm btn-success rounded-pill px-3" type="submit">
+                                                Re-Approve
+                                            </button>
+                                        </form>
+                                    </td>
+                                </tr>
+                                {% endfor %}
+                            </tbody>
+                        </table>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- Lightbox Overlay -->
+<div id="testiLightbox" class="lightbox-overlay" onclick="closeLightbox()">
+    <img class="lightbox-content" id="lightboxImg">
+</div>
+
+{% endblock %}
+
+{% block scripts %}
+<script>
+    function openLightbox(src) {
+        document.getElementById('lightboxImg').src = src;
+        document.getElementById('testiLightbox').style.display = 'flex';
+    }
+    function closeLightbox() {
+        document.getElementById('testiLightbox').style.display = 'none';
+    }
+</script>
+{% endblock %}

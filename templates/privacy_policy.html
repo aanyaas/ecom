@@ -1,0 +1,165 @@
+{% extends "base.html" %}
+
+{% block title %}{{ company_name }} - Privacy Policy{% endblock %}
+
+{% block styles %}
+{{ super() }}
+<style>
+    .page-header-luxury {
+        padding: 80px 0 40px;
+        background: #fdfcfd;
+        text-align: center;
+        border-bottom: 1px solid #f0f0f0;
+    }
+
+    .page-header-luxury h1 {
+        font-family: 'Playfair Display', serif;
+        font-weight: 700;
+        font-size: 3rem;
+        color: #1a1a1a;
+        margin-bottom: 15px;
+    }
+
+    .breadcrumb-luxury {
+        display: flex;
+        justify-content: center;
+        align-items: center;
+        gap: 15px;
+        list-style: none;
+        padding: 0;
+        margin: 0;
+        font-size: 0.85rem;
+        text-transform: uppercase;
+        letter-spacing: 2px;
+        font-weight: 600;
+    }
+
+    .breadcrumb-luxury a {
+        color: #999;
+        transition: color 0.3s;
+    }
+
+    .breadcrumb-luxury a:hover {
+        color: #a64d79;
+        text-decoration: none;
+    }
+
+    .breadcrumb-luxury span {
+        color: #1a1a1a;
+    }
+
+    .policy-content {
+        padding: 60px 0 100px;
+        background: #fff;
+    }
+
+    .policy-card {
+        background: #fff;
+        border: 1px solid #f0f0f0;
+        border-radius: 30px;
+        padding: 50px;
+        box-shadow: 0 15px 40px rgba(0,0,0,0.02);
+    }
+
+    .policy-card h4 {
+        font-family: 'Playfair Display', serif;
+        font-weight: 700;
+        color: #a64d79;
+        margin-top: 40px;
+        margin-bottom: 20px;
+        font-size: 1.5rem;
+    }
+    
+    .policy-card h4:first-child {
+        margin-top: 0;
+    }
+
+    .policy-card p, .policy-card ul {
+        font-size: 1.05rem;
+        line-height: 1.8;
+        color: #555;
+    }
+
+    .policy-card ul {
+        padding-left: 20px;
+        margin-bottom: 20px;
+    }
+
+    .policy-card li {
+        margin-bottom: 10px;
+    }
+
+    .policy-card a {
+        color: #a64d79;
+        font-weight: 600;
+        text-decoration: none;
+        border-bottom: 1px solid transparent;
+        transition: all 0.3s;
+    }
+
+    .policy-card a:hover {
+        border-bottom-color: #a64d79;
+    }
+</style>
+{% endblock %}
+
+{% block content %}
+<div class="page-header-luxury">
+    <div class="container reveal">
+        <h1>Privacy Policy</h1>
+        <ul class="breadcrumb-luxury">
+            <li><a href="{{ url_for('pages_bp.home') }}">Home</a></li>
+            <li>/</li>
+            <li><span>Privacy Policy</span></li>
+        </ul>
+    </div>
+</div>
+
+<div class="policy-content">
+    <div class="container">
+        <div class="row">
+            <div class="col-lg-10 mx-auto reveal" data-reveal="bottom">
+                <div class="policy-card">
+                    <p class="lead" style="font-size: 1.2rem; color: #333; margin-bottom: 40px;">At {{ company_name }}, your privacy is of utmost importance to us. We are committed to safeguarding your personal information and ensuring that your experience on our website is secure and enjoyable. This Privacy Policy outlines how we collect, use, and protect your data when you visit or shop at <a href="{{ company_info.website or request.host_url }}">{{ company_info.website or request.host }}</a>.</p>
+
+                    <h4>1. Information We Collect</h4>
+                    <p>When you interact with our website, we may collect the following information:</p>
+                    <ul>
+                        <li><strong>Personal Information:</strong> This includes your name, email address, phone number, and billing or shipping address.</li>
+                        <li><strong>Payment Details:</strong> We do not store your payment information. All transactions are processed securely through trusted, third-party payment gateways.</li>
+                        <li><strong>Browsing Data:</strong> We collect information about your device, browser, and website usage to enhance your shopping experience.</li>
+                    </ul>
+
+                    <h4>2. How We Use Your Information</h4>
+                    <p>We use your information to:</p>
+                    <ul>
+                        <li><strong>Process Your Orders:</strong> Ensure prompt and accurate delivery of your purchases.</li>
+                        <li><strong>Customer Support:</strong> Provide updates regarding your orders and respond to any inquiries or concerns.</li>
+                        <li><strong>Improve Our Services:</strong> Continuously enhance the functionality and experience of our website.</li>
+                        <li><strong>Send Marketing Communications:</strong> Share exclusive offers, promotions, and updates (only if you have subscribed to our mailing list).</li>
+                    </ul>
+
+                    <h4>3. Data Protection &amp; Security</h4>
+                    <p>We prioritize the safety and security of your personal data. We implement the latest security measures, including encryption and secure servers, to protect your information. We will never sell, share, or misuse your personal data. Your trust is our priority.</p>
+
+                    <h4>4. Cookies &amp; Tracking Technologies</h4>
+                    <p>To improve your experience on our website, we may use cookies and similar tracking technologies. These tools help us understand your preferences and customize your browsing experience. You have the option to disable cookies through your browser settings at any time.</p>
+
+                    <h4>5. Third-Party Services</h4>
+                    <p>We may partner with trusted third-party services, such as payment processors and analytics providers, to support our website's functionality. These third parties have their own privacy policies, and we recommend reviewing them before using their services.</p>
+
+                    <h4>6. Your Rights &amp; Choices</h4>
+                    <p>You have the right to:</p>
+                    <ul>
+                        <li>Access, Correct, or Delete your personal data at any time by contacting us.</li>
+                        <li>Unsubscribe from our marketing emails by clicking the unsubscribe link included in each email.</li>
+                    </ul>
+
+                    <h4>7. Contact Us</h4>
+                    <p>If you have any questions or concerns about our Privacy Policy or how your data is handled, please feel free to reach out to us at <a href="mailto:{{ company_info.email or 'info@example.com' }}">{{ company_info.email or 'info@example.com' }}</a>.</p>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}

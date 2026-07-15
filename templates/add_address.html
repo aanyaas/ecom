@@ -1,0 +1,370 @@
+{% extends "base.html" %}
+
+{% block title %}Add Address - {{ company_name }}{% endblock %}
+
+{% block styles %}
+{{ super() }}
+<style>
+    .auth-container {
+        padding: 80px 0 100px;
+        background: #fff;
+    }
+
+    .auth-card {
+        background: #fff;
+        border-radius: 30px;
+        border: 1px solid #f0f0f0;
+        box-shadow: 0 20px 50px rgba(0, 0, 0, 0.04);
+        overflow: hidden;
+    }
+
+    .auth-card-header {
+        background: #fdfcfd;
+        padding: 40px;
+        text-align: center;
+        border-bottom: 1px solid #f0f0f0;
+    }
+
+    .auth-card-header h2 {
+        font-family: 'Playfair Display', serif;
+        font-weight: 700;
+        margin-bottom: 0;
+        color: #1a1a1a;
+    }
+
+    .auth-card-body {
+        padding: 50px;
+    }
+
+    .form-label-luxury {
+        font-size: 0.75rem;
+        text-transform: uppercase;
+        letter-spacing: 1.5px;
+        color: #999;
+        font-weight: 700;
+        margin-bottom: 10px;
+        display: block;
+    }
+
+    .form-control-luxury {
+        border: 1px solid #f0f0f0;
+        border-radius: 12px;
+        padding: 12px 20px;
+        height: 50px;
+        font-size: 0.95rem;
+        transition: all 0.3s;
+    }
+
+    .form-control-luxury:focus {
+        border-color: #a64d79;
+        box-shadow: 0 10px 30px rgba(166, 77, 121, 0.05);
+    }
+
+    .btn-auth {
+        background: #1a1a1a;
+        color: #fff;
+        padding: 18px;
+        border-radius: 50px;
+        font-weight: 700;
+        text-transform: uppercase;
+        letter-spacing: 2px;
+        font-size: 0.85rem;
+        border: none;
+        transition: all 0.3s;
+        margin-top: 20px;
+    }
+
+    .btn-auth:hover {
+        background: #a64d79;
+        transform: translateY(-3px);
+        box-shadow: 0 10px 25px rgba(166, 77, 121, 0.2);
+    }
+</style>
+{% endblock %}
+
+{% block content %}
+<div class="auth-container">
+    <div class="container">
+        <div class="row justify-content-center">
+            <div class="col-lg-8" data-reveal="bottom">
+                <div class="auth-card">
+                    <div class="auth-card-header">
+                        <h2>Add New Address</h2>
+                    </div>
+                    <div class="auth-card-body">
+                        <form method="POST">
+                            <input type="hidden" name="csrf_token" value="{{ csrf_token() }}" />
+
+                            <div class="form-group mb-4">
+                                <label class="form-label-luxury" for="postal_code">Postal Code</label>
+                                <div class="input-group">
+                                    <input type="text" id="postal_code" name="postal_code" class="form-control form-control-luxury"
+                                        placeholder="Enter 6-digit pincode" required maxlength="6" pattern="\d{6}">
+                                    <div class="input-group-append" style="margin-left: 10px;">
+                                        <button class="btn btn-outline-dark" style="border-radius: 12px;" type="button" id="fetch-address">Fetch
+                                            Address</button>
+                                    </div>
+                                </div>
+                                <small class="text-muted mt-2 d-block">Enter your 6-digit postal code first</small>
+                            </div>
+
+                            <div id="address-fields" style="display: none;">
+                                <input type="hidden" id="state_code" name="state_code">
+
+                                <div class="row">
+                                    <div class="col-md-6 form-group mb-4">
+                                        <label class="form-label-luxury" for="state">State<span class="text-danger">*</span></label>
+                                        <select id="state" name="state" class="form-control form-control-luxury" required>
+                                            <option value="">Select State</option>
+                                        </select>
+                                    </div>
+
+                                    <div class="col-md-6 form-group mb-4">
+                                        <label class="form-label-luxury" for="city">City<span class="text-danger">*</span></label>
+                                        <select id="city" name="city" class="form-control form-control-luxury" required>
+                                            <option value="">Select City</option>
+                                        </select>
+                                    </div>
+                                </div>
+
+                                <div class="form-group mb-4">
+                                    <label class="form-label-luxury" for="address_type">Address Type<span class="text-danger">*</span></label>
+                                    <select id="address_type" name="address_type" class="form-control form-control-luxury" required>
+                                        <option value="Home">Home</option>
+                                        <option value="Work">Work</option>
+                                        <option value="Friends">Friends</option>
+                                        <option value="Other">Other</option>
+                                        <option value="company">Company</option>
+                                    </select>
+                                </div>
+
+                                <div id="billing-fields" style="display: none;">
+                                    <div class="form-group mb-4">
+                                        <label class="form-label-luxury" for="company_name">Company Name</label>
+                                        <input type="text" id="company_name" name="company_name" class="form-control form-control-luxury"
+                                            placeholder="Company Name (if applicable)">
+                                    </div>
+                                    <div class="form-group mb-4">
+                                        <label class="form-label-luxury" for="gst_number">GST Number<span class="text-danger">*</span></label>
+                                        <input type="text" id="gst_number" name="gst_number" class="form-control form-control-luxury"
+                                            placeholder="Enter 15-digit GSTIN" maxlength="15">
+                                        <small class="text-muted mt-2 d-block">GST is mandatory for Company addresses.</small>
+                                    </div>
+                                </div>
+
+                                <div class="form-group mb-4">
+                                    <label class="form-label-luxury" for="address_line1">Address Line 1<span class="text-danger">*</span></label>
+                                    <input type="text" id="address_line1" name="address_line1" class="form-control form-control-luxury"
+                                        placeholder="House No., Building, Street" required>
+                                </div>
+
+                                <div class="form-group mb-4">
+                                    <label class="form-label-luxury" for="address_line2">Address Line 2 (Optional)</label>
+                                    <input type="text" id="address_line2" name="address_line2" class="form-control form-control-luxury"
+                                        placeholder="Area, Colony, Landmark">
+                                </div>
+
+                                <div class="form-group mb-4">
+                                    <label class="form-label-luxury" for="full_name">Full Name<span class="text-danger">*</span></label>
+                                    <input type="text" id="full_name" name="full_name" class="form-control form-control-luxury"
+                                        value="{% if user %}{{ user.first_name or '' }} {{ user.last_name or '' }}{% endif %}"
+                                        required>
+                                </div>
+
+                                <div class="row">
+                                    <div class="col-md-6 form-group mb-4">
+                                        <label class="form-label-luxury" for="mobile_number">Mobile No.<span class="text-danger">*</span></label>
+                                        <input type="tel" id="mobile_number" name="mobile_number" class="form-control form-control-luxury"
+                                            value="{% if user %}{{ user.mobile_number or '' }}{% endif %}" required>
+                                    </div>
+                                    <div class="col-md-6 form-group mb-4">
+                                        <label class="form-label-luxury" for="email">Email Id:<span class="text-danger">*</span></label>
+                                        <input type="email" id="email" name="email" class="form-control form-control-luxury"
+                                            value="{% if user %}{{ user.email or '' }}{% endif %}" required>
+                                    </div>
+                                </div>
+
+                                <div class="form-group mb-4">
+                                    <div class="custom-control custom-checkbox">
+                                        <input type="checkbox" class="custom-control-input" id="is_default" name="is_default" value="1">
+                                        <label class="custom-control-label" for="is_default">Set as default address</label>
+                                    </div>
+                                </div>
+
+                                <button type="submit" class="btn btn-auth btn-block">
+                                    <i class="fas fa-save mr-2"></i> Save Address
+                                </button>
+                                
+                                <div class="text-center mt-4">
+                                    <a href="{{ url_for('user_bp.profile') }}" class="text-muted small text-uppercase font-weight-bold" style="letter-spacing: 1px;">Cancel & Return to Profile</a>
+                                </div>
+                            </div>
+                        </form>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}
+
+{% block scripts %}
+<script>
+    $(document).ready(function () {
+        // Load states when page loads
+        loadStates();
+
+        $('#fetch-address').click(function () {
+            const pincode = $('#postal_code').val().trim();
+            if (pincode.length === 6 && /^\d+$/.test(pincode)) {
+                $('#postal_code').addClass('is-valid').removeClass('is-invalid');
+
+                // Show loading state
+                $(this).html('<span class="spinner-border spinner-border-sm" role="status" aria-hidden="true"></span> Fetching...');
+
+                $.ajax({
+                    url: "{{ url_for('pages_bp.get_pincode_details') }}",
+                    method: 'POST',
+                    data: {
+                        pincode: pincode,
+                        csrf_token: "{{ csrf_token() }}"
+                    },
+                    success: function (response) {
+                        // Reset button text
+                        $('#fetch-address').html('Fetch State and City');
+
+                        if (response.success) {
+                            // If pincode found, set city, state and state_code
+                            $('#city').html(`<option value="${response.city}" selected>${response.city}</option>`);
+                            $('#state').html(`<option value="${response.state}" selected>${response.state}</option>`);
+                            $('#state_code').val(response.state_code);
+                        } else {
+                            // If pincode not found, populate states dropdown
+                            populateStates(response.states);
+                        }
+
+                        // Always show address fields
+                        $('#address-fields').slideDown();
+                    },
+                    error: function () {
+                        // Reset button text
+                        $('#fetch-address').html('Fetch Address');
+
+                        // On error, allow manual entry
+                        alert('Error fetching pincode details. Please select state and city manually.');
+                        $('#address-fields').slideDown();
+                    }
+                });
+            } else {
+                $('#postal_code').addClass('is-invalid');
+                alert('Please enter a valid 6-digit pincode');
+            }
+        });
+        // Auto-trigger fetch when 6-digit pincode is entered (no button click needed)
+        let pincodeLookupTimer = null;
+        $('#postal_code').on('input', function () {
+            clearTimeout(pincodeLookupTimer);
+            const pincode = $(this).val().trim();
+            $(this).removeClass('is-invalid is-valid');
+            if (pincode.length === 6 && /^\d+$/.test(pincode)) {
+                pincodeLookupTimer = setTimeout(function () {
+                    $('#fetch-address').trigger('click');
+                }, 400);
+            }
+        });
+
+        // When state changes, load cities for that state
+        $('#state').change(function () {
+            const state = $(this).val();
+            if (state) {
+                loadCities(state);
+                // Get state code when state is selected
+                getStateCode(state);
+            } else {
+                $('#city').html('<option value="">Select City</option>');
+            }
+        });
+
+        // Show address fields if pincode is manually entered (6 digits)
+        $('#postal_code').on('input', function () {
+            if ($(this).val().trim().length === 6 && /^\d+$/.test($(this).val().trim())) {
+                $('#address-fields').slideDown();
+            }
+        });
+
+        function loadStates() {
+            $.ajax({
+                url: "{{ url_for('pages_bp.get_pincode_details') }}",
+                method: 'POST',
+                data: {
+                    pincode: '000000', // Dummy pincode to get all states
+                    csrf_token: "{{ csrf_token() }}"
+                },
+                success: function (response) {
+                    if (response.states) {
+                        populateStates(response.states);
+                    }
+                }
+            });
+        }
+
+        function populateStates(states) {
+            let options = '<option value="">Select State</option>';
+            states.forEach(state => {
+                options += `<option value="${state}">${state}</option>`;
+            });
+            $('#state').html(options);
+        }
+
+        function loadCities(state) {
+            $.ajax({
+                url: "{{ url_for('pages_bp.get_cities_by_state') }}",
+                method: 'POST',
+                data: {
+                    state: state,
+                    csrf_token: "{{ csrf_token() }}"
+                },
+                success: function (response) {
+                    if (response.success) {
+                        let options = '<option value="">Select City</option>';
+                        response.cities.forEach(city => {
+                            options += `<option value="${city}">${city}</option>`;
+                        });
+                        $('#city').html(options);
+                    }
+                }
+            });
+        }
+
+        function getStateCode(state) {
+            $.ajax({
+                url: "{{ url_for('pages_bp.get_state_code') }}",
+                method: 'POST',
+                data: {
+                    state: state,
+                    csrf_token: "{{ csrf_token() }}"
+                },
+                success: function (response) {
+                    if (response.success) {
+                        $('#state_code').val(response.state_code);
+                    }
+                }
+            });
+        }
+
+        // Handle Address Type toggle
+        $('#address_type').change(function () {
+            if ($(this).val() === 'company') {
+                $('#billing-fields').slideDown();
+                $('#gst_number').prop('required', true);
+            } else {
+                $('#billing-fields').slideUp();
+                $('#gst_number').prop('required', false);
+            }
+        });
+
+        // Trigger on load just in case
+        $('#address_type').trigger('change');
+    });
+</script>
+{% endblock %}

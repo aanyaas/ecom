@@ -1,0 +1,600 @@
+{% extends "base.html" %}
+
+{% block title %}{{ company_name }} - FAQs{% endblock %}
+
+{% block content %}
+<!-- Additional CSS for responsive enhancements and smooth icons -->
+<style>
+    /* Luxury FAQ Styles */
+    .faq-container {
+        padding: 80px 0 100px;
+        background: #fff;
+    }
+
+    .faq-hero {
+        text-align: center;
+        margin-bottom: 80px;
+    }
+
+    .faq-hero h1 {
+        font-family: 'Playfair Display', serif;
+        font-size: 3.5rem;
+        font-weight: 700;
+        color: #1a1a1a;
+        margin-bottom: 20px;
+    }
+
+    .faq-hero p {
+        color: #666;
+        font-size: 1.2rem;
+        max-width: 600px;
+        margin: 0 auto;
+    }
+
+    .faq-section-title {
+        font-family: 'Playfair Display', serif;
+        font-size: 2rem;
+        font-weight: 700;
+        color: #1a1a1a;
+        margin: 60px 0 30px;
+        padding-bottom: 15px;
+        border-bottom: 1px solid #f0f0f0;
+        display: flex;
+        align-items: center;
+        gap: 15px;
+    }
+
+    .faq-section-title i {
+        color: #a64d79;
+        font-size: 1.4rem;
+    }
+
+    .faq-card {
+        border-radius: 20px;
+        margin-bottom: 15px;
+        border: 1px solid #f0f0f0;
+        background: #fff;
+        transition: all 0.3s cubic-bezier(0.165, 0.84, 0.44, 1);
+        overflow: hidden;
+    }
+
+    .faq-card:hover {
+        border-color: #a64d79;
+        box-shadow: 0 10px 30px rgba(0, 0, 0, 0.03);
+    }
+
+    .faq-card .card-header {
+        background: #fff;
+        border: none;
+        padding: 25px 30px;
+        cursor: pointer;
+    }
+
+    .faq-card .card-header h5 {
+        font-family: 'Poppins', sans-serif;
+        font-size: 1rem;
+        font-weight: 600;
+        color: #1a1a1a;
+        margin: 0;
+        line-height: 1.5;
+    }
+
+    .collapse-icon {
+        width: 32px;
+        height: 32px;
+        background: #fdfcfd;
+        border: 1px solid #f0f0f0;
+        border-radius: 50%;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        color: #a64d79;
+        font-weight: 700;
+        transition: all 0.3s;
+        flex-shrink: 0;
+    }
+
+    .faq-card.active .collapse-icon {
+        background: #a64d79;
+        color: #fff;
+        border-color: #a64d79;
+        transform: rotate(180deg);
+    }
+
+    .faq-card .card-body {
+        padding: 0 30px 30px;
+        font-size: 0.95rem;
+        line-height: 1.8;
+        color: #666;
+        background: #fff;
+    }
+
+    .faq-card .card-body a {
+        color: #a64d79;
+        font-weight: 600;
+        text-decoration: underline;
+    }
+
+    @media (max-width: 768px) {
+        .faq-hero h1 {
+            font-size: 2.5rem;
+        }
+
+        .faq-card .card-header {
+            padding: 20px;
+        }
+    }
+</style>
+
+<div class="faq-container">
+    <div class="container">
+        <div class="faq-hero" data-reveal="bottom">
+            <h1>Customer Care</h1>
+            <p>Everything you need to know about our handcrafted pieces, orders, and delivery.</p>
+        </div>
+
+        <div class="faq-sections mx-auto" style="max-width: 900px;">
+            <!-- ================= PRODUCT SECTION ================= -->
+            <h3 id="product" class="faq-section-title">
+                <i class="fas fa-shopping-bag"></i>
+                Handcrafted Pieces
+            </h3>
+
+            <!-- FAQ 1 - Product Care -->
+            <div class="card faq-card">
+                <div class="card-header" data-toggle="collapse" data-target="#collapseProduct1">
+                    <h5 class="mb-0 d-flex justify-content-between align-items-center">
+                        How to handle or take care of the product?
+                        <span class="collapse-icon"><i class="fas fa-plus"></i></span>
+                    </h5>
+                </div>
+                <div id="collapseProduct1" class="collapse">
+                    <div class="card-body">
+                        <p>To maintain the beauty of your jewels, avoid direct contact with water, perfumes, and harsh
+                            chemicals. Store in a dry, cool place. Clean with a soft, dry cloth.</p>
+                    </div>
+                </div>
+            </div>
+
+            <!-- FAQ 2 - Customisation -->
+            <div class="card faq-card">
+                <div class="card-header" data-toggle="collapse" data-target="#collapseProduct2">
+                    <h5 class="mb-0 d-flex justify-content-between align-items-center">
+                        Can I get my order customised?
+                        <span class="collapse-icon"><i class="fas fa-plus"></i></span>
+                    </h5>
+                </div>
+                <div id="collapseProduct2" class="collapse">
+                    <div class="card-body">
+                        <p>Yes, we can add customisations to a product. An additional fee of Rs. 500/- will be charged.
+                            You can directly connect with our customer stylist through WhatsApp or Call on {{
+                            company_info.phone or '+91 9555144442' }}.</p>
+                    </div>
+                </div>
+            </div>
+
+            <!-- FAQ 3 - Returns -->
+            <div class="card faq-card">
+                <div class="card-header" data-toggle="collapse" data-target="#collapseProduct3">
+                    <h5 class="mb-0 d-flex justify-content-between align-items-center">
+                        Can I return my order?
+                        <span class="collapse-icon"><i class="fas fa-plus"></i></span>
+                    </h5>
+                </div>
+                <div id="collapseProduct3" class="collapse">
+                    <div class="card-body">
+                        <p>All our products are handcrafted by Indian artisans & manufactured on order, hence we do not
+                            offer returns. For further details, please go through our Exchange & Repair Policy.</p>
+                    </div>
+                </div>
+            </div>
+
+            <!-- FAQ 4 - Material -->
+            <div class="card faq-card">
+                <div class="card-header" data-toggle="collapse" data-target="#collapseProduct4">
+                    <h5 class="mb-0 d-flex justify-content-between align-items-center">
+                        What material is the jewellery made of?
+                        <span class="collapse-icon"><i class="fas fa-plus"></i></span>
+                    </h5>
+                </div>
+                <div id="collapseProduct4" class="collapse">
+                    <div class="card-body">
+                        <p>{{ company_name }} uses a variety of high-quality materials, including stones, pearls,
+                            crystals, and 22kt gold and silver plating. Each piece is carefully crafted to ensure
+                            durability and beauty. Kindly read the description of each product carefully before placing
+                            your order.</p>
+                    </div>
+                </div>
+            </div>
+
+            <!-- FAQ 5 - Size -->
+            <div class="card faq-card">
+                <div class="card-header" data-toggle="collapse" data-target="#collapseProduct5">
+                    <h5 class="mb-0 d-flex justify-content-between align-items-center">
+                        How do I choose the correct size?
+                        <span class="collapse-icon"><i class="fas fa-plus"></i></span>
+                    </h5>
+                </div>
+                <div id="collapseProduct5" class="collapse">
+                    <div class="card-body">
+                        <p>Indeed an important criteria while selecting your jewellery, although the sizes are
+                            accurately mentioned on the products but in case of any further query we'll be happy to
+                            assist you in the process. Get in touch with us on WhatsApp : {{ company_info.phone or '+91
+                            9555144442' }} or email: <a
+                                href="mailto:{{ company_info.email or 'contact@aanyaas.com' }}">{{ company_info.email or
+                                'contact@aanyaas.com' }}</a></p>
+                    </div>
+                </div>
+            </div>
+
+            <!-- FAQ 6 - Store Location -->
+            <div class="card faq-card">
+                <div class="card-header" data-toggle="collapse" data-target="#collapseProduct6">
+                    <h5 class="mb-0 d-flex justify-content-between align-items-center">
+                        Where are the stores located?
+                        <span class="collapse-icon"><i class="fas fa-plus"></i></span>
+                    </h5>
+                </div>
+                <div id="collapseProduct6" class="collapse">
+                    <div class="card-body">
+                        <p>Only Online store and Exhibitions.</p>
+                    </div>
+                </div>
+            </div>
+
+            <!-- ================= BOGO OFFER SECTION ================= -->
+            <h3 id="bogo-offer" class="faq-section-title">
+                <i class="fas fa-percentage"></i>
+                Offers & Rewards
+            </h3>
+
+            <!-- BOGO 1: How to redeem -->
+            <div class="card faq-card">
+                <div class="card-header" data-toggle="collapse" data-target="#collapseBogo1">
+                    <h5 class="mb-0 d-flex justify-content-between align-items-center">
+                        How do I redeem this offer?
+                        <span class="collapse-icon"><i class="fas fa-plus"></i></span>
+                    </h5>
+                </div>
+                <div id="collapseBogo1" class="collapse">
+                    <div class="card-body">
+                        <p>Follow these simple steps:</p>
+                        <ul>
+                            <li>Add your item from the collection to your cart</li>
+                            <li>Proceed to checkout</li>
+                            <li>Enter the coupon codes <strong>AVAILABLE</strong></li>
+                        </ul>
+                    </div>
+                </div>
+            </div>
+
+            <!-- BOGO 2: specific order? -->
+            <div class="card faq-card">
+                <div class="card-header" data-toggle="collapse" data-target="#collapseBogo2">
+                    <h5 class="mb-0 d-flex justify-content-between align-items-center">
+                        Do I need to add the items in a specific order?
+                        <span class="collapse-icon"><i class="fas fa-plus"></i></span>
+                    </h5>
+                </div>
+                <div id="collapseBogo2" class="collapse">
+                    <div class="card-body">
+                        <p>No! You can add the items to your cart in any order. Just make sure all items are in your
+                            cart before you enter the code at checkout.</p>
+                    </div>
+                </div>
+            </div>
+
+            <!-- BOGO 3: eligible products -->
+            <div class="card faq-card">
+                <div class="card-header" data-toggle="collapse" data-target="#collapseBogo3">
+                    <h5 class="mb-0 d-flex justify-content-between align-items-center">
+                        Which products are eligible for this offer?
+                        <span class="collapse-icon"><i class="fas fa-plus"></i></span>
+                    </h5>
+                </div>
+                <div id="collapseBogo3" class="collapse">
+                    <div class="card-body">
+                        <p>All products in our collections are qualify for this promotion.</p>
+                    </div>
+                </div>
+            </div>
+
+            <!-- BOGO 4: multiple free items -->
+            <div class="card faq-card">
+                <div class="card-header" data-toggle="collapse" data-target="#collapseBogo4">
+                    <h5 class="mb-0 d-flex justify-content-between align-items-center">
+                        Can I get multiple items?
+                        <span class="collapse-icon"><i class="fas fa-plus"></i></span>
+                    </h5>
+                </div>
+                <div id="collapseBogo4" class="collapse">
+                    <div class="card-body">
+                        <p>Yes!</p>
+                    </div>
+                </div>
+            </div>
+
+            <!-- BOGO 5: forgot code -->
+            <div class="card faq-card">
+                <div class="card-header" data-toggle="collapse" data-target="#collapseBogo5">
+                    <h5 class="mb-0 d-flex justify-content-between align-items-center">
+                        What if I forget to enter the code?
+                        <span class="collapse-icon"><i class="fas fa-plus"></i></span>
+                    </h5>
+                </div>
+                <div id="collapseBogo5" class="collapse">
+                    <div class="card-body">
+                        <p>The discount will only apply when you enter the code at checkout.</p>
+                    </div>
+                </div>
+            </div>
+
+            <!-- ================= PAYMENTS & SHIPPING SECTION ================= -->
+            <h3 id="payments-shipping" class="faq-section-title">
+                <i class="fas fa-shipping-fast"></i>
+                Logistics & Payments
+            </h3>
+
+            <!-- Payments 1 -->
+            <div class="card faq-card">
+                <div class="card-header" data-toggle="collapse" data-target="#collapsePay1">
+                    <h5 class="mb-0 d-flex justify-content-between align-items-center">
+                        What payment options are available?
+                        <span class="collapse-icon"><i class="fas fa-plus"></i></span>
+                    </h5>
+                </div>
+                <div id="collapsePay1" class="collapse">
+                    <div class="card-body">
+                        <p>All the payment procedures are absolutely secure.</p>
+                        <p><strong>In India, we accept:</strong> Debit Card, Credit Card, Google-Pay, Paytm, UPI, Bank
+                            Transfer. Further we have Cash on Delivery (COD).</p>
+                        <p><strong>For International customers:</strong> Debit Card, Credit Card, Bank Transfer and
+                            PayPal.</p>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Payments 2 : COD to Prepaid -->
+            <div class="card faq-card">
+                <div class="card-header" data-toggle="collapse" data-target="#collapsePay2">
+                    <h5 class="mb-0 d-flex justify-content-between align-items-center">
+                        Can I convert COD to Prepaid?
+                        <span class="collapse-icon"><i class="fas fa-plus"></i></span>
+                    </h5>
+                </div>
+                <div id="collapsePay2" class="collapse">
+                    <div class="card-body">
+                        <p>Yes, COD orders can be converted to Prepaid.</p>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Payments 3 : international shipping (corrected answer) -->
+            <div class="card faq-card">
+                <div class="card-header" data-toggle="collapse" data-target="#collapsePay3">
+                    <h5 class="mb-0 d-flex justify-content-between align-items-center">
+                        Do you offer international shipping?
+                        <span class="collapse-icon"><i class="fas fa-plus"></i></span>
+                    </h5>
+                </div>
+                <div id="collapsePay3" class="collapse">
+                    <div class="card-body">
+                        <p>Yes, we ship internationally as well as nationwide in India. For more detailed information,
+                            refer to the <a href="{{ url_for('pages_bp.shipping_policy') }}">shipping policy</a> on the
+                            website.</p>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Payments 4 : payment debited -->
+            <div class="card faq-card">
+                <div class="card-header" data-toggle="collapse" data-target="#collapsePay4">
+                    <h5 class="mb-0 d-flex justify-content-between align-items-center">
+                        The payment got debited from my account, but I did not receive an order confirmation.
+                        <span class="collapse-icon"><i class="fas fa-plus"></i></span>
+                    </h5>
+                </div>
+                <div id="collapsePay4" class="collapse">
+                    <div class="card-body">
+                        <p>This generally occurs due to a technical issue with the payment gateway. In case you
+                            experience the same, you can directly connect to our Customer Service Executive through
+                            WhatsApp or Call on {{ company_info.phone or '+91 9555144442' }}.</p>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Payments 5 : other payment queries -->
+            <div class="card faq-card">
+                <div class="card-header" data-toggle="collapse" data-target="#collapsePay5">
+                    <h5 class="mb-0 d-flex justify-content-between align-items-center">
+                        Where can I connect for payment other related queries?
+                        <span class="collapse-icon"><i class="fas fa-plus"></i></span>
+                    </h5>
+                </div>
+                <div id="collapsePay5" class="collapse">
+                    <div class="card-body">
+                        <p>If you are facing trouble in payment or placing an order then you can directly connect to our
+                            Customer Service Executive through WhatsApp or Call on {{ company_info.phone or '+91
+                            9555144442' }}.</p>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Payments 6 : order confirmation -->
+            <div class="card faq-card">
+                <div class="card-header" data-toggle="collapse" data-target="#collapsePay6">
+                    <h5 class="mb-0 d-flex justify-content-between align-items-center">
+                        How will I know if the order is successfully placed?
+                        <span class="collapse-icon"><i class="fas fa-plus"></i></span>
+                    </h5>
+                </div>
+                <div id="collapsePay6" class="collapse">
+                    <div class="card-body">
+                        <p>You will get a confirmation mail on your registered E-mail ID regarding order confirmation.
+                        </p>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Payments 7 : track order -->
+            <div class="card faq-card">
+                <div class="card-header" data-toggle="collapse" data-target="#collapsePay7">
+                    <h5 class="mb-0 d-flex justify-content-between align-items-center">
+                        How can I track my order?
+                        <span class="collapse-icon"><i class="fas fa-plus"></i></span>
+                    </h5>
+                </div>
+                <div id="collapsePay7" class="collapse">
+                    <div class="card-body">
+                        <p>Once the order is dispatched, a tracking ID will be sent on your registered E-mail ID along
+                            with the link.</p>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Payments 8 : missing/damaged -->
+            <div class="card faq-card">
+                <div class="card-header" data-toggle="collapse" data-target="#collapsePay8">
+                    <h5 class="mb-0 d-flex justify-content-between align-items-center">
+                        What to do if my order has an item missing or damaged?
+                        <span class="collapse-icon"><i class="fas fa-plus"></i></span>
+                    </h5>
+                </div>
+                <div id="collapsePay8" class="collapse">
+                    <div class="card-body">
+                        <p>Kindly write to us at <a href="mailto:{{ company_info.email or 'contact@aanyaas.com' }}">{{
+                                company_info.email or 'contact@aanyaas.com' }}</a> or Whatsapp on {{ company_info.phone
+                            or '+91 9555144442' }}. We will surely provide you best solution for the same.</p>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Payments 9 : delay info -->
+            <div class="card faq-card">
+                <div class="card-header" data-toggle="collapse" data-target="#collapsePay9">
+                    <h5 class="mb-0 d-flex justify-content-between align-items-center">
+                        How can I get information regarding the delay in delivery?
+                        <span class="collapse-icon"><i class="fas fa-plus"></i></span>
+                    </h5>
+                </div>
+                <div id="collapsePay9" class="collapse">
+                    <div class="card-body">
+                        <p>In case, there’s a delay in the shipment, our team will make sure that they reach out to you
+                            on your registered E-mail ID, WhatsApp or Phone-call.</p>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Payments 10 : change shipping address -->
+            <div class="card faq-card">
+                <div class="card-header" data-toggle="collapse" data-target="#collapsePay10">
+                    <h5 class="mb-0 d-flex justify-content-between align-items-center">
+                        How can I request to change the shipping address?
+                        <span class="collapse-icon"><i class="fas fa-plus"></i></span>
+                    </h5>
+                </div>
+                <div id="collapsePay10" class="collapse">
+                    <div class="card-body">
+                        <p>Please write to us at <a href="mailto:{{ company_info.email or 'contact@aanyaas.com' }}">{{
+                                company_info.email or 'contact@aanyaas.com' }}</a> or call us on {{ company_info.phone
+                            or '+91 9555144442' }}, for any assistance related to your order. Our customer support team
+                            will be happy to help you.</p>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Payments 11 : cancel order -->
+            <div class="card faq-card">
+                <div class="card-header" data-toggle="collapse" data-target="#collapsePay11">
+                    <h5 class="mb-0 d-flex justify-content-between align-items-center">
+                        How can I cancel my order?
+                        <span class="collapse-icon"><i class="fas fa-plus"></i></span>
+                    </h5>
+                </div>
+                <div id="collapsePay11" class="collapse">
+                    <div class="card-body">
+                        <p>Order cannot be cancelled once it is dispatched. Please write to us at <a
+                                href="mailto:{{ company_info.email or 'contact@aanyaas.com' }}">{{ company_info.email or
+                                'contact@aanyaas.com' }}</a> or call us on {{ company_info.phone or '+91 9555144442' }},
+                            for any assistance related to your order. Our customer support team will be happy to help
+                            you.</p>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Payments 12 : exchange more than once -->
+            <div class="card faq-card">
+                <div class="card-header" data-toggle="collapse" data-target="#collapsePay12">
+                    <h5 class="mb-0 d-flex justify-content-between align-items-center">
+                        Can I exchange my order more than once?
+                        <span class="collapse-icon"><i class="fas fa-plus"></i></span>
+                    </h5>
+                </div>
+                <div id="collapsePay12" class="collapse">
+                    <div class="card-body">
+                        <p>Order can only be exchanged ONCE during it’s course.</p>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Payments 13 : no suitable exchange product -->
+            <div class="card faq-card">
+                <div class="card-header" data-toggle="collapse" data-target="#collapsePay13">
+                    <h5 class="mb-0 d-flex justify-content-between align-items-center">
+                        What can I do if I don’t find a suitable product in exchange?
+                        <span class="collapse-icon"><i class="fas fa-plus"></i></span>
+                    </h5>
+                </div>
+                <div id="collapsePay13" class="collapse">
+                    <div class="card-body">
+                        <p>We provide credit notes (which are exclusive of shipping charges) on your registered E-mail
+                            ID. The Credit Note is redeemable on the next purchase and is valid for 3 months ONLY.</p>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Payments 14 : redeem credit amount -->
+            <div class="card faq-card">
+                <div class="card-header" data-toggle="collapse" data-target="#collapsePay14">
+                    <h5 class="mb-0 d-flex justify-content-between align-items-center">
+                        How can I redeem my credit amount?
+                        <span class="collapse-icon"><i class="fas fa-plus"></i></span>
+                    </h5>
+                </div>
+                <div id="collapsePay14" class="collapse">
+                    <div class="card-body">
+                        <p>Please write to us at <a href="mailto:{{ company_info.email or 'contact@aanyaas.com' }}">{{
+                                company_info.email or 'contact@aanyaas.com' }}</a> or call us on {{ company_info.phone
+                            or '+91 9555144442' }} for the redemption process. Our customer support team will be at your
+                            service.</p>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+</div>
+
+<script>
+    document.addEventListener('DOMContentLoaded', function () {
+        const collapses = document.querySelectorAll('.collapse');
+
+        collapses.forEach(collapse => {
+            const card = collapse.closest('.faq-card');
+            const icon = card.querySelector('.collapse-icon i');
+
+            collapse.addEventListener('show.bs.collapse', () => {
+                card.classList.add('active');
+                icon.classList.remove('fa-plus');
+                icon.classList.add('fa-minus');
+            });
+
+            collapse.addEventListener('hide.bs.collapse', () => {
+                card.classList.remove('active');
+                icon.classList.remove('fa-minus');
+                icon.classList.add('fa-plus');
+            });
+        });
+    });
+</script>
+{% endblock %}

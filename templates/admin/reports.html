@@ -1,0 +1,325 @@
+{% extends "admin/base.html" %}
+
+{% block title %}Business Intelligence & Reports - {{ brand_name }}{% endblock %}
+
+{% block styles %}
+<style>
+    /* Premium Glassmorphism Reports Overhaul */
+    :root {
+        --glass-bg: rgba(255, 255, 255, 0.85);
+        --glass-border: rgba(255, 255, 255, 0.4);
+        --glass-shadow: 0 10px 30px rgba(0, 0, 0, 0.05);
+        --primary-accent: #a64d79;
+        --secondary-accent: #1a1a2e;
+        --text-dark: #2d3748;
+        --text-muted: #718096;
+    }
+
+    body {
+        background-color: #f4f7f6;
+        background-image:
+            radial-gradient(at 0% 0%, hsla(331, 65%, 85%, 1) 0, transparent 50%),
+            radial-gradient(at 100% 0%, hsla(236, 40%, 85%, 1) 0, transparent 50%);
+        background-attachment: fixed;
+        font-family: 'Inter', sans-serif;
+    }
+
+    @keyframes fadeUp {
+        from {
+            opacity: 0;
+            transform: translateY(20px);
+        }
+
+        to {
+            opacity: 1;
+            transform: translateY(0);
+        }
+    }
+
+    .info-card-luxury {
+        background: var(--glass-bg) !important;
+        backdrop-filter: blur(12px) !important;
+        -webkit-backdrop-filter: blur(12px);
+        border: 1px solid var(--glass-border) !important;
+        border-radius: 24px !important;
+        box-shadow: var(--glass-shadow) !important;
+        overflow: hidden;
+        animation: fadeUp 0.7s ease-out backwards;
+    }
+
+    .report-card {
+        transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+        cursor: pointer;
+        height: 100%;
+        background: var(--glass-bg) !important;
+        backdrop-filter: blur(12px) !important;
+        -webkit-backdrop-filter: blur(12px);
+        border: 1px solid var(--glass-border) !important;
+        border-radius: 24px !important;
+        box-shadow: var(--glass-shadow) !important;
+        animation: fadeUp 0.7s ease-out backwards;
+    }
+
+    .report-card:hover {
+        transform: translateY(-5px);
+        box-shadow: 0 15px 35px rgba(0, 0, 0, 0.1) !important;
+        border-color: var(--primary-accent) !important;
+    }
+
+    .report-icon {
+        width: 48px;
+        height: 48px;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        border-radius: 14px;
+        margin-bottom: 1.25rem;
+        font-size: 1.25rem;
+    }
+
+    .icon-sales {
+        background: rgba(166, 77, 121, 0.15);
+        color: #a64d79;
+    }
+
+    .icon-inventory {
+        background: rgba(49, 130, 206, 0.15);
+        color: #3182ce;
+    }
+
+    .icon-customers {
+        background: rgba(56, 161, 105, 0.15);
+        color: #38a169;
+    }
+
+    .icon-financial {
+        background: rgba(214, 158, 46, 0.15);
+        color: #d69e2e;
+    }
+
+    .icon-returns {
+        background: rgba(229, 62, 62, 0.15);
+        color: #e53e3e;
+    }
+
+    .report-title {
+        font-weight: 800;
+        font-size: 1.1rem;
+        margin-bottom: 0.5rem;
+        color: var(--text-dark);
+    }
+
+    .report-desc {
+        font-size: 0.85rem;
+        color: var(--text-muted);
+        line-height: 1.5;
+    }
+
+    .filter-section {
+        background: var(--glass-bg);
+        backdrop-filter: blur(12px);
+        -webkit-backdrop-filter: blur(12px);
+        border: 1px solid var(--glass-border);
+        border-radius: 24px;
+        padding: 1.5rem;
+        margin-bottom: 2rem;
+        box-shadow: var(--glass-shadow);
+        animation: fadeUp 0.5s ease-out;
+    }
+
+    .custom-date-range {
+        display: none;
+    }
+</style>
+{% endblock %}
+
+{% block content %}
+<div class="row mb-1">
+    <div class="col-12 d-flex justify-content-between align-items-center">
+        <div>
+            <h2 class="h3 mb-0">Business Intelligence & Reports</h2>
+        </div>
+    </div>
+</div>
+
+<form id="reportForm" action="{{ url_for('admin_bp.admin_reports_generate') }}" method="POST">
+    <input type="hidden" name="csrf_token" value="{{ csrf_token() }}">
+    <input type="hidden" name="report_id" id="report_id" value="">
+
+    <div class="filter-section">
+        <div class="row align-items-end">
+            <div class="col-md-3">
+                <label class="small font-weight-bold text-uppercase text-muted">Time Period</label>
+                <select name="period" id="periodSelect" class="form-control form-control-sm shadow-none">
+                    <option value="daily">Today</option>
+                    <option value="weekly">Last 7 Days</option>
+                    <option value="monthly" selected>This Month</option>
+                    <option value="quarterly">This Quarter</option>
+                    <option value="yearly">This Year</option>
+                    <option value="custom">Custom Range</option>
+                </select>
+            </div>
+            <div class="col-md-5 custom-date-range" id="customRange">
+                <div class="row">
+                    <div class="col-6">
+                        <label class="small font-weight-bold text-uppercase text-muted">Start Date</label>
+                        <input type="date" name="start_date" class="form-control form-control-sm">
+                    </div>
+                    <div class="col-6">
+                        <label class="small font-weight-bold text-uppercase text-muted">End Date</label>
+                        <input type="date" name="end_date" class="form-control form-control-sm">
+                    </div>
+                </div>
+            </div>
+            <div class="col-md-2">
+                <label class="small font-weight-bold text-uppercase text-muted">Format</label>
+                <select name="format" class="form-control form-control-sm shadow-none">
+                    <option value="pdf">PDF Document</option>
+                    <option value="excel">Excel Sheet</option>
+                    <option value="csv">CSV Data</option>
+                </select>
+            </div>
+        </div>
+    </div>
+
+    <div class="row g-4">
+        <!-- Sales & Revenue -->
+        <div class="col-md-4 mb-4">
+            <div class="card report-card p-4" onclick="selectReport('sales_summary')">
+                <div class="report-icon icon-sales">
+                    <i class="fas fa-chart-bar"></i>
+                </div>
+                <h3 class="report-title">Sales Summary</h3>
+                <p class="report-desc">Comprehensive overview of orders, average order value, and top-selling products.
+                </p>
+            </div>
+        </div>
+
+        <div class="col-md-4 mb-4">
+            <div class="card report-card p-4" onclick="selectReport('revenue_analytics')">
+                <div class="report-icon icon-sales">
+                    <i class="fas fa-money-bill-trend-up"></i>
+                </div>
+                <h3 class="report-title">Revenue Analytics</h3>
+                <p class="report-desc">Detailed breakdown of gross revenue, taxes, and shipping collections.</p>
+            </div>
+        </div>
+
+        <!-- Inventory -->
+        <div class="col-md-4 mb-4">
+            <div class="card report-card p-4" onclick="selectReport('inventory_status')">
+                <div class="report-icon icon-inventory">
+                    <i class="fas fa-boxes-stacked"></i>
+                </div>
+                <h3 class="report-title">Inventory Status</h3>
+                <p class="report-desc">Current stock levels, valuation, and reorder point alerts for all SKU variants.
+                </p>
+            </div>
+        </div>
+
+        <!-- Customers & Users -->
+        <div class="col-md-4 mb-4">
+            <div class="card report-card p-4" onclick="selectReport('customer_engagement')">
+                <div class="report-icon icon-customers">
+                    <i class="fas fa-user-group"></i>
+                </div>
+                <h3 class="report-title">Customer Engagement</h3>
+                <p class="report-desc">New signups, active users, and customer lifetime value (CLV) metrics.</p>
+            </div>
+        </div>
+
+        <!-- Financial Reports -->
+        <div class="col-md-4 mb-4">
+            <div class="card report-card p-4" onclick="selectReport('profit_loss')">
+                <div class="report-icon icon-financial">
+                    <i class="fas fa-file-invoice-dollar"></i>
+                </div>
+                <h3 class="report-title">Profit & Loss</h3>
+                <p class="report-desc">Analysis of revenue vs material costs and operational overheads.</p>
+            </div>
+        </div>
+
+        <div class="col-md-4 mb-4">
+            <div class="card report-card p-4" onclick="selectReport('balance_sheet')">
+                <div class="report-icon icon-financial">
+                    <i class="fas fa-balance-scale"></i>
+                </div>
+                <h3 class="report-title">Balance Sheet</h3>
+                <p class="report-desc">Snapshot of assets (inventory) and liabilities for financial auditing.</p>
+            </div>
+        </div>
+
+        <!-- Returns & Cancellations -->
+        <div class="col-md-4 mb-4">
+            <div class="card report-card p-4" onclick="selectReport('refund_return_summary')">
+                <div class="report-icon icon-returns">
+                    <i class="fas fa-rotate-left"></i>
+                </div>
+                <h3 class="report-title">Refunds & Returns</h3>
+                <p class="report-desc">Detailed logs of return requests, approved refunds, and reason analysis.</p>
+            </div>
+        </div>
+
+        <div class="col-md-4 mb-4">
+            <div class="card report-card p-4" onclick="selectReport('cancellation_report')">
+                <div class="report-icon icon-returns">
+                    <i class="fas fa-ban"></i>
+                </div>
+                <h3 class="report-title">Cancellation Report</h3>
+                <p class="report-desc">Insights into order cancellations and lost revenue opportunities.</p>
+            </div>
+        </div>
+
+        <div class="col-md-4 mb-4">
+            <div class="card report-card p-4" onclick="selectReport('tax_gst_compliance')">
+                <div class="report-icon icon-sales">
+                    <i class="fas fa-file-shield"></i>
+                </div>
+                <h3 class="report-title">GST Compliance</h3>
+                <p class="report-desc">HSN-wise tax breakdown for GSTR filing and financial compliance.</p>
+            </div>
+        </div>
+    </div>
+</form>
+
+<!-- Processing Modal -->
+<div class="modal fade" id="processingModal" data-backdrop="static" tabindex="-1">
+    <div class="modal-dialog modal-dialog-centered">
+        <div class="modal-content border-0">
+            <div class="modal-body text-center p-5">
+                <div class="spinner-border text-primary mb-4" role="status" style="width: 3rem; height: 3rem;"></div>
+                <h4 class="font-weight-bold">Generating Report</h4>
+                <p class="text-muted mb-0">We are crunching the numbers for you. This may take a few moments...</p>
+            </div>
+        </div>
+    </div>
+</div>
+
+{% endblock %}
+
+{% block scripts %}
+<script>
+    function selectReport(id) {
+        $('#report_id').val(id);
+        $('.report-card').removeClass('border-primary shadow-sm');
+        $(`[onclick="selectReport('${id}')"]`).addClass('border-primary shadow-sm');
+
+        // Show processing and submit
+        $('#processingModal').modal('show');
+        setTimeout(() => {
+            $('#reportForm').submit();
+            setTimeout(() => {
+                $('#processingModal').modal('hide');
+            }, 2000);
+        }, 500);
+    }
+
+    $('#periodSelect').on('change', function () {
+        if ($(this).val() === 'custom') {
+            $('#customRange').fadeIn();
+        } else {
+            $('#customRange').hide();
+        }
+    });
+</script>
+{% endblock %}

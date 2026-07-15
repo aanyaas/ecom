@@ -1,0 +1,235 @@
+﻿{% extends "base.html" %}
+
+{% block title %}{{ company_name }} - Reviews for {{ product.name }}{% endblock %}
+
+{% block content %}
+{% block styles %}
+{{ super() }}
+<style>
+    /* Luxury Product Reviews Styles */
+    .reviews-container {
+        padding: 60px 0 100px;
+        background: #fff;
+    }
+    .product-context-card {
+        background: #fdfcfd;
+        border-radius: 30px;
+        border: 1px solid #f0f0f0;
+        padding: 40px;
+        position: sticky;
+        top: 100px;
+        text-align: center;
+    }
+    .product-context-card img {
+        border-radius: 20px;
+        box-shadow: 0 15px 40px rgba(0,0,0,0.05);
+        margin-bottom: 25px;
+    }
+    .product-context-card h4 {
+        font-family: 'Playfair Display', serif;
+        font-weight: 700;
+        font-size: 1.8rem;
+        color: #1a1a1a;
+        margin-bottom: 15px;
+    }
+    .avg-rating-big {
+        font-size: 1.2rem;
+        color: #ffc107;
+        margin-bottom: 25px;
+        letter-spacing: 2px;
+    }
+    .btn-back {
+        background: #1a1a1a;
+        color: #fff;
+        padding: 15px 30px;
+        border-radius: 50px;
+        font-weight: 700;
+        text-transform: uppercase;
+        letter-spacing: 2px;
+        font-size: 0.8rem;
+        border: none;
+        transition: all 0.3s;
+        display: inline-block;
+    }
+    .btn-back:hover {
+        background: #a64d79;
+        color: #fff;
+        transform: translateY(-3px);
+        box-shadow: 0 10px 25px rgba(166, 77, 121, 0.2);
+    }
+
+    .review-item-card {
+        background: #fff;
+        border: 1px solid #f0f0f0;
+        border-radius: 25px;
+        padding: 35px;
+        margin-bottom: 30px;
+        transition: all 0.3s ease;
+    }
+    .review-item-card:hover {
+        border-color: #a64d79;
+        box-shadow: 0 15px 45px rgba(0,0,0,0.03);
+    }
+    .review-header {
+        display: flex;
+        justify-content: space-between;
+        align-items: flex-start;
+        margin-bottom: 20px;
+    }
+    .reviewer-info h5 {
+        font-family: 'Poppins', sans-serif;
+        font-weight: 700;
+        font-size: 1.1rem;
+        color: #1a1a1a;
+        margin-bottom: 5px;
+    }
+    .review-date {
+        font-size: 0.75rem;
+        color: #999;
+        text-transform: uppercase;
+        letter-spacing: 1.5px;
+        font-weight: 600;
+    }
+    .review-stars {
+        color: #ffc107;
+        font-size: 0.8rem;
+        letter-spacing: 2px;
+        margin-bottom: 20px;
+    }
+    .review-text {
+        font-family: 'Playfair Display', serif;
+        font-size: 1.1rem;
+        line-height: 1.8;
+        color: #333;
+        font-style: italic;
+    }
+    
+    .customer-media-grid {
+        display: flex;
+        gap: 15px;
+        flex-wrap: wrap;
+        margin-top: 25px;
+    }
+    .customer-media-item {
+        width: 100px;
+        height: 100px;
+        border-radius: 12px;
+        overflow: hidden;
+        border: 1px solid #eee;
+        cursor: pointer;
+    }
+    .customer-media-item img, .customer-media-item video {
+        width: 100%;
+        height: 100%;
+        object-fit: cover;
+        transition: transform 0.4s;
+    }
+    .customer-media-item:hover img {
+        transform: scale(1.1);
+    }
+
+    .empty-reviews {
+        text-align: center;
+        padding: 80px 40px;
+        background: #fdfcfd;
+        border-radius: 30px;
+        border: 1px dashed #ddd;
+    }
+</style>
+
+<div class="reviews-container">
+    <div class="container">
+        <div class="row">
+            <!-- Product Info Card -->
+            <div class="col-lg-4 mb-5">
+                <div class="product-context-card" data-reveal="left">
+                    <img src="{{ url_for('static', filename='img/products/' + product.image) if product.image else url_for('static', filename='img/default.jpg') }}" 
+                         alt="{{ product.name }}" class="img-fluid">
+                    <h4>{{ product.name }}</h4>
+                    
+                    <div class="avg-rating-big">
+                        {% for i in range(1, 6) %}
+                            {% if i <= avg_rating|round %}<i class="fas fa-star"></i>{% else %}<i class="far fa-star"></i>{% endif %}
+                        {% endfor %}
+                        <div class="mt-2 text-muted small" style="letter-spacing: 0;">
+                            {{ avg_rating|round(1) }} / 5.0 ({{ review_count }} Verified Reviews)
+                        </div>
+                    </div>
+                    
+                    <a href="{{ url_for('shop_bp.detail', product_id=product.id) }}" class="btn-back">
+                        <i class="fas fa-arrow-left mr-2"></i> Product Details
+                    </a>
+                </div>
+            </div>
+
+            <!-- Reviews Section -->
+            <div class="col-lg-8">
+                <h3 class="font-family-playfair font-weight-bold mb-4" style="font-size: 2rem;">Customer Experiences</h3>
+                
+                {% if reviews %}
+                    <div class="reviews-list">
+                        {% for review in reviews %}
+                        <div class="review-item-card" data-reveal="bottom">
+                            <div class="review-header">
+                                <div class="reviewer-info">
+                                    <h5>{{ review.title if review.title else 'Verified Purchase' }}</h5>
+                                    <div class="review-date">{{ review.created_at.strftime('%B %d, %Y') }} — by {{ review.username }}</div>
+                                </div>
+                            </div>
+                            
+                            <div class="review-stars">
+                                {% for i in range(1, 6) %}
+                                    {% if i <= review.rating %}<i class="fas fa-star"></i>{% else %}<i class="far fa-star"></i>{% endif %}
+                                {% endfor %}
+                            </div>
+                            
+                            {% if review.review_text %}
+                            <p class="review-text">"{{ review.review_text }}"</p>
+                            {% endif %}
+                            
+                            {% if review.media_files %}
+                            <div class="customer-media-grid">
+                                {% for media in review.media_files %}
+                                    {% if media.filename %}
+                                        <div class="customer-media-item">
+                                            {% if media.type and media.type.startswith('image') %}
+                                                <a href="{{ url_for('static', filename=media.path) }}" data-lightbox="review-{{ review.id }}">
+                                                    <img src="{{ url_for('static', filename=media.path) }}" alt="Customer Photo">
+                                                </a>
+                                            {% elif media.type and media.type.startswith('video') %}
+                                                <video controls>
+                                                    <source src="{{ url_for('static', filename=media.path) }}" type="{{ media.type }}">
+                                                </video>
+                                            {% endif %}
+                                        </div>
+                                    {% endif %}
+                                {% endfor %}
+                            </div>
+                            {% endif %}
+                        </div>
+                        {% endfor %}
+                    </div>
+                {% else %}
+                    <div class="empty-reviews">
+                        <i class="fas fa-comment-slash fa-3x mb-4 text-muted"></i>
+                        <h4 class="font-family-playfair">No reviews yet</h4>
+                        <p class="text-muted">Be the first to share your experience with this piece.</p>
+                        <a href="{{ url_for('shop_bp.detail', product_id=product.id) }}" class="btn btn-outline-primary rounded-pill mt-3">Submit a Review</a>
+                    </div>
+                {% endif %}
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- Lightbox Integration -->
+<link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/lightbox2/2.11.3/css/lightbox.min.css">
+<script src="https://cdnjs.cloudflare.com/ajax/libs/lightbox2/2.11.3/js/lightbox.min.js"></script>
+<script>
+    lightbox.option({
+        'resizeDuration': 300,
+        'wrapAround': true,
+        'showImageNumberLabel': false
+    });
+</script>
+{% endblock %}

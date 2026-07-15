@@ -1,0 +1,733 @@
+{% extends "admin/base.html" %}
+
+{% block title %}Product Management - {{ brand_name }}{% endblock %}
+
+{% block content %}
+<style>
+    /* Premium Glassmorphism Products Overhaul */
+    :root {
+        --glass-bg: rgba(255, 255, 255, 0.85);
+        --glass-border: rgba(255, 255, 255, 0.4);
+        --glass-shadow: 0 10px 30px rgba(0, 0, 0, 0.05);
+        --primary-accent: #a64d79;
+        --secondary-accent: #1a1a2e;
+        --text-dark: #2d3748;
+        --text-muted: #718096;
+    }
+
+    body {
+        background-color: #f4f7f6;
+        background-image:
+            radial-gradient(at 0% 0%, hsla(331, 65%, 85%, 1) 0, transparent 50%),
+            radial-gradient(at 100% 0%, hsla(236, 40%, 85%, 1) 0, transparent 50%);
+        background-attachment: fixed;
+        font-family: 'Inter', sans-serif;
+    }
+
+    /* Animated entrance */
+    @keyframes fadeUp {
+        from {
+            opacity: 0;
+            transform: translateY(20px);
+        }
+
+        to {
+            opacity: 1;
+            transform: translateY(0);
+        }
+    }
+
+    .card {
+        background: var(--glass-bg) !important;
+        backdrop-filter: blur(12px) !important;
+        -webkit-backdrop-filter: blur(12px);
+        border: 1px solid var(--glass-border) !important;
+        border-radius: 24px !important;
+        box-shadow: var(--glass-shadow) !important;
+        animation: fadeUp 0.7s ease-out backwards;
+    }
+
+    .card-header {
+        background: transparent !important;
+        border-bottom: 1px solid rgba(0, 0, 0, 0.05) !important;
+        padding: 15px 20px !important;
+    }
+
+    /* Controls (Inputs, Selects, Buttons) */
+    .form-control,
+    .btn {
+        border-radius: 12px;
+    }
+
+    .btn-primary {
+        background: linear-gradient(135deg, var(--primary-accent), #c26792);
+        border: none;
+        box-shadow: 0 4px 15px rgba(166, 77, 121, 0.3);
+        transition: transform 0.3s ease, box-shadow 0.3s ease;
+    }
+
+    .btn-primary:hover {
+        transform: translateY(-2px);
+        box-shadow: 0 6px 20px rgba(166, 77, 121, 0.4);
+    }
+
+    /* Table Styles */
+    .table {
+        color: var(--text-dark);
+        margin-bottom: 0;
+    }
+
+    .table thead th {
+        border-bottom: 2px solid rgba(0, 0, 0, 0.05);
+        border-top: none;
+        color: var(--text-muted);
+        font-weight: 600;
+        text-transform: uppercase;
+        font-size: 0.75rem;
+        letter-spacing: 1px;
+        padding: 12px 15px;
+        white-space: nowrap;
+    }
+
+    .table tbody td {
+        padding: 12px 15px;
+        vertical-align: middle;
+        border-bottom: 1px solid rgba(0, 0, 0, 0.03);
+        font-size: 0.875rem;
+    }
+
+    .table-hover tbody tr:hover {
+        background-color: rgba(255, 255, 255, 0.6);
+        transform: scale(1.002);
+        box-shadow: 0 5px 15px rgba(0, 0, 0, 0.03);
+        transition: all 0.3s ease;
+    }
+
+    .badge {
+        padding: 6px 12px;
+        border-radius: 8px;
+        font-weight: 600;
+        letter-spacing: 0.5px;
+    }
+
+    th a {
+        color: inherit;
+        text-decoration: none;
+        display: flex;
+        align-items: center;
+        justify-content: space-between;
+        transition: color 0.3s;
+    }
+
+    th a:hover {
+        color: var(--primary-accent);
+    }
+
+    /* Original utility classes */
+    .stock-value {
+        cursor: pointer;
+        border-bottom: 1px dashed #ccc;
+        padding: 4px 8px;
+        border-radius: 6px;
+        transition: background 0.3s;
+    }
+
+    .stock-value:hover {
+        background-color: rgba(0, 0, 0, 0.03);
+    }
+
+    .text-yellow {
+        color: #f6c23e !important;
+    }
+
+    .badge-soft-warning {
+        background-color: rgba(246, 194, 62, 0.1);
+        color: #f6c23e;
+    }
+
+    .badge-soft-success {
+        background-color: rgba(28, 200, 138, 0.1);
+        color: #1cc88a;
+    }
+
+    .badge-soft-secondary {
+        background-color: rgba(133, 135, 150, 0.1);
+        color: #858796;
+    }
+
+    .product-name-clamp {
+        display: -webkit-box;
+        line-clamp: 2;
+        -webkit-line-clamp: 2;
+        -webkit-box-orient: vertical;
+        overflow: hidden;
+        text-overflow: ellipsis;
+        white-space: normal;
+    }
+</style>
+
+<div class="d-flex justify-content-between align-items-center mb-1">
+    <div style="animation: fadeUp 0.5s ease-out;">
+        <h2 class="font-weight-bold mb-1" style="color: var(--text-dark);">Products</h2>
+    </div>
+    <div class="d-flex">
+        <a href="{{ url_for('admin_bp.add_product') }}" class="btn btn-primary mr-2">
+            <i class="fas fa-plus mr-2"></i> New Product
+        </a>
+        <a href="{{ url_for('admin_bp.download_products_report', search=search, category=category, status=status, sort=sort, order=order) }}"
+            class="btn btn-outline-primary">
+            <i class="fas fa-file-excel mr-2"></i> Download Report
+        </a>
+    </div>
+</div>
+
+<div class="card border-0 shadow-sm mb-3">
+    <div class="card-header bg-white py-3" style="border-radius: 24px 24px 0 0;">
+        <form class="row align-items-center mx-0 w-100" method="GET">
+            <div class="col-md-4 mb-2 mb-md-0">
+                <div class="input-group shadow-sm"
+                    style="border-radius: 12px; overflow: hidden; border: 1px solid rgba(0,0,0,0.05);">
+                    <div class="input-group-prepend">
+                        <span class="input-group-text bg-white border-0"><i
+                                class="fas fa-search text-primary"></i></span>
+                    </div>
+                    <input type="text" name="search" class="form-control border-0 bg-white"
+                        placeholder="Search products..." value="{{ search }}" style="box-shadow: none;">
+                </div>
+            </div>
+            <div class="col-md-3 mb-2 mb-md-0">
+                <select name="category" class="form-control shadow-sm border-0" onchange="this.form.submit()"
+                    style="border-radius: 12px; border: 1px solid rgba(0,0,0,0.05) !important;">
+                    <option value="all" {% if category=='all' %}selected{% endif %}>All Categories</option>
+                    {% for cat in categories %}
+                    <option value="{{ cat.id }}" {% if category==cat.id|string %}selected{% endif %}>{{ cat.name }}
+                    </option>
+                    {% endfor %}
+                </select>
+            </div>
+            <div class="col-md-3 mb-2 mb-md-0">
+                <select name="status" class="form-control shadow-sm border-0" onchange="this.form.submit()"
+                    style="border-radius: 12px; border: 1px solid rgba(0,0,0,0.05) !important;">
+                    <option value="all" {% if status=='all' %}selected{% endif %}>All Status</option>
+                    <option value="active" {% if status=='active' %}selected{% endif %}>Active</option>
+                    <option value="inactive" {% if status=='inactive' %}selected{% endif %}>Inactive</option>
+                    <option value="lowstock" {% if status=='lowstock' %}selected{% endif %}>Low Stock</option>
+                    <option value="outofstock" {% if status=='outofstock' %}selected{% endif %}>Out of Stock</option>
+                </select>
+            </div>
+            <div class="col-md-2 text-right">
+                <button type="submit" class="btn btn-primary shadow-sm mr-2 py-2 px-3">Apply</button>
+                <a href="{{ url_for('admin_bp.admin_products') }}" class="text-muted small font-weight-bold"
+                    style="text-decoration: none;">Reset</a>
+            </div>
+            <input type="hidden" name="sort" value="{{ sort }}">
+            <input type="hidden" name="order" value="{{ order }}">
+        </form>
+    </div>
+
+    <div class="card-body p-0">
+        <div class="table-responsive">
+            <table class="table table-hover align-items-center mb-0">
+                <thead>
+                    <tr>
+                        <th class="border-top-0">
+                            <a
+                                href="{{ url_for('admin_bp.admin_products', sort='name', order='asc' if sort != 'name' or order == 'desc' else 'desc', search=search, category=category, status=status) }}">
+                                Product
+                                {% if sort == 'name' or sort == 'id' %}<i
+                                    class="fas fa-sort-{{ 'down' if order == 'desc' else 'up' }} ml-1"></i>{% endif %}
+                            </a>
+                        </th>
+                        <th class="border-top-0">
+                            <a
+                                href="{{ url_for('admin_bp.admin_products', sort='sku', order='asc' if sort != 'sku' or order == 'desc' else 'desc', search=search, category=category, status=status) }}">
+                                SKU
+                                {% if sort == 'sku' %}<i
+                                    class="fas fa-sort-{{ 'down' if order == 'desc' else 'up' }} ml-1"></i>{% endif %}
+                            </a>
+                        </th>
+                        <th class="border-top-0">Category</th>
+                        <th class="border-top-0">
+                            <a
+                                href="{{ url_for('admin_bp.admin_products', sort='price', order='asc' if sort != 'price' or order == 'desc' else 'desc', search=search, category=category, status=status) }}">
+                                Price
+                                {% if sort == 'price' %}<i
+                                    class="fas fa-sort-{{ 'down' if order == 'desc' else 'up' }} ml-1"></i>{% endif %}
+                            </a>
+                        </th>
+                        <th class="border-top-0">
+                            <a
+                                href="{{ url_for('admin_bp.admin_products', sort='stock', order='asc' if sort != 'stock' or order == 'desc' else 'desc', search=search, category=category, status=status) }}">
+                                Stock
+                                {% if sort == 'stock' %}<i
+                                    class="fas fa-sort-{{ 'down' if order == 'desc' else 'up' }} ml-1"></i>{% endif %}
+                            </a>
+                        </th>
+                        <th class="border-top-0">Status</th>
+                        <th class="border-top-0 text-right">Actions</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    {% for product in products %}
+                    <tr>
+                        <td>
+                            <div class="d-flex align-items-center">
+                                <div class="mr-3">
+                                    {% set img_filename = product.image_filename or product.image %}
+                                    {% if img_filename and img_filename != 'default.jpg' %}
+                                    {% if '/' in img_filename %}
+                                    {% set parts = img_filename.rsplit('/', 1) %}
+                                    {% set thumb_path = url_for('static', filename='img/' + parts[0] + '/thumbs/' +
+                                    parts[1]) %}
+                                    {% set full_path = url_for('static', filename='img/' + img_filename) %}
+                                    {% else %}
+                                    {% set thumb_path = url_for('static', filename='img/thumbs/' + img_filename) %}
+                                    {% set full_path = thumb_path %}
+                                    {% endif %}
+                                    <img src="{{ thumb_path }}" class="rounded shadow-sm"
+                                        style="width: 32px; height: 32px; object-fit: cover;" alt="{{ product.name }}"
+                                        data-full="{{ full_path }}"
+                                        data-logo="{{ url_for('static', filename='img/logo.png') }}"
+                                        onerror="handleImageError(this)">
+                                    {% else %}
+                                    <div class="bg-light rounded d-flex align-items-center justify-content-center shadow-sm"
+                                        style="width: 48px; height: 60px;">
+                                        <i class="fas fa-image text-muted"></i>
+                                    </div>
+                                    {% endif %}
+                                </div>
+                                <div>
+                                    <div style="max-width: 200px;" title="{{ product.name }}">
+                                        <div class="mb-0 font-weight-bold text-dark product-name-clamp"
+                                            style="font-size: 0.9rem; line-height: 1.3;">{{ product.name }}</div>
+                                    </div>
+                                </div>
+                            </div>
+                        </td>
+                        <td>
+                            <code
+                                class="text-dark small font-weight-600">{{ product.sku if product.sku else '-' }}</code>
+                        </td>
+                        <td>
+                            <span class="badge badge-light border">
+                                {% if product.category in category_map %}
+                                {{ category_map[product.category]|title }}
+                                {% else %}
+                                {{ product.category|title if product.category else '-' }}
+                                {% endif %}
+                            </span>
+                        </td>
+                        <td>
+                            <div class="font-weight-600 text-dark">₹{{ "%.2f"|format(product.price) }}</div>
+                            <small class="text-muted">{{ product.gst_rate }}% GST</small>
+                        </td>
+                        <td class="stock-cell" data-product-id="{{ product.id }}">
+                            <div class="d-flex align-items-center stock-display">
+                                <span class="stock-value font-weight-600 mr-2 
+                                    {% if product.stock_quantity <= 0 %}text-danger
+                                    {% elif product.stock_quantity <= product.reorder_level %}text-yellow
+                                    {% endif %}" title="Click to edit">
+                                    {{ product.stock_quantity }}
+                                </span>
+                            </div>
+                            <div class="stock-edit" style="display: none;">
+                                <div class="input-group input-group-sm" style="width: 100px;">
+                                    <input type="number" class="form-control stock-input"
+                                        value="{{ product.stock_quantity }}">
+                                    <div class="input-group-append">
+                                        <button class="btn btn-primary save-stock" type="button"><i
+                                                class="fas fa-check"></i></button>
+                                    </div>
+                                </div>
+                            </div>
+                        </td>
+                        <td>
+                            {% if product.is_active %}
+                            <span class="badge badge-soft-success">Active</span>
+                            {% else %}
+                            <span class="badge badge-soft-secondary">Inactive</span>
+                            {% endif %}
+                        </td>
+                        <td class="text-right">
+                            <div class="dropdown no-arrow">
+                                <a class="btn btn-sm btn-white border shadow-sm dropdown-toggle" href="#" role="button"
+                                    data-toggle="dropdown">
+                                    <i class="fas fa-ellipsis-v text-muted"></i>
+                                </a>
+                                <div class="dropdown-menu dropdown-menu-right shadow border-0">
+                                    <a class="dropdown-item"
+                                        href="{{ url_for('admin_bp.edit_product', product_id=product.id) }}">
+                                        <i class="fas fa-edit mr-2 text-muted"></i> Edit Details
+                                    </a>
+                                    <a class="dropdown-item"
+                                        href="{{ url_for('admin_bp.add_product_variant', product_id=product.id) }}">
+                                        <i class="fas fa-copy mr-2 text-muted"></i> Create Variant
+                                    </a>
+                                    <div class="dropdown-divider"></div>
+                                    <button type="button" class="dropdown-item text-danger"
+                                        data-product-id="{{ product.id }}" data-product-name="{{ product.name|e }}"
+                                        onclick="confirmDelete(this)">
+                                        <i class="fas fa-trash-alt mr-2 text-danger"></i> Delete Product
+                                    </button>
+                                </div>
+                            </div>
+                        </td>
+                    </tr>
+                    {% else %}
+                    <tr>
+                        <td colspan="7" class="text-center py-5">
+                            <div class="text-muted mb-3"><i class="fas fa-box-open fa-3x"></i></div>
+                            <p class="mb-0">No products match your current filters.</p>
+                        </td>
+                    </tr>
+                    {% endfor %}
+                </tbody>
+            </table>
+        </div>
+    </div>
+
+    {% if pagination.pages > 1 %}
+    <div class="card-footer bg-white border-top-0 py-3">
+        <nav aria-label="Page navigation">
+            <ul class="pagination pagination-sm justify-content-end mb-0">
+                {% if pagination.page > 1 %}
+                <li class="page-item">
+                    <a class="page-link"
+                        href="{{ url_for('admin_bp.admin_products', page=pagination.page-1, search=search, category=category, status=status, sort=sort, order=order) }}">
+                        <i class="fas fa-chevron-left"></i>
+                    </a>
+                </li>
+                {% endif %}
+
+                {% for page_num in range(1, pagination.pages + 1) %}
+                <li class="page-item {% if page_num == pagination.page %}active{% endif %}">
+                    <a class="page-link"
+                        href="{{ url_for('admin_bp.admin_products', page=page_num, search=search, category=category, status=status, sort=sort, order=order) }}">{{
+                        page_num }}</a>
+                </li>
+                {% endfor %}
+
+                {% if pagination.page < pagination.pages %} <li class="page-item">
+                    <a class="page-link"
+                        href="{{ url_for('admin_bp.admin_products', page=pagination.page+1, search=search, category=category, status=status, sort=sort, order=order) }}">
+                        <i class="fas fa-chevron-right"></i>
+                    </a>
+                    </li>
+                    {% endif %}
+            </ul>
+        </nav>
+    </div>
+    {% endif %}
+</div>
+
+<!-- Delete Confirmation Modal -->
+<div class="modal fade" id="deleteProductModal" tabindex="-1" role="dialog" aria-labelledby="deleteModalLabel"
+    aria-hidden="true">
+    <div class="modal-dialog modal-dialog-centered" role="document">
+        <div class="modal-content border-0 shadow-lg" style="border-radius: 16px; overflow: hidden;">
+            <div class="modal-header border-0 pb-0"
+                style="background: linear-gradient(135deg, #fff5f5 0%, #fff0f0 100%);">
+                <div class="d-flex align-items-center">
+                    <div id="deleteModalIcon"
+                        class="rounded-circle d-flex align-items-center justify-content-center mr-3"
+                        style="width:48px;height:48px;background:rgba(220,53,69,0.12);">
+                        <i class="fas fa-trash-alt text-danger" style="font-size:20px;"></i>
+                    </div>
+                    <div>
+                        <h5 class="modal-title mb-0 font-weight-bold text-dark" id="deleteModalLabel">Delete Product
+                        </h5>
+                        <small class="text-muted" id="deleteModalSubtitle">This action may be irreversible</small>
+                    </div>
+                </div>
+                <button type="button" class="close ml-auto" data-dismiss="modal" aria-label="Close">
+                    <span aria-hidden="true" style="font-size:1.4rem;">&times;</span>
+                </button>
+            </div>
+            <div class="modal-body" style="background: linear-gradient(135deg, #fff5f5 0%, #fff0f0 100%);">
+                <!-- Default: confirm view -->
+                <div id="deleteConfirmView">
+                    <p class="mb-1 text-dark">You are about to permanently delete:</p>
+                    <p class="font-weight-bold text-danger mb-3" id="deleteProductName" style="font-size:1.05rem;"></p>
+                    <p class="text-muted small mb-0">Are you sure you want to continue?</p>
+                </div>
+                <!-- Error: linked to orders -->
+                <div id="deleteErrorView" style="display:none;">
+                    <div class="text-center py-2">
+                        <div class="rounded-circle bg-warning d-inline-flex align-items-center justify-content-center mb-3"
+                            style="width:56px;height:56px;">
+                            <i class="fas fa-link text-white" style="font-size:22px;"></i>
+                        </div>
+                        <h6 class="font-weight-bold text-dark mb-1" id="deleteErrorTitle">Cannot Delete — Product in Use
+                        </h6>
+                        <p class="text-muted small mb-3" id="deleteErrorProductName"></p>
+                        <div class="alert border-0 rounded-lg py-2 px-3 text-left mb-3" style="background:#fff8e1;">
+                            <i class="fas fa-exclamation-triangle text-warning mr-2"></i>
+                            <span class="small" id="deleteErrorDetail">This product is linked to existing <strong>orders
+                                    or records</strong> and cannot be permanently deleted.</span>
+                        </div>
+                        <p class="text-muted small" id="deleteErrorHint">You can hide it from the storefront by marking
+                            it <strong>Inactive</strong> instead.</p>
+                    </div>
+                </div>
+                <!-- Success: deleted -->
+                <div id="deleteSuccessView" style="display:none;">
+                    <div class="text-center py-2">
+                        <div class="rounded-circle bg-success d-inline-flex align-items-center justify-content-center mb-3"
+                            style="width:56px;height:56px;">
+                            <i class="fas fa-check text-white" style="font-size:22px;"></i>
+                        </div>
+                        <h6 class="font-weight-bold text-dark mb-1" id="deleteSuccessTitle">Product Deleted</h6>
+                        <p class="text-muted small" id="deleteSuccessMessage">The product has been removed successfully.
+                        </p>
+                    </div>
+                </div>
+            </div>
+            <div class="modal-footer border-0" style="background:#fff;">
+                <!-- Default footer -->
+                <div id="deleteConfirmFooter" class="w-100 justify-content-end" style="display:flex;">
+                    <button type="button" class="btn btn-light px-4 mr-2" data-dismiss="modal">
+                        <i class="fas fa-times mr-1"></i> Cancel
+                    </button>
+                    <button type="button" class="btn btn-danger px-4" id="confirmDeleteBtn" onclick="handleDelete()">
+                        <i class="fas fa-trash-alt mr-1"></i> Yes, Delete
+                    </button>
+                </div>
+                <!-- Error footer (linked) -->
+                <div id="deleteErrorFooter" class="w-100 justify-content-end" style="display:none;">
+                    <button type="button" class="btn btn-light px-4 mr-2" data-dismiss="modal">
+                        <i class="fas fa-times mr-1"></i> Close
+                    </button>
+                    <button type="button" class="btn btn-warning px-4" id="setInactiveBtn"
+                        onclick="handleSetInactive()">
+                        <i class="fas fa-eye-slash mr-1"></i> Mark as Inactive
+                    </button>
+                </div>
+                <!-- Success footer -->
+                <div id="deleteSuccessFooter" class="w-100 justify-content-end" style="display:none;">
+                    <button type="button" class="btn btn-success px-4" data-dismiss="modal">
+                        <i class="fas fa-check mr-1"></i> Done
+                    </button>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<script>
+    let _deleteProductId = null;
+    let _deleteProductAlreadyInactive = false;
+    const CSRF_TOKEN = '{{ csrf_token() }}';
+
+    function confirmDelete(btn) {
+        _deleteProductId = btn.dataset.productId;
+        const productName = btn.dataset.productName;
+        // Check if the product is already inactive by reading the badge in the same table row
+        const row = btn.closest('tr');
+        const badge = row ? row.querySelector('.badge') : null;
+        _deleteProductAlreadyInactive = badge ? badge.textContent.trim().toLowerCase() === 'inactive' : false;
+        // Reset to confirm view
+        document.getElementById('deleteProductName').textContent = '"' + productName + '"';
+        document.getElementById('deleteErrorProductName').textContent = '"' + productName + '"';
+        document.getElementById('deleteConfirmView').style.display = 'block';
+        document.getElementById('deleteErrorView').style.display = 'none';
+        document.getElementById('deleteSuccessView').style.display = 'none';
+        document.getElementById('deleteConfirmFooter').style.display = 'flex';
+        document.getElementById('deleteErrorFooter').style.display = 'none';
+        document.getElementById('deleteSuccessFooter').style.display = 'none';
+        document.getElementById('deleteModalLabel').textContent = 'Delete Product';
+        // Reset error footer to default (Mark as Inactive) to avoid stale state from prior opens
+        document.getElementById('deleteErrorFooter').innerHTML =
+            '<button type="button" class="btn btn-light px-4 mr-2" data-dismiss="modal"><i class="fas fa-times mr-1"></i> Close</button>' +
+            '<button type="button" class="btn btn-warning px-4" id="setInactiveBtn" onclick="handleSetInactive()"><i class="fas fa-eye-slash mr-1"></i> Mark as Inactive</button>';
+        $('#deleteProductModal').modal('show');
+    }
+
+    function handleDelete() {
+        if (!_deleteProductId) return;
+        const btn = document.getElementById('confirmDeleteBtn');
+        btn.disabled = true;
+        btn.innerHTML = '<span class="spinner-border spinner-border-sm mr-1"></span> Deleting...';
+
+        const fd = new FormData();
+        fd.append('csrf_token', CSRF_TOKEN);
+
+        fetch('/admin/products/delete/' + _deleteProductId, { method: 'POST', body: fd })
+            .then(r => r.json())
+            .then(data => {
+                if (data.success) {
+                    // Show success state
+                    document.getElementById('deleteSuccessTitle').textContent = 'Product Deleted';
+                    document.getElementById('deleteSuccessMessage').textContent = 'The product has been removed successfully.';
+                    document.getElementById('deleteConfirmView').style.display = 'none';
+                    document.getElementById('deleteSuccessView').style.display = 'block';
+                    document.getElementById('deleteConfirmFooter').style.display = 'none';
+                    document.getElementById('deleteSuccessFooter').style.display = 'flex';
+                    btn.disabled = false;
+                    btn.innerHTML = '<i class="fas fa-trash-alt mr-1"></i> Yes, Delete';
+                    // Remove the row from the table
+                    const row = document.querySelector('button[data-product-id="' + _deleteProductId + '"]')?.closest('tr');
+                    if (row) { row.style.transition = 'opacity 0.4s'; row.style.opacity = '0'; setTimeout(() => row.remove(), 400); }
+                } else if (data.error === 'linked') {
+                    btn.disabled = false;
+                    btn.innerHTML = '<i class="fas fa-trash-alt mr-1"></i> Yes, Delete';
+                    document.getElementById('deleteConfirmView').style.display = 'none';
+                    document.getElementById('deleteErrorView').style.display = 'block';
+                    document.getElementById('deleteConfirmFooter').style.display = 'none';
+                    if (_deleteProductAlreadyInactive) {
+                        // Already inactive — no point offering Mark as Inactive
+                        document.getElementById('deleteErrorTitle').textContent = 'Cannot Delete — Already Inactive';
+                        document.getElementById('deleteErrorDetail').innerHTML = 'This product is linked to existing <strong>orders or records</strong> and cannot be permanently deleted.';
+                        document.getElementById('deleteErrorHint').textContent = 'Since it is already Inactive, it is hidden from the storefront. No further action is needed.';
+                        document.getElementById('deleteErrorFooter').style.display = 'none';
+                        // Show just a Close button via success footer repurposed
+                        document.getElementById('deleteSuccessTitle').textContent = '';
+                        document.getElementById('deleteSuccessMessage').textContent = '';
+                        // Use a simple close-only footer
+                        document.getElementById('deleteErrorFooter').innerHTML = '<button type="button" class="btn btn-secondary px-4" data-dismiss="modal"><i class="fas fa-times mr-1"></i> Close</button>';
+                        document.getElementById('deleteErrorFooter').style.display = 'flex';
+                    } else {
+                        // Active product — offer Mark as Inactive
+                        document.getElementById('deleteErrorTitle').textContent = 'Cannot Delete — Product in Use';
+                        document.getElementById('deleteErrorDetail').innerHTML = 'This product is linked to existing <strong>orders or records</strong> and cannot be permanently deleted.';
+                        document.getElementById('deleteErrorHint').innerHTML = 'You can hide it from the storefront by marking it <strong>Inactive</strong> instead.';
+                        document.getElementById('deleteErrorFooter').style.display = 'flex';
+                    }
+                } else {
+                    btn.disabled = false;
+                    btn.innerHTML = '<i class="fas fa-trash-alt mr-1"></i> Yes, Delete';
+                    alert(data.message || 'An unexpected error occurred.');
+                }
+            })
+            .catch(() => {
+                btn.disabled = false;
+                btn.innerHTML = '<i class="fas fa-trash-alt mr-1"></i> Yes, Delete';
+                alert('Network error. Please try again.');
+            });
+    }
+
+    function handleSetInactive() {
+        if (!_deleteProductId) return;
+        const btn = document.getElementById('setInactiveBtn');
+        btn.disabled = true;
+        btn.innerHTML = '<span class="spinner-border spinner-border-sm mr-1"></span> Updating...';
+
+        const fd = new FormData();
+        fd.append('csrf_token', CSRF_TOKEN);
+
+        fetch('/admin/products/set-inactive/' + _deleteProductId, { method: 'POST', body: fd })
+            .then(r => r.json())
+            .then(data => {
+                if (data.success) {
+                    // Update badge in table row
+                    const row = document.querySelector('button[data-product-id="' + _deleteProductId + '"]')?.closest('tr');
+                    if (row) {
+                        const badge = row.querySelector('.badge-soft-success');
+                        if (badge) { badge.className = 'badge badge-soft-secondary'; badge.textContent = 'Inactive'; }
+                    }
+                    document.getElementById('deleteSuccessTitle').textContent = 'Marked as Inactive';
+                    document.getElementById('deleteSuccessMessage').textContent = 'The product is now hidden from the storefront.';
+                    document.getElementById('deleteModalLabel').textContent = 'Marked as Inactive';
+                    document.getElementById('deleteErrorView').style.display = 'none';
+                    document.getElementById('deleteSuccessView').style.display = 'block';
+                    document.getElementById('deleteErrorFooter').style.display = 'none';
+                    document.getElementById('deleteSuccessFooter').style.display = 'flex';
+                    btn.disabled = false;
+                    btn.innerHTML = '<i class="fas fa-eye-slash mr-1"></i> Mark as Inactive';
+                } else {
+                    btn.disabled = false;
+                    btn.innerHTML = '<i class="fas fa-eye-slash mr-1"></i> Mark as Inactive';
+                    alert(data.message || 'Could not update status. Please try again.');
+                }
+            })
+            .catch(() => {
+                btn.disabled = false;
+                btn.innerHTML = '<i class="fas fa-eye-slash mr-1"></i> Mark as Inactive';
+                alert('Network error. Please try again.');
+            });
+    }
+
+
+    function handleImageError(img) {
+        const fullPath = img.getAttribute('data-full');
+        const logoPath = img.getAttribute('data-logo');
+
+        if (img.getAttribute('data-tried-full')) {
+            img.src = logoPath;
+            img.onerror = null;
+        } else {
+            img.setAttribute('data-tried-full', '1');
+            img.src = fullPath;
+        }
+    }
+
+    document.addEventListener('DOMContentLoaded', function () {
+        // Click on stock value to edit
+        document.querySelectorAll('.stock-value').forEach(el => {
+            el.addEventListener('click', function () {
+                const cell = this.closest('.stock-cell');
+                cell.querySelector('.stock-display').style.display = 'none';
+                cell.querySelector('.stock-edit').style.display = 'block';
+                cell.querySelector('.stock-input').focus();
+            });
+        });
+
+        // Save stock value
+        document.querySelectorAll('.save-stock').forEach(btn => {
+            btn.addEventListener('click', function () {
+                const cell = this.closest('.stock-cell');
+                const productId = cell.getAttribute('data-product-id');
+                const newStock = cell.querySelector('.stock-input').value;
+                const displaySpan = cell.querySelector('.stock-value');
+
+                // Send AJAX request
+                const formData = new FormData();
+                formData.append('product_id', productId);
+                formData.append('stock', newStock);
+                formData.append('csrf_token', '{{ csrf_token() }}');
+
+                fetch("{{ url_for('admin_bp.update_stock') }}", {
+                    method: 'POST',
+                    body: formData
+                })
+                    .then(response => response.json())
+                    .then(data => {
+                        if (data.success) {
+                            displaySpan.textContent = newStock;
+
+                            // Update color coding
+                            displaySpan.classList.remove('text-danger', 'text-yellow');
+                            // Logic for badges update could be added here too, but for now just refresh or update text
+                            if (parseInt(newStock) <= 0) {
+                                displaySpan.classList.add('text-danger');
+                            }
+
+                            cell.querySelector('.stock-display').style.display = 'flex';
+                            cell.querySelector('.stock-edit').style.display = 'none';
+
+                            // Optional: show a small toast or success indicator
+                        } else {
+                            alert('Error updating stock: ' + data.message);
+                        }
+                    })
+                    .catch(error => {
+                        console.error('Error:', error);
+                        alert('An error occurred while updating stock.');
+                    });
+            });
+        });
+
+        // Cancel edit on Escape or click outside
+        document.addEventListener('keydown', function (e) {
+            if (e.key === 'Escape') {
+                document.querySelectorAll('.stock-edit').forEach(el => {
+                    if (el.style.display !== 'none') {
+                        const cell = el.closest('.stock-cell');
+                        cell.querySelector('.stock-display').style.display = 'flex';
+                        cell.querySelector('.stock-edit').style.display = 'none';
+                    }
+                });
+            }
+        });
+    });
+</script>
+{% endblock %}

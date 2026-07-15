@@ -1,0 +1,436 @@
+﻿{% extends "base.html" %}
+
+{% block title %}{{ company_name }} - My Wishlist{% endblock %}
+
+{% block styles %}
+{{ super() }}
+<link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/sweetalert2@11/dist/sweetalert2.min.css">
+<style>
+    /* Premium SweetAlert Custom Styling */
+    .premium-swal-popup {
+        border-radius: 25px !important;
+        font-family: 'Poppins', sans-serif !important;
+        box-shadow: 0 20px 50px rgba(0, 0, 0, 0.1) !important;
+        padding: 35px !important;
+        background: #fff !important;
+    }
+    .premium-swal-title {
+        font-family: 'Playfair Display', serif !important;
+        font-weight: 700 !important;
+        color: #1a1a1a !important;
+        font-size: 1.6rem !important;
+        margin-bottom: 10px !important;
+    }
+    .premium-swal-text {
+        font-family: 'Poppins', sans-serif !important;
+        color: #666 !important;
+        font-size: 0.95rem !important;
+        margin-bottom: 20px !important;
+    }
+    .premium-swal-confirm {
+        border-radius: 50px !important;
+        padding: 12px 30px !important;
+        font-size: 14px !important;
+        font-weight: 600 !important;
+        background-color: #dc3545 !important;
+        border: none !important;
+        color: #fff !important;
+        box-shadow: 0 5px 15px rgba(220, 53, 69, 0.2) !important;
+        transition: all 0.3s ease !important;
+    }
+    .premium-swal-confirm:hover {
+        transform: translateY(-2px) !important;
+        box-shadow: 0 8px 20px rgba(220, 53, 69, 0.4) !important;
+    }
+    .premium-swal-cancel {
+        border-radius: 50px !important;
+        padding: 12px 30px !important;
+        font-size: 14px !important;
+        font-weight: 600 !important;
+        background-color: #f8f9fa !important;
+        border: 1px solid #ddd !important;
+        color: #333 !important;
+        transition: all 0.3s ease !important;
+    }
+    .premium-swal-cancel:hover {
+        transform: translateY(-2px) !important;
+        background-color: #e2e6ea !important;
+    }
+
+    /* Premium Wishlist/Shop Grid Design System */
+    .product-item {
+        background: #fff;
+        border-radius: 25px !important;
+        overflow: hidden;
+        border: none !important;
+        transition: all 0.4s cubic-bezier(0.165, 0.84, 0.44, 1);
+        box-shadow: 0 10px 25px rgba(0,0,0,0.04);
+        margin-bottom: 40px;
+        position: relative;
+    }
+    .product-item:hover {
+        transform: translateY(-5px);
+        box-shadow: 0 15px 35px rgba(0,0,0,0.08);
+    }
+    .product-img {
+        height: 320px !important;
+        background: #f9f9f9 !important;
+        position: relative;
+        overflow: hidden;
+    }
+    .product-img img {
+        width: 100%;
+        height: 100%;
+        object-fit: cover;
+        transition: transform 1.2s cubic-bezier(0.165, 0.84, 0.44, 1);
+    }
+    .product-item:hover .product-img img {
+        transform: scale(1.08);
+    }
+    .product-details {
+        padding: 20px !important;
+        background: #fff;
+    }
+    .product-name-link {
+        font-family: 'Playfair Display', serif;
+        font-size: 1.05rem;
+        font-weight: 700;
+        color: #2a2a2a !important;
+        text-decoration: none !important;
+        transition: color 0.3s;
+    }
+    .product-name-link:hover {
+        color: #a64d79 !important;
+    }
+    .price-tag {
+        font-weight: 600;
+        color: #a64d79;
+        font-size: 1.1rem;
+    }
+    .cart-summary-card {
+        border: none !important;
+        background: #fff;
+        border-radius: 25px;
+        box-shadow: 0 20px 50px rgba(0,0,0,0.05);
+        padding: 40px;
+        position: sticky;
+        top: 120px;
+    }
+    .cart-summary-card h4 {
+        font-family: 'Playfair Display', serif;
+        font-weight: 700;
+        margin-bottom: 30px;
+        font-size: 1.5rem;
+        color: #1a1a1a;
+    }
+    .empty-cart-state {
+        text-align: center;
+        padding: 100px 20px;
+    }
+    .empty-cart-state i {
+        font-size: 4rem;
+        color: #ddd;
+        margin-bottom: 20px;
+    }
+    .share-link-input {
+        background: #f8f8f8;
+        border: 1px solid #eee;
+        font-size: 13px;
+        border-radius: 50px;
+        padding-left: 20px;
+    }
+    .copy-btn {
+        border-radius: 0 50px 50px 0;
+    }
+    
+    /* Remove Button Customization in Product Action Overlay */
+    .remove-from-wishlist-btn:hover {
+        background: #dc3545 !important;
+        color: #fff !important;
+        box-shadow: 0 15px 25px rgba(220, 53, 69, 0.35) !important;
+    }
+</style>
+{% endblock %}
+
+{% block content %}
+<div class="container-fluid py-5 bg-white">
+    <div class="container py-5">
+        <div class="row mb-5 reveal active">
+            <div class="col-12 text-center">
+                <h1 class="font-weight-bold mb-3" style="font-family: 'Playfair Display', serif; font-size: 3rem;">
+                    {% if is_shared %}Shared Wishlist{% else %}My Wishlist{% endif %}
+                </h1>
+                <p class="text-muted">{% if is_shared %}Discover these beautiful pieces.{% else %}Your favorite items, saved for later.{% endif %}</p>
+            </div>
+        </div>
+
+        <div class="row">
+            <div class="col-lg-8 reveal active">
+                {% if items %}
+                <div class="row">
+                    {% for item in items %}
+                    <div class="col-lg-6 col-md-6 col-sm-12 pb-1 reveal active" id="wishlist-row-{{ item.id }}">
+                        <div class="card product-item border-0">
+                            <div class="card-header product-img position-relative overflow-hidden bg-transparent p-0">
+                                <a href="{{ url_for('shop_bp.detail', product_id=item.id) }}" class="d-block">
+                                    <img class="img-fluid w-100"
+                                        src="{{ url_for('static', filename='img/thumbs/' ~ item.image|default('default.jpg')) }}"
+                                        alt="{{ item.name }}" loading="lazy">
+                                </a>
+                                {% if item.mrp and item.mrp|float > item.price|float %}
+                                {% set discount_percent = ((item.mrp|float - item.price|float) / item.mrp|float * 100)|round|int %}
+                                <div class="product-discount-badge">
+                                    <span>-{{ discount_percent }}%</span>
+                                </div>
+                                {% endif %}
+
+                                {% if item.stock_quantity|int <= 0 %}
+                                <div class="product-soldout-badge">
+                                    <span>Sold Out</span>
+                                </div>
+                                {% endif %}
+
+                                <div class="product-action">
+                                    <a class="btn" href="{{ url_for('shop_bp.detail', product_id=item.id) }}" aria-label="View Product"><i class="fa fa-eye"></i></a>
+                                    
+                                    {% if not is_shared or is_owner %}
+                                    <button class="btn remove-from-wishlist-btn" data-product-id="{{ item.id }}" aria-label="Remove from Wishlist" title="Remove">
+                                        <i class="far fa-trash-alt"></i>
+                                    </button>
+                                    {% endif %}
+                                    
+                                    {% if item.stock_quantity|int > 0 %}
+                                        {% if item.id not in cart_product_ids %}
+                                        <button class="btn add-to-cart-btn" data-product-id="{{ item.id }}">
+                                            <i class="fa fa-shopping-bag"></i>
+                                        </button>
+                                        {% else %}
+                                        <a href="{{ url_for('cart_bp.cart') }}" class="btn btn-in-cart-check" style="background: #25d366; color: #fff; border-color: #25d366;">
+                                            <i class="fa fa-check"></i>
+                                        </a>
+                                        {% endif %}
+                                    {% endif %}
+                                </div>
+                            </div>
+                            <div class="card-body product-details">
+                                <a href="{{ url_for('shop_bp.detail', product_id=item.id) }}" class="product-name-link text-truncate d-block">{{ item.name }}</a>
+                                <div class="d-flex align-items-baseline mb-2">
+                                    <span class="price-tag">₹{{ item.price|round|int }}</span>
+                                    {% if item.mrp and item.mrp|float > item.price|float %}
+                                    <del class="text-muted small ml-2">₹{{ item.mrp|round|int }}</del>
+                                    {% endif %}
+                                </div>
+                                <div class="d-flex align-items-center">
+                                    {% set rating = item.avg_rating|default(0)|float %}
+                                    <div class="text-primary mr-2" style="font-size: 0.75rem;">
+                                        {% for i in range(1, 6) %}
+                                        {% if i <= rating|round %}<i class="fas fa-star"></i>
+                                        {% elif i <= rating %}<i class="fas fa-star-half-alt"></i>
+                                        {% else %}<i class="far fa-star"></i>
+                                        {% endif %}
+                                        {% endfor %}
+                                    </div>
+                                    <small class="text-muted" style="font-size: 0.7rem;">({{ item.review_count|default(0) }})</small>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                    {% endfor %}
+                </div>
+                {% else %}
+                <div class="empty-cart-state bg-light rounded-lg">
+                    <i class="far fa-heart"></i>
+                    <h4 class="font-weight-bold mb-3" style="font-family: 'Playfair Display', serif;">This wishlist is empty</h4>
+                    <p class="text-muted mb-4">Discover our collection and add your favorite items.</p>
+                    <a href="{{ url_for('shop_bp.shop') }}" class="btn btn-primary px-5">Continue Shopping</a>
+                </div>
+                {% endif %}
+            </div>
+
+            <div class="col-lg-4 reveal active">
+                <div class="cart-summary-card">
+                    <h4>Wishlist Actions</h4>
+                    
+                    {% if items %}
+                        <button class="btn btn-block btn-dark py-3 font-weight-bold mb-4" onclick="addAllToCart()" style="border-radius: 50px;">
+                            <i class="fas fa-cart-plus mr-2"></i>Add All to Cart
+                        </button>
+                    {% endif %}
+                    
+                    {% if not is_shared or is_owner %}
+                        <hr class="my-4">
+                        <h5 class="font-weight-bold mb-3" style="font-size: 1.1rem;">Share Wishlist</h5>
+                        <p class="text-muted small mb-3">Share your favorite items with friends and family.</p>
+                        
+                        <div class="input-group mb-3">
+                            <input type="text" class="form-control share-link-input" id="shareLink" value="{{ request.url_root }}wishlist/shared/{{ share_token }}" readonly>
+                            <div class="input-group-append">
+                                <button class="btn btn-outline-secondary copy-btn" type="button" onclick="copyShareLink()">
+                                    <i class="far fa-copy"></i>
+                                </button>
+                            </div>
+                        </div>
+                        
+                        <div class="d-flex justify-content-between mt-3 gap-2">
+                            <a href="https://wa.me/?text={{ 'Check out my wishlist: ' | urlencode }}{{ request.url_root }}wishlist/shared/{{ share_token }}" target="_blank" class="btn btn-success flex-fill" style="border-radius: 50px; font-size: 13px;">
+                                <i class="fab fa-whatsapp mr-1"></i> WhatsApp
+                            </a>
+                            <a href="mailto:?subject=My Wishlist&body={{ 'Check out my wishlist here: ' | urlencode }}{{ request.url_root }}wishlist/shared/{{ share_token }}" class="btn btn-info flex-fill" style="border-radius: 50px; font-size: 13px;">
+                                <i class="far fa-envelope mr-1"></i> Email
+                            </a>
+                        </div>
+                    {% endif %}
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}
+
+{% block scripts %}
+{{ super() }}
+<script src="https://cdn.jsdelivr.net/npm/sweetalert2@11"></script>
+<script>
+    $(document).ready(function () {
+        // Remove from wishlist click event handler
+        $(document).on('click', '.remove-from-wishlist-btn', function (e) {
+            e.preventDefault();
+            const productId = $(this).data('product-id');
+            removeFromWishlist(productId);
+        });
+    });
+
+    function addAllToCart() {
+        const btn = event.currentTarget;
+        const originalText = btn.innerHTML;
+        btn.innerHTML = '<i class="fas fa-spinner fa-spin"></i> Adding...';
+        btn.disabled = true;
+
+        fetch('/wishlist/add_all_to_cart', {
+            method: 'POST',
+            headers: {
+                'X-Requested-With': 'XMLHttpRequest',
+                'X-CSRFToken': getCsrfToken()
+            }
+        })
+        .then(response => response.json())
+        .then(data => {
+            if(data.success) {
+                if (typeof window.showToast === 'function') {
+                    window.showToast('success', data.message);
+                } else if (typeof showToast === 'function') {
+                    showToast(data.message, 'success');
+                }
+                
+                // Refresh cart count
+                fetch('/get_cart_count')
+                    .then(res => res.json())
+                    .then(countData => {
+                        const totalQty = countData.total_quantity || countData.totalquantity || 0;
+                        $('.cart-count').text(totalQty);
+                    });
+            } else {
+                if (typeof window.showToast === 'function') {
+                    window.showToast('error', data.message || 'Error adding items to cart');
+                } else if (typeof showToast === 'function') {
+                    showToast(data.message || 'Error adding items to cart', 'error');
+                }
+            }
+        })
+        .catch(error => {
+            console.error('Error:', error);
+            if (typeof window.showToast === 'function') {
+                window.showToast('error', 'Failed to add items to cart');
+            } else if (typeof showToast === 'function') {
+                showToast('Failed to add items to cart', 'error');
+            }
+        })
+        .finally(() => {
+            btn.innerHTML = originalText;
+            btn.disabled = false;
+        });
+    }
+
+    function removeFromWishlist(productId) {
+        Swal.fire({
+            title: 'Remove Item?',
+            text: 'Are you sure you want to remove this item from your wishlist?',
+            icon: 'warning',
+            iconColor: '#ba6286',
+            showCancelButton: true,
+            confirmButtonText: 'Yes, Remove It',
+            cancelButtonText: 'No, Keep It',
+            customClass: {
+                popup: 'premium-swal-popup',
+                title: 'premium-swal-title',
+                htmlContainer: 'premium-swal-text',
+                confirmButton: 'premium-swal-confirm btn btn-danger mx-2',
+                cancelButton: 'premium-swal-cancel btn btn-light mx-2'
+            },
+            buttonsStyling: false
+        }).then((result) => {
+            if (result.isConfirmed) {
+                fetch(`/wishlist/remove/${productId}`, {
+                    method: 'POST',
+                    headers: {
+                        'X-Requested-With': 'XMLHttpRequest',
+                        'X-CSRFToken': getCsrfToken()
+                    }
+                })
+                .then(response => response.json())
+                .then(data => {
+                    if(data.success) {
+                        if (typeof window.showToast === 'function') {
+                            window.showToast('success', data.message);
+                        } else if (typeof showToast === 'function') {
+                            showToast(data.message, 'success');
+                        }
+                        
+                        $(`#wishlist-row-${productId}`).fadeOut(400, function() {
+                            $(this).remove();
+                            if($('.product-item').length === 0) {
+                                location.reload(); // Reload to show empty state
+                            }
+                        });
+                    } else {
+                        if (typeof window.showToast === 'function') {
+                            window.showToast('error', data.message || 'Error removing item');
+                        } else if (typeof showToast === 'function') {
+                            showToast(data.message || 'Error removing item', 'error');
+                        }
+                    }
+                })
+                .catch(error => {
+                    console.error('Error:', error);
+                    if (typeof window.showToast === 'function') {
+                        window.showToast('error', 'Failed to remove item');
+                    } else if (typeof showToast === 'function') {
+                        showToast('Failed to remove item', 'error');
+                    }
+                });
+            }
+        });
+    }
+
+    function copyShareLink() {
+        const copyText = document.getElementById("shareLink");
+        copyText.select();
+        copyText.setSelectionRange(0, 99999); // For mobile devices
+        document.execCommand("copy");
+        
+        const btn = document.querySelector('.copy-btn');
+        const icon = btn.querySelector('i');
+        icon.className = 'fas fa-check text-success';
+        
+        if (typeof window.showToast === 'function') {
+            window.showToast('success', 'Link copied to clipboard!');
+        } else if (typeof showToast === 'function') {
+            showToast('Link copied to clipboard!', 'success');
+        }
+        
+        setTimeout(() => {
+            icon.className = 'far fa-copy';
+        }, 2000);
+    }
+</script>
+{% endblock %}

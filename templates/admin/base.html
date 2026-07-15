@@ -1,0 +1,622 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <meta name="csrf-token" content="{{ csrf_token() }}">
+    <title>{% block title %}Enterprise Dashboard - {{ brand_name }} {% endblock %}</title>
+
+    <!-- Google Fonts -->
+    <link
+        href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&family=Poppins:wght@400;600;700&display=swap"
+        rel="stylesheet">
+
+    <!-- Font Awesome -->
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+
+    <!-- Bootstrap 4 -->
+    <link rel="stylesheet" href="https://stackpath.bootstrapcdn.com/bootstrap/4.5.2/css/bootstrap.min.css">
+
+    <!-- SweetAlert2 -->
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/sweetalert2@11/dist/sweetalert2.min.css">
+    <script src="https://cdn.jsdelivr.net/npm/sweetalert2@11"></script>
+
+    <style>
+        :root {
+            --sidebar-width: 260px;
+            --sidebar-collapsed-width: 80px;
+            --primary-color: #a64d79;
+            --secondary-color: #1a1a1a;
+            --bg-color: #fdfcfd;
+            --sidebar-bg: #111111;
+            --sidebar-hover: #1a1a1a;
+            --text-main: #1a1a1a;
+            --text-muted: #999;
+            --card-shadow: 0 10px 30px rgba(0, 0, 0, 0.03);
+            --transition: all 0.3s cubic-bezier(0.165, 0.84, 0.44, 1);
+        }
+
+        .text-primary {
+            color: var(--primary-color) !important;
+        }
+
+        .bg-primary {
+            background-color: var(--primary-color) !important;
+        }
+
+        .btn-primary {
+            background-color: var(--primary-color) !important;
+            border-color: var(--primary-color) !important;
+        }
+
+        .btn-outline-primary {
+            color: var(--primary-color) !important;
+            border-color: var(--primary-color) !important;
+        }
+
+        .btn-outline-primary:hover {
+            background-color: var(--primary-color) !important;
+            color: #fff !important;
+        }
+
+        body {
+            font-family: 'Inter', sans-serif;
+            background-color: var(--bg-color);
+            color: var(--text-main);
+            overflow-x: hidden;
+        }
+
+        h1,
+        h2,
+        h3,
+        h4,
+        h5,
+        h6 {
+            font-family: 'Poppins', sans-serif;
+            font-weight: 700;
+            letter-spacing: -0.02em;
+        }
+
+        #wrapper {
+            display: flex;
+            width: 100%;
+            overflow-x: hidden;
+            transition: var(--transition);
+        }
+
+        /* Sidebar Styling */
+        #sidebar-wrapper {
+            min-width: var(--sidebar-width);
+            max-width: var(--sidebar-width);
+            height: 100vh;
+            background: var(--sidebar-bg);
+            color: #fff;
+            transition: var(--transition);
+            position: fixed;
+            z-index: 1000;
+            border-right: 1px solid rgba(255, 255, 255, 0.05);
+        }
+
+        #sidebar-wrapper .sidebar-heading {
+            padding: 2rem 1.5rem;
+            display: flex;
+            align-items: center;
+        }
+
+        #sidebar-wrapper .sidebar-heading h4 {
+            margin: 0;
+            font-size: 1.4rem;
+            letter-spacing: 4px;
+            color: #fff;
+            font-weight: 900;
+        }
+
+        #sidebar-wrapper .list-group {
+            width: var(--sidebar-width);
+            padding: 1rem 0;
+        }
+
+        #sidebar-wrapper .list-group-item {
+            background: transparent;
+            color: rgba(255, 255, 255, 0.5);
+            border: none;
+            padding: 0.9rem 1.8rem;
+            font-size: 0.85rem;
+            font-weight: 600;
+            text-transform: uppercase;
+            letter-spacing: 1px;
+            transition: var(--transition);
+            display: flex;
+            align-items: center;
+        }
+
+        #sidebar-wrapper .list-group-item i {
+            width: 25px;
+            font-size: 1rem;
+            margin-right: 15px;
+            opacity: 0.8;
+        }
+
+        #sidebar-wrapper .list-group-item:hover {
+            color: #fff;
+            background: var(--sidebar-hover);
+            transform: translateX(5px);
+        }
+
+        #sidebar-wrapper .list-group-item.active {
+            color: #fff;
+            background: transparent;
+            position: relative;
+        }
+
+        #sidebar-wrapper .list-group-item.active::before {
+            content: '';
+            position: absolute;
+            left: 0;
+            top: 20%;
+            height: 60%;
+            width: 4px;
+            background: var(--primary-color);
+            border-radius: 0 4px 4px 0;
+        }
+
+        #sidebar-wrapper .list-group-item.active i {
+            color: var(--primary-color);
+            opacity: 1;
+        }
+
+        /* Page Content Styling */
+        #sidebar-wrapper {
+            left: 0;
+        }
+
+        #wrapper.toggled #sidebar-wrapper {
+            left: calc(-1 * var(--sidebar-width));
+        }
+
+        #page-content-wrapper {
+            width: calc(100vw - var(--sidebar-width));
+            max-width: calc(100vw - var(--sidebar-width));
+            margin-left: var(--sidebar-width);
+            transition: var(--transition);
+            overflow-x: hidden;
+            box-sizing: border-box;
+        }
+
+        #wrapper.toggled #page-content-wrapper {
+            width: 100vw;
+            max-width: 100vw;
+            margin-left: 0;
+        }
+
+        /* Navbar Enhancements */
+        .navbar {
+            padding: 1.2rem 2.5rem;
+            background: rgba(255, 255, 255, 0.8) !important;
+            backdrop-filter: blur(10px);
+            border-bottom: 1px solid rgba(0, 0, 0, 0.05);
+            position: sticky;
+            top: 0;
+            z-index: 999;
+        }
+
+        #menu-toggle {
+            background: #fff;
+            border: 1px solid #eee;
+            color: var(--text-main);
+            width: 40px;
+            height: 40px;
+            border-radius: 12px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            cursor: pointer;
+            transition: var(--transition);
+            box-shadow: 0 2px 5px rgba(0, 0, 0, 0.02);
+        }
+
+        #menu-toggle:hover {
+            background: #1a1a1a;
+            color: #fff;
+            border-color: #1a1a1a;
+        }
+
+        /* Sidebar active state refined */
+        #sidebar-wrapper .list-group-item.active {
+            color: #fff;
+            background: rgba(255, 255, 255, 0.03);
+        }
+
+        #sidebar-wrapper .list-group-item.active i {
+            color: var(--primary-color);
+            opacity: 1;
+            transform: scale(1.2);
+        }
+
+        .breadcrumb {
+            background: transparent;
+            padding: 0;
+            margin-bottom: 0;
+            font-size: 0.75rem;
+            text-transform: uppercase;
+            letter-spacing: 1px;
+            font-weight: 700;
+        }
+
+        .breadcrumb-item a {
+            color: var(--text-muted);
+        }
+
+        .breadcrumb-item.active {
+            color: var(--primary-color);
+        }
+
+        /* Cards & Components */
+        .card {
+            border: 1px solid #f0f0f0;
+            border-radius: 20px;
+            box-shadow: var(--card-shadow);
+            background: #fff;
+            transition: var(--transition);
+        }
+
+        .card:hover {
+            box-shadow: 0 15px 40px rgba(0, 0, 0, 0.06);
+        }
+
+        .card-header {
+            background-color: #fff;
+            border-bottom: 1px solid #f9f9f9;
+            padding: 1.5rem 1.8rem;
+            font-weight: 700;
+        }
+
+        .btn-primary {
+            background-color: var(--primary-color);
+            border: none;
+            border-radius: 50px;
+            padding: 0.6rem 1.8rem;
+            font-weight: 700;
+            font-size: 0.8rem;
+            letter-spacing: 1px;
+            text-transform: uppercase;
+            transition: var(--transition);
+        }
+
+        .btn-primary:hover {
+            background-color: #1a1a1a;
+            transform: translateY(-2px);
+            box-shadow: 0 10px 20px rgba(166, 77, 121, 0.2);
+        }
+
+        .badge-soft-primary {
+            background-color: rgba(166, 77, 121, 0.05);
+            color: var(--primary-color);
+            border-radius: 50px;
+            padding: 5px 12px;
+            font-weight: 700;
+        }
+
+        /* Table Styling */
+        .table {
+            color: var(--text-main);
+        }
+
+        .table thead th {
+            background-color: #f8f9fc;
+            border-bottom: none;
+            text-transform: uppercase;
+            font-size: 0.75rem;
+            letter-spacing: 1px;
+            font-weight: 700;
+            color: var(--text-muted);
+            padding: 1rem 1.5rem;
+        }
+
+        .table td {
+            padding: 1rem 1.5rem;
+            vertical-align: middle;
+            border-top: 1px solid #f1f1f1;
+        }
+
+        /* Custom Scrollbar for Luxury Feel */
+        ::-webkit-scrollbar {
+            width: 6px;
+        }
+
+        ::-webkit-scrollbar-track {
+            background: #fdfcfd;
+        }
+
+        ::-webkit-scrollbar-thumb {
+            background: #ddd;
+            border-radius: 10px;
+        }
+
+        ::-webkit-scrollbar-thumb:hover {
+            background: var(--primary-color);
+        }
+    </style>
+    {% block styles %}{% endblock %}
+</head>
+
+<body class="theme-{{ session.get('admin_theme', 'light') }}">
+    <div id="wrapper">
+        <!-- Sidebar -->
+        <div id="sidebar-wrapper">
+            <div class="sidebar-heading">
+                <h4>{{ brand_name|upper }}</h4>
+            </div>
+            {% if session.admin_username %}
+            <div class="list-group list-group-flush">
+                {% if admin_sidebar_menus %}
+                {% for menu in admin_sidebar_menus %}
+                <a href="{{ url_for(menu.endpoint) }}"
+                    class="list-group-item list-group-item-action {% if menu.endpoint == request.endpoint %}active{% endif %}">
+                    <i class="{{ menu.icon }}"></i><span>{{ menu.name }}</span>
+                </a>
+                {% endfor %}
+                {% else %}
+                <a href="{{ url_for('admin_bp.admin_dashboard') }}"
+                    class="list-group-item list-group-item-action active">
+                    <i class="fas fa-th-large"></i><span>Dashboard</span>
+                </a>
+                {% endif %}
+
+                <div class="dropdown-divider opacity-10 mx-3 my-2" style="border-color: rgba(255,255,255,0.05)"></div>
+                <a href="{{ url_for('admin_bp.admin_logout') }}"
+                    class="list-group-item list-group-item-action text-danger mt-auto">
+                    <i class="fas fa-sign-out-alt"></i><span>Logout</span>
+                </a>
+            </div>
+            {% else %}
+            <div class="p-4 text-center">
+                <p class="small text-white-50">Portal Authentication Required</p>
+            </div>
+            {% endif %}
+        </div>
+
+        <!-- Page Content -->
+        <div id="page-content-wrapper">
+            <nav class="navbar navbar-expand-lg navbar-light">
+                <div class="d-flex align-items-center">
+                    <button id="menu-toggle" class="mr-3">
+                        <i class="fas fa-bars-staggered"></i>
+                    </button>
+                </div>
+
+                <div class="collapse navbar-collapse" id="navbarSupportedContent">
+                    <ul class="navbar-nav ml-auto align-items-center">
+                        <li class="nav-item mr-3">
+                            <a href="/" target="_blank" class="btn btn-sm btn-outline-primary">
+                                <i class="fas fa-external-link-alt mr-1"></i> View Site
+                            </a>
+                        </li>
+                        {% if session.admin_username %}
+                        <li class="nav-item dropdown">
+                            <a class="nav-link dropdown-toggle d-flex align-items-center" href="#" id="navbarDropdown"
+                                role="button" data-toggle="dropdown">
+                                <div class="bg-primary rounded-circle text-white d-flex align-items-center justify-content-center mr-2"
+                                    style="width: 32px; height: 32px; font-size: 0.8rem;">
+                                    {{ session.admin_username[0]|upper }}
+                                </div>
+                                <span class="font-weight-600">{{ session.admin_username }}</span>
+                            </a>
+                            <div class="dropdown-menu dropdown-menu-right shadow-sm border-0 mt-2">
+                                <a class="dropdown-item" href="#" data-toggle="modal" data-target="#profileModal">
+                                    <i class="fas fa-user-circle mr-2 text-muted"></i> My Profile
+                                </a>
+                                <a class="dropdown-item" href="#" data-toggle="modal"
+                                    data-target="#changePasswordModal">
+                                    <i class="fas fa-key mr-2 text-muted"></i> Change Password
+                                </a>
+                                <div class="dropdown-divider"></div>
+                                <a class="dropdown-item text-danger" href="{{ url_for('admin_bp.admin_logout') }}">
+                                    <i class="fas fa-sign-out-alt mr-2"></i> Logout
+                                </a>
+                            </div>
+                        </li>
+                        {% endif %}
+                    </ul>
+                </div>
+            </nav>
+
+            <div class="container-fluid py-2">
+                {% block flash_messages %}
+                {% with messages = get_flashed_messages(with_categories=true) %}
+                {% if messages %}
+                {% for category, message in messages %}
+                <div
+                    class="alert alert-{{ 'success' if category == 'success' else 'danger' }} alert-dismissible fade show border-0 shadow-sm mb-3">
+                    <i class="fas fa-{{ 'check-circle' if category == 'success' else 'exclamation-circle' }} mr-2"></i>
+                    {{ message }}
+                    <button type="button" class="close" data-dismiss="alert">
+                        <span>&times;</span>
+                    </button>
+                </div>
+                {% endfor %}
+                {% endif %}
+                {% endwith %}
+                {% endblock %}
+
+                {% block content %}{% endblock %}
+            </div>
+
+            <footer class="footer mt-auto py-2 bg-white border-top w-100">
+                <div class="container-fluid">
+                    <div class="row">
+                        <div class="col-12 text-center">
+                            <span class="text-muted small">&copy; 2026 {{ company_name }}. All rights
+                                reserved.</span>
+                        </div>
+                    </div>
+                </div>
+            </footer>
+        </div>
+    </div>
+
+    {% if session.admin_username %}
+    <!-- Profile Modal (Premium Design) -->
+    <div class="modal fade" id="profileModal" tabindex="-1" role="dialog">
+        <div class="modal-dialog modal-sm" role="document">
+            <div class="modal-content border-0 shadow-lg" style="border-radius: 0.5rem; overflow: hidden;">
+                <div class="modal-body p-0">
+                    <div class="bg-primary text-center py-4"
+                        style="background: linear-gradient(135deg, var(--primary) 0%, #2a5298 100%);">
+                        <div class="d-inline-flex align-items-center justify-content-center bg-white text-primary rounded-circle shadow-sm mb-3"
+                            style="width: 80px; height: 80px; font-size: 32px; font-weight: 700;">
+                            {{ session.admin_username[0]|upper }}
+                        </div>
+                        <h4 class="mb-0 text-white font-weight-bold">{{ session.admin_username }}</h4>
+                        <span class="badge badge-light mt-2 px-3 py-1" style="opacity: 0.9; letter-spacing: 1px;">{{
+                            session.admin_role|upper }}</span>
+                    </div>
+                    <div class="p-4 bg-white">
+                        <div class="list-group list-group-flush mb-4">
+                            <div
+                                class="list-group-item px-0 py-2 d-flex justify-content-between align-items-center border-bottom-0">
+                                <span class="text-muted small"><i class="fas fa-id-badge mr-2"></i>Account Type</span>
+                                <span class="font-weight-600 small">{{ session.admin_role|title }}</span>
+                            </div>
+                            <div class="list-group-item px-0 py-2 d-flex justify-content-between align-items-center">
+                                <span class="text-muted small"><i class="fas fa-user mr-2"></i>Username</span>
+                                <span class="font-weight-600 small">{{ session.admin_username }}</span>
+                            </div>
+                        </div>
+                        <button type="button" class="btn btn-primary btn-block mb-2" id="changePasswordBtn"
+                            style="border-radius: 20px;">
+                            <i class="fas fa-key mr-2"></i>Change Password
+                        </button>
+                        <button type="button" class="btn btn-light btn-block text-muted" data-dismiss="modal"
+                            style="border-radius: 20px;">
+                            Close
+                        </button>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Change Password Modal -->
+    <div class="modal fade" id="changePasswordModal" tabindex="-1" role="dialog">
+        <div class="modal-dialog" role="document">
+            <div class="modal-content border-0 shadow-lg">
+                <div class="modal-header bg-light border-0">
+                    <h5 class="modal-title"><i class="fas fa-key mr-2 text-primary"></i>Change Password</h5>
+                    <button type="button" class="close" data-dismiss="modal" aria-label="Close">
+                        <span aria-hidden="true">&times;</span>
+                    </button>
+                </div>
+                <div class="modal-body p-4">
+                    <form id="changePasswordForm">
+                        <input type="hidden" name="csrf_token" value="{{ csrf_token() }}">
+                        <div class="form-group">
+                            <label>Current Password</label>
+                            <div class="input-group">
+                                <input type="password" class="form-control" name="current_password" required>
+                                <div class="input-group-append">
+                                    <button class="btn btn-outline-secondary toggle-password" type="button"><i
+                                            class="fas fa-eye"></i></button>
+                                </div>
+                            </div>
+                        </div>
+                        <div class="form-group">
+                            <label>New Password</label>
+                            <div class="input-group">
+                                <input type="password" class="form-control" name="new_password" required minlength="8">
+                                <div class="input-group-append">
+                                    <button class="btn btn-outline-secondary toggle-password" type="button"><i
+                                            class="fas fa-eye"></i></button>
+                                </div>
+                            </div>
+                        </div>
+                        <div class="form-group">
+                            <label>Confirm New Password</label>
+                            <div class="input-group">
+                                <input type="password" class="form-control" name="confirm_new_password" required
+                                    minlength="8">
+                                <div class="input-group-append">
+                                    <button class="btn btn-outline-secondary toggle-password" type="button"><i
+                                            class="fas fa-eye"></i></button>
+                                </div>
+                            </div>
+                        </div>
+                        <div id="passwordAlert" class="alert d-none small"></div>
+                        <button type="submit" class="btn btn-primary btn-block mt-4">Update Password</button>
+                    </form>
+                </div>
+            </div>
+        </div>
+    </div>
+    {% endif %}
+
+    <!-- Bootstrap & jQuery -->
+    <script src="https://code.jquery.com/jquery-3.6.0.min.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/popper.js@1.16.1/dist/umd/popper.min.js"></script>
+    <script src="https://stackpath.bootstrapcdn.com/bootstrap/4.5.2/js/bootstrap.min.js"></script>
+
+    <script>
+        // Toggle sidebar
+        $("#menu-toggle").click(function (e) {
+            e.preventDefault();
+            $("#wrapper").toggleClass("toggled");
+        });
+
+        // Auto-dismiss alerts
+        setTimeout(function () {
+            $('.alert-dismissible').fadeOut(500, function () { $(this).remove(); });
+        }, 5000);
+
+        // Change password handler
+        $('#changePasswordBtn').click(function () {
+            $('#profileModal').modal('hide');
+            $('#changePasswordModal').modal('show');
+        });
+
+        // Toggle password visibility
+        $('.toggle-password').click(function () {
+            const input = $(this).closest('.input-group').find('input');
+            const icon = $(this).find('i');
+            if (input.attr('type') === 'password') {
+                input.attr('type', 'text');
+                icon.removeClass('fa-eye').addClass('fa-eye-slash');
+            } else {
+                input.attr('type', 'password');
+                icon.removeClass('fa-eye-slash').addClass('fa-eye');
+            }
+        });
+
+        // Change password form submission
+        $('#changePasswordForm').submit(function (e) {
+            e.preventDefault();
+            const form = $(this);
+            const alert = $('#passwordAlert');
+            const submitBtn = form.find('button[type="submit"]');
+
+            submitBtn.prop('disabled', true).text('Updating...');
+            alert.addClass('d-none').removeClass('alert-success alert-danger');
+
+            $.ajax({
+                url: "{{ url_for('admin_bp.change_password') }}",
+                type: 'POST',
+                data: form.serialize(),
+                success: function (response) {
+                    alert.removeClass('d-none alert-danger').addClass('alert-success').text(response.message);
+                    form[0].reset();
+                    setTimeout(() => $('#changePasswordModal').modal('hide'), 2000);
+                },
+                error: function (xhr) {
+                    const msg = xhr.responseJSON ? xhr.responseJSON.message : 'An error occurred';
+                    alert.removeClass('d-none alert-success').addClass('alert-danger').text(msg);
+                },
+                complete: function () {
+                    submitBtn.prop('disabled', false).text('Update Password');
+                }
+            });
+        });
+    </script>
+    {% block scripts %}{% endblock %}
+</body>
+
+</html>

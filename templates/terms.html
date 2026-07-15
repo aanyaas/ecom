@@ -1,0 +1,184 @@
+{% extends "base.html" %}
+
+{% block title %}{{ company_name }} - Terms and Conditions{% endblock %}
+
+{% block styles %}
+{{ super() }}
+<style>
+    .page-header-luxury {
+        padding: 80px 0 40px;
+        background: #fdfcfd;
+        text-align: center;
+        border-bottom: 1px solid #f0f0f0;
+    }
+
+    .page-header-luxury h1 {
+        font-family: 'Playfair Display', serif;
+        font-weight: 700;
+        font-size: 3rem;
+        color: #1a1a1a;
+        margin-bottom: 15px;
+    }
+
+    .breadcrumb-luxury {
+        display: flex;
+        justify-content: center;
+        align-items: center;
+        gap: 15px;
+        list-style: none;
+        padding: 0;
+        margin: 0;
+        font-size: 0.85rem;
+        text-transform: uppercase;
+        letter-spacing: 2px;
+        font-weight: 600;
+    }
+
+    .breadcrumb-luxury a {
+        color: #999;
+        transition: color 0.3s;
+    }
+
+    .breadcrumb-luxury a:hover {
+        color: #a64d79;
+        text-decoration: none;
+    }
+
+    .breadcrumb-luxury span {
+        color: #1a1a1a;
+    }
+
+    .policy-content {
+        padding: 60px 0 100px;
+        background: #fff;
+    }
+
+    .policy-card {
+        background: #fff;
+        border: 1px solid #f0f0f0;
+        border-radius: 30px;
+        padding: 50px;
+        box-shadow: 0 15px 40px rgba(0, 0, 0, 0.02);
+        margin-bottom: 30px;
+    }
+
+    .policy-card h4 {
+        font-family: 'Playfair Display', serif;
+        font-weight: 700;
+        color: #a64d79;
+        margin-top: 40px;
+        margin-bottom: 20px;
+        font-size: 1.5rem;
+    }
+
+    .policy-card h4:first-child {
+        margin-top: 0;
+    }
+
+    .policy-card p,
+    .policy-card ul {
+        font-size: 1.05rem;
+        line-height: 1.8;
+        color: #555;
+    }
+
+    .policy-card ul {
+        padding-left: 20px;
+        margin-bottom: 20px;
+    }
+
+    .policy-card li {
+        margin-bottom: 10px;
+    }
+
+    .policy-card a {
+        color: #a64d79;
+        font-weight: 600;
+        text-decoration: none;
+        border-bottom: 1px solid transparent;
+        transition: all 0.3s;
+    }
+
+    .policy-card a:hover {
+        border-bottom-color: #a64d79;
+    }
+</style>
+{% endblock %}
+
+{% block content %}
+<div class="page-header-luxury">
+    <div class="container reveal">
+        <h1>Terms and Conditions</h1>
+        <ul class="breadcrumb-luxury">
+            <li><a href="{{ url_for('pages_bp.home') }}">Home</a></li>
+            <li>/</li>
+            <li><span>Terms and Conditions</span></li>
+        </ul>
+    </div>
+</div>
+
+<div class="policy-content">
+    <div class="container">
+        <div class="row">
+            <div class="col-lg-10 mx-auto reveal" data-reveal="bottom">
+                <div class="policy-card">
+                    <h4>1. Introduction</h4>
+                    <p>Welcome to {{ company_name }}. These terms and conditions outline the rules and regulations for
+                        the use of our website and services.</p>
+                    <p>By accessing this website, we assume you accept these terms and conditions in full. Do not
+                        continue to use {{ company_name }}' website if you do not accept all of the terms and conditions
+                        stated on this page.</p>
+
+                    <h4>2. Intellectual Property Rights</h4>
+                    <p>Unless otherwise stated, {{ company_name }} and/or its licensors own the intellectual property
+                        rights for all material on this website. All intellectual property rights are reserved.</p>
+                    <p>You may view and/or print pages from {{ company_info.website or request.host }} for your own personal use subject to
+                        restrictions set in these terms and conditions.</p>
+
+                    <h4>3. Restrictions</h4>
+                    <p>You are specifically restricted from:</p>
+                    <ul>
+                        <li>Publishing any website material in any other media</li>
+                        <li>Selling, sublicensing and/or otherwise commercializing any website material</li>
+                        <li>Using this website in any way that is or may be damaging to this website</li>
+                        <li>Using this website in any way that impacts user access to this website</li>
+                        <li>Using this website contrary to applicable laws and regulations</li>
+                    </ul>
+
+                    <h4>4. Products and Services</h4>
+                    <p>All products and services are subject to availability. We reserve the right to discontinue any
+                        product at any time.</p>
+                    <p>We make every effort to display as accurately as possible the colors and images of our products
+                        that appear on the website. However, we cannot guarantee that your computer monitor's display of
+                        any color will be accurate.</p>
+
+                    <h4>5. Pricing and Payment</h4>
+                    <p>All prices are in Indian Rupees (₹) and are subject to change without notice.</p>
+                    <p>We reserve the right to refuse any order you place with us. We may limit or cancel quantities
+                        purchased per person, per household or per order.</p>
+
+                    <h4>6. Returns and Refunds</h4>
+                    <p>Please review our Return Policy which governs the return of any merchandise purchased from us.
+                    </p>
+                    <p>We reserve the right to refuse returns of any merchandise that does not meet the return policy
+                        requirements in our sole discretion.</p>
+
+                    <h4>7. Limitation of Liability</h4>
+                    <p>In no event shall {{ company_name }}, nor any of its officers, directors and employees, be liable
+                        to you for anything arising out of or in any way connected with your use of this website.</p>
+
+                    <h4>8. Governing Law</h4>
+                    <p>These terms and conditions are governed by and construed in accordance with the laws of India and
+                        you irrevocably submit to the exclusive jurisdiction of the courts in that State or location.
+                    </p>
+
+                    <h4>9. Changes to Terms</h4>
+                    <p>We reserve the right, at our sole discretion, to modify or replace these terms at any time. By
+                        continuing to access or use our website after those revisions become effective, you agree to be
+                        bound by the revised terms.</p>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}

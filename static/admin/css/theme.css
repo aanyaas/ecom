@@ -1,0 +1,180 @@
+/* Dark theme styles */
+body.theme-dark {
+    background-color: #1a1a1a;
+    color: #e0e0e0; /* Brighter text for better contrast */
+}
+
+body.theme-dark .card {
+    background-color: #2a2a2a;
+    border-color: #3a3a3a;
+    color: #e0e0e0; /* Ensure card text is visible */
+}
+
+body.theme-dark .card-header {
+    background-color: #333;
+    border-bottom-color: #444;
+    color: #ffffff; /* Brighter header text */
+}
+
+body.theme-dark .table {
+    color: #e0e0e0;
+    background-color: #2a2a2a;
+}
+
+body.theme-dark .table-bordered {
+    border-color: #3a3a3a;
+}
+
+body.theme-dark .table thead th {
+    background-color: #333;
+    border-color: #3a3a3a;
+}
+
+body.theme-dark .table td,
+body.theme-dark .table th {
+    color: #e0e0e0 !important;
+}
+body.theme-dark .table tbody tr {
+    background-color: #2a2a2a;
+}
+
+body.theme-dark .list-group-item {
+    background-color: #2a2a2a;
+    border-color: #3a3a3a;
+    color: #e0e0e0;
+}
+body.theme-dark .list-group-item.active {
+    background-color: var(--primary);
+    border-color: var(--primary);
+}
+body.theme-dark .bg-light {
+    background-color: #2a2a2a !important;
+}
+/* Fix for chart text colors */
+body.theme-dark .chartjs-render-monitor text {
+    fill: #ffffff !important;
+    font-weight: 600 !important;
+}
+body.theme-dark .border-right {
+    border-right-color: #3a3a3a !important;
+}
+
+body.theme-dark .text-muted {
+    color: #b0b0b0 !important;
+    opacity: 0.9 !important;
+}
+
+body.theme-dark .text-gray-800 {
+    color: #e0e0e0 !important; /* Override dark text in dark mode */
+}
+
+body.theme-dark .dropdown-menu {
+    background-color: #333;
+    border-color: #444;
+}
+
+body.theme-dark .dropdown-item {
+    color: #e0e0e0;
+}
+
+body.theme-dark .dropdown-item:hover {
+    background-color: #444;
+}
+
+body.theme-dark .navbar-light {
+    background-color: #2a2a2a !important;
+    border-color: #3a3a3a !important;
+}
+/* Add these to theme.css */
+body.theme-dark .form-control {
+    background-color: #333;
+    border-color: #444;
+    color: #e0e0e0;
+}
+
+body.theme-dark .form-control:focus {
+    background-color: #333;
+    color: #ffffff;
+    border-color: var(--primary);
+    box-shadow: 0 0 0 0.2rem rgba(78, 115, 223, 0.25);
+}
+
+body.theme-dark .form-control::placeholder {
+    color: #888;
+}
+
+body.theme-dark .input-group-text {
+    background-color: #444;
+    border-color: #444;
+    color: #e0e0e0;
+}
+
+body.theme-dark .modal-content {
+    background-color: #2a2a2a;
+    border-color: #3a3a3a;
+}
+
+body.theme-dark .modal-header {
+    border-bottom-color: #3a3a3a;
+}
+
+body.theme-dark .modal-footer {
+    border-top-color: #3a3a3a;
+}
+
+body.theme-dark .close {
+    color: #e0e0e0;
+    text-shadow: 0 1px 0 #000;
+}
+
+body.theme-dark .close:hover {
+    color: #ffffff;
+}
+
+body.theme-dark label {
+    color: #e0e0e0;
+}
+
+body.theme-dark .badge-success {
+    background-color: #1cc88a;
+    color: #fff;
+}
+
+body.theme-dark .badge-secondary {
+    background-color: #6c757d;
+    color: #fff;
+}
+/* Fix for faded elements in dashboard cards */
+body.theme-dark .card-body h1,
+body.theme-dark .card-body .h1,
+body.theme-dark .card-body h2,
+body.theme-dark .card-body .h2,
+body.theme-dark .card-body h3,
+body.theme-dark .card-body .h3,
+body.theme-dark .card-body h4,
+body.theme-dark .card-body .h4,
+body.theme-dark .card-body h5,
+body.theme-dark .card-body .h5,
+body.theme-dark .card-body h6,
+body.theme-dark .card-body .h6 {
+    color: #ffffff !important;
+}
+/* Fix for activity items */
+body.theme-dark .activity-item {
+    color: #e0e0e0;
+    border-left-color: #444;
+}
+body.theme-dark .card-body .text-gray-800 {
+    color: #ffffff !important;
+    opacity: 1 !important;
+}
+body.theme-dark .activity-item:hover {
+    background-color: #333;
+}
+body.theme-dark .nav-link {
+    color: rgba(255, 255, 255, 0.8);
+}
+
+body.theme-dark .nav-link:hover {
+    color: rgba(255, 255, 255, 1);
+}

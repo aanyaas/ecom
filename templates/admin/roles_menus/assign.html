@@ -1,0 +1,58 @@
+{% extends "admin/base.html" %}
+
+{% block title %}Assign Menus to Role- {{ brand_name }}{% endblock %}
+
+{% block content %}
+<div class="d-flex justify-content-between align-items-center mb-1">
+    <h2>Assign Menus to <span class="text-primary">{{ role.name | capitalize }}</span></h2>
+    <a href="{{ url_for('admin_bp.roles_list') }}" class="btn btn-secondary">Back to Roles</a>
+</div>
+
+<div class="card shadow-sm border-0">
+    <div class="card-body p-0">
+        <form action="{{ url_for('admin_bp.assign_menus', role_id=role.id) }}" method="POST">
+            <input type="hidden" name="csrf_token" value="{{ csrf_token() }}">
+
+            <table class="table table-hover mb-0">
+                <thead class="bg-light">
+                    <tr>
+                        <th>Menu Name</th>
+                        <th class="text-center">
+                            Allow Access
+                            <div class="custom-control custom-checkbox d-inline-block ml-2">
+                                <input type="checkbox" class="custom-control-input" id="selectAll">
+                                <label class="custom-control-label" for="selectAll"></label>
+                            </div>
+                        </th>
+                    </tr>
+                </thead>
+                <tbody>
+                    {% for menu in menus %}
+                    {% set p = perms_map.get(menu.id) %}
+                    <tr>
+                        <td class="font-weight-bold">
+                            <i class="{{ menu.icon }} mr-2 text-muted"></i> {{ menu.name }}
+                        </td>
+                        <td class="text-center">
+                            <input type="checkbox" class="menu-checkbox" name="menu_{{ menu.id }}_view" value="1" {% if
+                                p and p.can_view %}checked{% endif %}>
+                        </td>
+                    </tr>
+                    {% endfor %}
+                </tbody>
+            </table>
+
+            <script>
+                document.getElementById('selectAll').addEventListener('change', function () {
+                    const checkboxes = document.querySelectorAll('.menu-checkbox');
+                    checkboxes.forEach(cb => cb.checked = this.checked);
+                });
+            </script>
+
+            <div class="p-3 bg-light border-top text-right">
+                <button type="submit" class="btn btn-primary px-4">Save Assignments</button>
+            </div>
+        </form>
+    </div>
+</div>
+{% endblock %}

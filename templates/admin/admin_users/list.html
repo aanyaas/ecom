@@ -1,0 +1,387 @@
+{% extends "admin/base.html" %}
+
+{% block title %}Staff User Management- {{ brand_name }} {% endblock %}
+
+{% block styles %}
+<style>
+    /* Premium Glassmorphism Admin Users Overhaul */
+    :root {
+        --glass-bg: rgba(255, 255, 255, 0.85);
+        --glass-border: rgba(255, 255, 255, 0.4);
+        --glass-shadow: 0 10px 30px rgba(0, 0, 0, 0.05);
+        --primary-accent: #a64d79;
+        --secondary-accent: #1a1a2e;
+        --text-dark: #2d3748;
+        --text-muted: #718096;
+    }
+
+    body {
+        background-color: #f4f7f6;
+        background-image:
+            radial-gradient(at 0% 0%, hsla(331, 65%, 85%, 1) 0, transparent 50%),
+            radial-gradient(at 100% 0%, hsla(236, 40%, 85%, 1) 0, transparent 50%);
+        background-attachment: fixed;
+        font-family: 'Inter', sans-serif;
+    }
+
+    @keyframes fadeUp {
+        from {
+            opacity: 0;
+            transform: translateY(20px);
+        }
+
+        to {
+            opacity: 1;
+            transform: translateY(0);
+        }
+    }
+
+    .info-card-luxury {
+        background: var(--glass-bg) !important;
+        backdrop-filter: blur(12px) !important;
+        -webkit-backdrop-filter: blur(12px);
+        border: 1px solid var(--glass-border) !important;
+        border-radius: 24px !important;
+        box-shadow: var(--glass-shadow) !important;
+        overflow: hidden;
+        animation: fadeUp 0.7s ease-out backwards;
+    }
+
+    .bg-soft-success {
+        background-color: rgba(25, 135, 84, 0.15);
+        color: #157347;
+    }
+
+    .bg-soft-danger {
+        background-color: rgba(220, 53, 69, 0.15);
+        color: #c82333;
+    }
+
+    .bg-soft-primary {
+        background-color: rgba(166, 77, 121, 0.15);
+        color: var(--primary-accent);
+    }
+
+    .role-badge {
+        font-size: 0.7rem;
+        font-weight: 700;
+        padding: 4px 10px;
+        border-radius: 6px;
+        text-transform: uppercase;
+        letter-spacing: 0.5px;
+    }
+
+    .status-pill {
+        font-size: 0.7rem;
+        font-weight: 700;
+        padding: 4px 10px;
+        border-radius: 20px;
+    }
+
+    .table thead th {
+        border-top: none;
+        background: transparent;
+        color: var(--text-muted);
+        font-weight: 700;
+        font-size: 0.75rem;
+        text-transform: uppercase;
+        letter-spacing: 1px;
+        padding: 15px 24px;
+        border-bottom: 2px solid var(--glass-border);
+    }
+
+    .table tbody tr {
+        transition: all 0.3s ease;
+    }
+
+    .table tbody tr:hover {
+        background-color: rgba(255, 255, 255, 0.5) !important;
+        transform: scale(1.002);
+        box-shadow: 0 5px 15px rgba(0, 0, 0, 0.03);
+    }
+
+    .table td {
+        padding: 16px 24px;
+        vertical-align: middle;
+        color: var(--text-dark);
+        border-bottom: 1px solid rgba(0, 0, 0, 0.02);
+    }
+
+    .user-avatar {
+        width: 38px;
+        height: 38px;
+        border-radius: 12px;
+        background: #f1f3f9;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        font-weight: 700;
+        color: var(--primary-accent);
+        margin-right: 15px;
+        box-shadow: 0 2px 5px rgba(0, 0, 0, 0.05);
+    }
+
+    .action-btn {
+        width: 32px;
+        height: 32px;
+        border-radius: 10px;
+        display: inline-flex;
+        align-items: center;
+        justify-content: center;
+        border: 1px solid var(--glass-border);
+        background: rgba(255, 255, 255, 0.7);
+        color: var(--text-muted);
+        transition: all 0.2s ease;
+        box-shadow: 0 2px 4px rgba(0, 0, 0, 0.02);
+    }
+
+    .action-btn:hover {
+        background: #fff;
+        transform: translateY(-2px);
+        box-shadow: 0 4px 10px rgba(0, 0, 0, 0.05);
+    }
+
+    .action-btn.btn-edit:hover {
+        color: var(--primary-accent);
+        border-color: var(--primary-accent);
+    }
+
+    .action-btn.btn-toggle:hover {
+        color: #e74a3b;
+        border-color: #e74a3b;
+    }
+
+    .btn-add-staff {
+        border-radius: 12px;
+        padding: 10px 20px;
+        font-weight: 700;
+        letter-spacing: 0.5px;
+        box-shadow: 0 4px 15px rgba(166, 77, 121, 0.4);
+        background: var(--primary-accent);
+        border: none;
+        transition: all 0.3s ease;
+    }
+
+    .btn-add-staff:hover {
+        transform: translateY(-2px);
+        box-shadow: 0 6px 20px rgba(166, 77, 121, 0.5);
+    }
+</style>
+{% endblock %}
+
+{% block content %}
+<div class="d-flex justify-content-between align-items-center mb-1 mt-2">
+    <div>
+        <h2 class="font-weight-bold mb-1">Staff User Management</h2>
+    </div>
+    <a href="{{ url_for('admin_bp.admin_users_add') }}" class="btn btn-primary btn-add-staff">
+        <i class="fas fa-plus-circle mr-2"></i>Add User
+    </a>
+</div>
+
+<!-- Filters -->
+<div class="card info-card-luxury mb-1" style="animation-delay: 0.1s;">
+    <div class="card-body p-4">
+        <form class="row align-items-end" method="GET">
+            <div class="col-md-4">
+                <label class="x-small font-weight-700 text-muted text-uppercase mb-2">Search Staff</label>
+                <div class="input-group shadow-sm" style="border-radius: 10px; overflow: hidden;">
+                    <div class="input-group-prepend">
+                        <span class="input-group-text bg-light border-0"><i class="fas fa-search text-muted"></i></span>
+                    </div>
+                    <input type="text" name="search" class="form-control bg-light border-0"
+                        placeholder="Username, email or mobile..." value="{{ search }}">
+                </div>
+            </div>
+            <div class="col-md-3">
+                <label class="x-small font-weight-700 text-muted text-uppercase mb-2">Filter by Role</label>
+                <select name="role" class="form-control border-0 bg-light shadow-sm" style="border-radius: 10px;">
+                    <option value="all" {% if role_filter=='all' %}selected{% endif %}>All Roles</option>
+                    <option value="admin" {% if role_filter=='admin' %}selected{% endif %}>Admin</option>
+                    <option value="manager" {% if role_filter=='manager' %}selected{% endif %}>Manager</option>
+                    <option value="editor" {% if role_filter=='editor' %}selected{% endif %}>Editor</option>
+                    <option value="sales" {% if role_filter=='sales' %}selected{% endif %}>Sales</option>
+                    <option value="operations" {% if role_filter=='operations' %}selected{% endif %}>Operations</option>
+                    <option value="mis" {% if role_filter=='mis' %}selected{% endif %}>MIS</option>
+                    <option value="analytics" {% if role_filter=='analytics' %}selected{% endif %}>Analytics</option>
+                    <option value="inventory" {% if role_filter=='inventory' %}selected{% endif %}>Inventory</option>
+                    <option value="payment" {% if role_filter=='payment' %}selected{% endif %}>Payment</option>
+                    <option value="storefront" {% if role_filter=='storefront' %}selected{% endif %}>Storefront</option>
+                </select>
+            </div>
+            <div class="col-md-3">
+                <label class="x-small font-weight-700 text-muted text-uppercase mb-2">Status</label>
+                <select name="status" class="form-control border-0 bg-light shadow-sm" style="border-radius: 10px;">
+                    <option value="all" {% if status_filter=='all' %}selected{% endif %}>All Status</option>
+                    <option value="active" {% if status_filter=='active' %}selected{% endif %}>Active Only</option>
+                    <option value="inactive" {% if status_filter=='inactive' %}selected{% endif %}>Inactive Only
+                    </option>
+                </select>
+            </div>
+            <div class="col-md-2">
+                <button type="submit" class="btn btn-primary btn-block shadow-sm"
+                    style="border-radius: 10px; height: 43px;">
+                    <i class="fas fa-filter mr-1"></i> Apply
+                </button>
+            </div>
+        </form>
+    </div>
+</div>
+
+<!-- User Table -->
+<div class="card info-card-luxury mb-5" style="animation-delay: 0.2s;">
+    <div class="card-body p-0">
+        <div class="table-responsive">
+            <table class="table table-hover mb-0">
+                <thead>
+                    <tr>
+                        <th class="px-4">User ID</th>
+                        <th>Role</th>
+                        <th>Contact Details</th>
+                        <th>Status</th>
+                        <th>Last Login</th>
+                        <th class="text-right px-4">Actions</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    {% for user in users %}
+                    <tr>
+                        <td class="px-4">
+                            <div class="d-flex align-items-center">
+                                <div class="user-avatar bg-soft-primary">
+                                    {{ user.username[0]|upper }}
+                                </div>
+                                <div>
+                                    <div class="font-weight-700 text-dark">{{ user.username }}</div>
+                                    <small class="text-muted">{{ user.email }}</small>
+                                </div>
+                            </div>
+                        </td>
+                        <td>
+                            <span
+                                class="role-badge {% if user.role == 'admin' %}bg-soft-primary{% else %}bg-light text-muted border{% endif %}">
+                                {{ user.role }}
+                            </span>
+                        </td>
+                        <td>
+                            <div class="small">
+                                <div class="mb-1"><i class="fas fa-phone-alt text-muted mr-2"></i>{{ user.mobile_number
+                                    or 'N/A' }}</div>
+                                {% if user.expiry_date %}
+                                <div><i class="fas fa-calendar-times text-danger mr-2"></i>Exp: {{ user.expiry_date }}
+                                </div>
+                                {% endif %}
+                            </div>
+                        </td>
+                        <td>
+                            <span
+                                class="status-pill {% if user.is_active %}bg-soft-success{% else %}bg-soft-danger{% endif %}">
+                                <i class="fas fa-circle mr-1" style="font-size: 0.5rem;"></i>
+                                {% if user.is_active %}Active{% else %}Deactivated{% endif %}
+                            </span>
+                        </td>
+                        <td>
+                            <div class="small text-muted font-weight-500">
+                                {% if user.last_login %}
+                                <div class="text-dark">{{ user.last_login.strftime('%d %b, %Y') }}</div>
+                                <div>{{ user.last_login.strftime('%H:%M') }}</div>
+                                {% else %}
+                                <span class="font-italic">Never logged in</span>
+                                {% endif %}
+                            </div>
+                        </td>
+                        <td class="text-right px-4">
+                            <a href="{{ url_for('admin_bp.admin_users_edit', user_id=user.id) }}"
+                                class="action-btn btn-edit" title="Edit Profile">
+                                <i class="fas fa-pencil-alt"></i>
+                            </a>
+                            {% if user.id != session.admin_id %}
+                            <button class="action-btn btn-toggle toggle-status ml-1" data-user-id="{{ user.id }}"
+                                data-action="{% if user.is_active %}deactivate{% else %}activate{% endif %}"
+                                title="{% if user.is_active %}Deactivate{% else %}Activate{% endif %}">
+                                <i class="fas fa-{% if user.is_active %}ban{% else %}check{% endif %}"></i>
+                            </button>
+                            {% endif %}
+                        </td>
+                    </tr>
+                    {% else %}
+                    <tr>
+                        <td colspan="6" class="text-center py-5">
+                            <div class="text-muted">
+                                <i class="fas fa-users-slash fa-3x mb-3 opacity-25"></i>
+                                <p class="font-weight-700 h5">No staff members found</p>
+                                <p class="small">Try adjusting your filters or search criteria.</p>
+                            </div>
+                        </td>
+                    </tr>
+                    {% endfor %}
+                </tbody>
+            </table>
+        </div>
+    </div>
+</div>
+
+<!-- Pagination -->
+{% if pagination.pages > 1 %}
+<div class="d-flex justify-content-center mt-2 mb-5">
+    <nav aria-label="Page navigation">
+        <ul class="pagination pagination-rounded shadow-sm">
+            <li class="page-item {% if pagination.page <= 1 %}disabled{% endif %}">
+                <a class="page-link border-0"
+                    href="{{ url_for('admin_bp.admin_users_list', page=pagination.page-1, search=search, role=role_filter, status=status_filter) }}">
+                    <i class="fas fa-chevron-left"></i>
+                </a>
+            </li>
+
+            {% for p in range(1, pagination.pages + 1) %}
+            <li class="page-item {% if p == pagination.page %}active{% endif %}">
+                <a class="page-link border-0"
+                    href="{{ url_for('admin_bp.admin_users_list', page=p, search=search, role=role_filter, status=status_filter) }}">{{
+                    p }}</a>
+            </li>
+            {% endfor %}
+
+            <li class="page-item {% if pagination.page >= pagination.pages %}disabled{% endif %}">
+                <a class="page-link border-0"
+                    href="{{ url_for('admin_bp.admin_users_list', page=pagination.page+1, search=search, role=role_filter, status=status_filter) }}">
+                    <i class="fas fa-chevron-right"></i>
+                </a>
+            </li>
+        </ul>
+    </nav>
+</div>
+{% endif %}
+
+{% endblock %}
+
+{% block scripts %}
+<script>
+    $(document).ready(function () {
+        $('.toggle-status').click(function () {
+            const userId = $(this).data('user-id');
+            const action = $(this).data('action');
+
+            if (confirm(`Are you sure you want to ${action} this staff member?`)) {
+                $.ajax({
+                    url: "{{ url_for('admin_bp.admin_users_toggle_status', user_id=0) }}".replace('0', userId),
+                    method: "POST",
+                    data: {
+                        'action': action,
+                        'csrf_token': "{{ csrf_token() }}"
+                    },
+                    success: function (response) {
+                        if (response.success) {
+                            location.reload();
+                        } else {
+                            alert(response.message);
+                        }
+                    },
+                    error: function () {
+                        alert('Error updating user status');
+                    }
+                });
+            }
+        });
+    });
+</script>
+{% endblock %}

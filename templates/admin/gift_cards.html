@@ -1,0 +1,108 @@
+{% extends "admin/base.html" %}
+{% block title %}Manage Gift Cards- {{ brand_name }}{% endblock %}
+
+{% block content %}
+<div class="container-fluid py-4">
+    <div class="d-flex justify-content-between align-items-center mb-4">
+        <h2>Gift Cards Management</h2>
+        <button class="btn btn-primary" data-bs-toggle="modal" data-bs-target="#generateModal">
+            <i class="fas fa-plus"></i> Generate Gift Card
+        </button>
+    </div>
+
+    {% with messages = get_flashed_messages(with_categories=true) %}
+    {% if messages %}
+    {% for category, message in messages %}
+    <div class="alert alert-{{ category }} alert-dismissible fade show" role="alert">
+        {{ message }}
+        <button type="button" class="btn-close" data-bs-dismiss="alert" aria-label="Close"></button>
+    </div>
+    {% endfor %}
+    {% endif %}
+    {% endwith %}
+
+    <div class="card shadow-sm">
+        <div class="card-body">
+            <div class="table-responsive">
+                <table class="table table-hover align-middle">
+                    <thead class="table-light">
+                        <tr>
+                            <th>Code</th>
+                            <th>Initial Balance (Rs.)</th>
+                            <th>Current Balance (Rs.)</th>
+                            <th>Expiry Date</th>
+                            <th>Status</th>
+                            <th>Created At</th>
+                            <th>Actions</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        {% for card in gift_cards %}
+                        <tr>
+                            <td><strong>{{ card.code }}</strong></td>
+                            <td>{{ "%.2f"|format(card.initial_balance) }}</td>
+                            <td>{{ "%.2f"|format(card.current_balance) }}</td>
+                            <td>{{ card.expiry_date.strftime('%Y-%m-%d') if card.expiry_date else 'Never' }}</td>
+                            <td>
+                                {% if card.is_active %}
+                                <span class="badge bg-success">Active</span>
+                                {% else %}
+                                <span class="badge bg-danger">Inactive</span>
+                                {% endif %}
+                            </td>
+                            <td>{{ card.created_at.strftime('%Y-%m-%d %H:%M') }}</td>
+                            <td>
+                                <form action="{{ url_for('admin_bp.admin_toggle_gift_card', card_id=card.id) }}"
+                                    method="POST" style="display:inline;">
+                                    <button type="submit"
+                                        class="btn btn-sm btn-{{ 'warning' if card.is_active else 'success' }}">
+                                        {{ 'Deactivate' if card.is_active else 'Activate' }}
+                                    </button>
+                                </form>
+                            </td>
+                        </tr>
+                        {% else %}
+                        <tr>
+                            <td colspan="7" class="text-center py-4 text-muted">No gift cards generated yet.</td>
+                        </tr>
+                        {% endfor %}
+                    </tbody>
+                </table>
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- Generate Modal -->
+<div class="modal fade" id="generateModal" tabindex="-1">
+    <div class="modal-dialog">
+        <div class="modal-content">
+            <form action="{{ url_for('admin_bp.admin_generate_gift_card') }}" method="POST">
+                <div class="modal-header">
+                    <h5 class="modal-title">Generate New Gift Card</h5>
+                    <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
+                </div>
+                <div class="modal-body">
+                    <div class="mb-3">
+                        <label class="form-label">Amount (Rs.) <span class="text-danger">*</span></label>
+                        <input type="number" step="0.01" min="1" name="amount" class="form-control" required>
+                    </div>
+                    <div class="mb-3">
+                        <label class="form-label">Custom Code (Optional)</label>
+                        <input type="text" name="custom_code" class="form-control"
+                            placeholder="Leave blank to auto-generate" style="text-transform: uppercase;">
+                    </div>
+                    <div class="mb-3">
+                        <label class="form-label">Expiry Date (Optional)</label>
+                        <input type="date" name="expiry_date" class="form-control">
+                    </div>
+                </div>
+                <div class="modal-footer">
+                    <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Cancel</button>
+                    <button type="submit" class="btn btn-primary">Generate</button>
+                </div>
+            </form>
+        </div>
+    </div>
+</div>
+{% endblock %}

@@ -1,0 +1,13 @@
+# Pyrefly configuration
+# Exclude HTML template files from analysis — they contain Jinja2, not Python
+# Exclude app.py — module-level execution order means single-line snippet
+# analysis produces false-positive "Could not find name" errors for `app`,
+# `generate_csrf`, etc. that are defined earlier in the same file.
+
+[python]
+project_excludes = [
+    "templates/**",
+    "static/**",
+    "**/*.html",
+    "app.py",
+]

@@ -1,0 +1,30 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<urlset xmlns="http://www.sitemaps.org/schemas/sitemap/0.9">
+    <!-- Static Pages -->
+    {% for page in static_pages %}
+    <url>
+        <loc>{{ page.loc }}</loc>
+        <changefreq>{{ page.changefreq }}</changefreq>
+        <priority>{{ page.priority }}</priority>
+    </url>
+    {% endfor %}
+
+    <!-- Categories -->
+    {% for category in categories %}
+    <url>
+        <loc>{{ url_for('shop_bp.shop', category=category.slug, _external=True) }}</loc>
+        <changefreq>daily</changefreq>
+        <priority>0.8</priority>
+    </url>
+    {% endfor %}
+
+    <!-- Products -->
+    {% for product in products %}
+    <url>
+        <loc>{{ url_for('shop_bp.product_detail', slug=product.slug, _external=True) }}</loc>
+        <lastmod>{{ product.updated_at.strftime('%Y-%m-%d') if product.updated_at else '2026-01-01' }}</lastmod>
+        <changefreq>weekly</changefreq>
+        <priority>0.9</priority>
+    </url>
+    {% endfor %}
+</urlset>

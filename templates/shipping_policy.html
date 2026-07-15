@@ -1,0 +1,157 @@
+{% extends "base.html" %}
+
+{% block title %}{{ company_name }} - Shipping Policy{% endblock %}
+
+{% block styles %}
+{{ super() }}
+<style>
+    .page-header-luxury {
+        padding: 80px 0 40px;
+        background: #fdfcfd;
+        text-align: center;
+        border-bottom: 1px solid #f0f0f0;
+    }
+
+    .page-header-luxury h1 {
+        font-family: 'Playfair Display', serif;
+        font-weight: 700;
+        font-size: 3rem;
+        color: #1a1a1a;
+        margin-bottom: 15px;
+    }
+
+    .breadcrumb-luxury {
+        display: flex;
+        justify-content: center;
+        align-items: center;
+        gap: 15px;
+        list-style: none;
+        padding: 0;
+        margin: 0;
+        font-size: 0.85rem;
+        text-transform: uppercase;
+        letter-spacing: 2px;
+        font-weight: 600;
+    }
+
+    .breadcrumb-luxury a {
+        color: #999;
+        transition: color 0.3s;
+    }
+
+    .breadcrumb-luxury a:hover {
+        color: #a64d79;
+        text-decoration: none;
+    }
+
+    .breadcrumb-luxury span {
+        color: #1a1a1a;
+    }
+
+    .policy-content {
+        padding: 60px 0 100px;
+        background: #fff;
+    }
+
+    .policy-card {
+        background: #fff;
+        border: 1px solid #f0f0f0;
+        border-radius: 30px;
+        padding: 50px;
+        box-shadow: 0 15px 40px rgba(0,0,0,0.02);
+    }
+
+    .policy-card h4 {
+        font-family: 'Playfair Display', serif;
+        font-weight: 700;
+        color: #a64d79;
+        margin-top: 40px;
+        margin-bottom: 20px;
+        font-size: 1.5rem;
+    }
+    
+    .policy-card h4:first-child {
+        margin-top: 0;
+    }
+
+    .policy-card p, .policy-card ul {
+        font-size: 1.05rem;
+        line-height: 1.8;
+        color: #555;
+    }
+
+    .policy-card ul {
+        padding-left: 20px;
+        margin-bottom: 20px;
+    }
+
+    .policy-card li {
+        margin-bottom: 10px;
+    }
+
+    .policy-card a {
+        color: #a64d79;
+        font-weight: 600;
+        text-decoration: none;
+        border-bottom: 1px solid transparent;
+        transition: all 0.3s;
+    }
+
+    .policy-card a:hover {
+        border-bottom-color: #a64d79;
+    }
+</style>
+{% endblock %}
+
+{% block content %}
+<div class="page-header-luxury">
+    <div class="container reveal">
+        <h1>Shipping Policy</h1>
+        <ul class="breadcrumb-luxury">
+            <li><a href="{{ url_for('pages_bp.home') }}">Home</a></li>
+            <li>/</li>
+            <li><span>Shipping Policy</span></li>
+        </ul>
+    </div>
+</div>
+
+<div class="policy-content">
+    <div class="container">
+        <div class="row">
+            <div class="col-lg-10 mx-auto reveal" data-reveal="bottom">
+                <div class="policy-card">
+                    <h4>1. Processing Time</h4>
+                    <p>All orders are processed within 1-3 business days. Orders are not shipped or delivered on weekends or
+                        public holidays. If we are experiencing a high volume of orders, shipments may be delayed by a few
+                        days. Please allow additional days in transit for delivery.</p>
+
+                    <h4>2. Shipping Rates &amp; Delivery Estimates</h4>
+                    <p>Shipping charges for your order will be calculated and displayed at checkout. Delivery estimates
+                        depend on your location and the shipping method chosen at checkout.</p>
+                    <ul>
+                        <li><strong>Standard Delivery:</strong> 5-7 business days</li>
+                        <li><strong>Express Delivery:</strong> 2-3 business days</li>
+                    </ul>
+
+                    <h4>3. Shipment Confirmation &amp; Order Tracking</h4>
+                    <p>You will receive a shipment confirmation email once your order has shipped containing your tracking
+                        number(s). The tracking number will be active within 24 hours.</p>
+
+                    <h4>4. Customs, Duties and Taxes</h4>
+                    <p>{{ company_name }} is not responsible for any customs and taxes applied to your order. All fees
+                        imposed during or after shipping are the responsibility of the customer (tariffs, taxes, etc.).</p>
+
+                    <h4>5. Damages</h4>
+                    <p>{{ company_name }} is not liable for any products damaged or lost during shipping. If you received
+                        your order damaged, please contact the shipment carrier to file a claim. Please save all packaging
+                        materials and damaged goods before filing a claim.</p>
+
+                    <h4>6. Contact Us</h4>
+                    <p>If you have any questions about our Shipping Policy, please contact us at <a
+                            href="mailto:{{ company_info.email or 'info@example.com' }}">{{ company_info.email or 'info@example.com' }}</a> or call us at {{ company_info.phone or '+91 9555144442' }}.</p>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}

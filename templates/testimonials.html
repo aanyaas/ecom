@@ -1,0 +1,364 @@
+{% extends "base.html" %}
+
+{% block title %}Customer Testimonials - {{ company_name }}{% endblock %}
+
+{% block styles %}
+{{ super() }}
+<style>
+    /* Luxury Testimonials Styles */
+    .testimonial-hero {
+        background: #fff;
+        padding: 80px 0 60px;
+        text-align: center;
+        border-bottom: 1px solid #f0f0f0;
+    }
+    .testimonial-hero h1 {
+        font-family: 'Playfair Display', serif;
+        font-size: 3.5rem;
+        font-weight: 700;
+        color: #1a1a1a;
+        margin-bottom: 20px;
+    }
+    .testimonial-hero p {
+        color: #666;
+        font-size: 1.2rem;
+        max-width: 600px;
+        margin: 0 auto;
+    }
+
+    .testimonial-card {
+        background: #fff;
+        border: 1px solid #f0f0f0;
+        border-radius: 25px;
+        padding: 35px;
+        box-shadow: 0 15px 40px rgba(0,0,0,0.03);
+        transition: all 0.4s cubic-bezier(0.165, 0.84, 0.44, 1);
+        height: 100%;
+        display: flex;
+        flex-direction: column;
+    }
+    .testimonial-card:hover {
+        transform: translateY(-10px);
+        box-shadow: 0 30px 60px rgba(0,0,0,0.08);
+        border-color: #a64d79;
+    }
+    .testimonial-photo-container {
+        width: 100%;
+        height: 250px;
+        border-radius: 20px;
+        overflow: hidden;
+        margin-bottom: 25px;
+        border: 1px solid #eee;
+    }
+    .testimonial-photo-container img {
+        width: 100%;
+        height: 100%;
+        object-fit: cover;
+        transition: transform 0.6s;
+    }
+    .testimonial-card:hover .testimonial-photo-container img {
+        transform: scale(1.1);
+    }
+    .testimonial-avatar {
+        width: 60px;
+        height: 60px;
+        border-radius: 50%;
+        background: #fdfcfd;
+        border: 1px solid #f0f0f0;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        color: #a64d79;
+        font-size: 1.4rem;
+        font-weight: 700;
+        font-family: 'Playfair Display', serif;
+    }
+    .testimonial-stars {
+        color: #ffc107;
+        font-size: 0.85rem;
+        letter-spacing: 2px;
+        margin-top: 5px;
+    }
+    .testimonial-text {
+        font-family: 'Playfair Display', serif;
+        color: #1a1a1a;
+        font-size: 1.1rem;
+        line-height: 1.8;
+        font-style: italic;
+        margin: 25px 0;
+        flex-grow: 1;
+    }
+    .testimonial-meta {
+        font-size: 0.75rem;
+        color: #999;
+        text-transform: uppercase;
+        letter-spacing: 1.5px;
+        font-weight: 600;
+    }
+
+    .feedback-form-card {
+        background: #fdfcfd;
+        border-radius: 30px;
+        border: 1px solid #f0f0f0;
+        padding: 40px;
+        box-shadow: 0 20px 50px rgba(0,0,0,0.04);
+    }
+    .form-control {
+        border: 1px solid #f0f0f0;
+        border-radius: 15px;
+        padding: 15px 20px;
+        background: #fff;
+        font-size: 0.95rem;
+    }
+    .form-control:focus {
+        border-color: #a64d79;
+        box-shadow: 0 10px 30px rgba(166, 77, 121, 0.05);
+    }
+    .btn-submit-feedback {
+        background: #1a1a1a;
+        color: #fff;
+        padding: 18px;
+        border-radius: 50px;
+        font-weight: 700;
+        text-transform: uppercase;
+        letter-spacing: 2px;
+        font-size: 0.85rem;
+        border: none;
+        transition: all 0.3s;
+        margin-top: 20px;
+    }
+    .btn-submit-feedback:hover {
+        background: #a64d79;
+        transform: translateY(-3px);
+        box-shadow: 0 10px 25px rgba(166, 77, 121, 0.2);
+    }
+    
+    .star-input-group {
+        display: flex;
+        flex-direction: row-reverse;
+        justify-content: flex-end;
+        gap: 10px;
+    }
+    .star-input-group label {
+        font-size: 2.2rem;
+        color: #eee;
+        cursor: pointer;
+        transition: all 0.2s;
+    }
+    .star-input-group input:checked ~ label,
+    .star-input-group label:hover,
+    .star-input-group label:hover ~ label {
+        color: #ffc107;
+    }
+</style>
+{% endblock %}
+
+{% block content %}
+
+<!-- Hero -->
+<div class="testimonial-hero">
+    <div class="container">
+        <span class="testimonial-badge mb-3 d-inline-block">⭐ Customer Voices</span>
+        <h1>Let Customers Speak For Us</h1>
+        <p>Real stories from real people who love our handcrafted jewellery and handicrafts.</p>
+        <a href="#submit-feedback" class="btn btn-primary mt-3 px-4" style="border-radius: 50px; background: linear-gradient(135deg,#ba6286,#d4786a); border:none;">
+            <i class="fas fa-pen mr-2"></i>Share Your Experience
+        </a>
+    </div>
+</div>
+
+<!-- Lightbox Overlay -->
+<div id="testimonialLightbox" class="lightbox-overlay">
+    <span class="close-lightbox">&times;</span>
+    <img class="lightbox-content" id="lightboxImage">
+</div>
+
+<div class="container-fluid py-5 px-xl-5">
+    <div class="row">
+
+        <!-- ===== TESTIMONIALS GRID ===== -->
+        <div class="col-lg-8 mb-5">
+            <h4 class="font-weight-bold mb-4" style="color:#2f2a26;">
+                <i class="fas fa-comments text-primary mr-2"></i>
+                What Our Customers Say
+                {% if testimonials %}
+                <span class="badge badge-light ml-2" style="font-size:0.75rem;">{{ testimonials|length }}</span>
+                {% endif %}
+            </h4>
+
+            {% if testimonials %}
+            <div class="row">
+                {% for t in testimonials %}
+                <div class="col-md-6 mb-4">
+                    <div class="testimonial-card">
+                        {% if t.customer_photo %}
+                        <div class="testimonial-photo-container" data-photo="{{ url_for('static', filename='img/testimonials/' + t.customer_photo) }}" onclick="openLightbox($(this).data('photo'))">
+                            <img src="{{ url_for('static', filename='img/testimonials/' + t.customer_photo) }}" alt="Photo from {{ t.customer_name }}">
+                        </div>
+                        {% endif %}
+                        <!-- Header -->
+                        <div class="d-flex align-items-center mb-3">
+                            <div class="testimonial-avatar mr-3">
+                                {{ t.customer_name[0]|upper }}
+                            </div>
+                            <div>
+                                <div class="font-weight-bold" style="color:#2f2a26; font-size:0.95rem;">{{ t.customer_name }}</div>
+                                <div class="testimonial-stars">
+                                    {% for i in range(1, 6) %}
+                                        {% if i <= t.rating %}<i class="fas fa-star"></i>{% else %}<i class="far fa-star"></i>{% endif %}
+                                    {% endfor %}
+                                </div>
+                            </div>
+                        </div>
+                        <!-- Review text -->
+                        <p class="testimonial-text mb-3">"{{ t.feedback }}"</p>
+                        <!-- Meta -->
+                        <div class="testimonial-meta d-flex justify-content-between align-items-center">
+                            <span><i class="far fa-calendar-alt mr-1"></i>{{ t.created_at.strftime('%d %b %Y') }}</span>
+                            {% if t.city %}
+                            <span><i class="fas fa-map-marker-alt mr-1"></i>{{ t.city }}</span>
+                            {% endif %}
+                        </div>
+                    </div>
+                </div>
+                {% endfor %}
+            </div>
+            {% else %}
+            <div class="empty-state">
+                <i class="fas fa-comment-dots d-block"></i>
+                <h5>No testimonials yet</h5>
+                <p>Be the first to share your experience!</p>
+            </div>
+            {% endif %}
+        </div>
+
+        <!-- ===== SUBMISSION FORM ===== -->
+        <div class="col-lg-4" id="submit-feedback">
+            <div class="feedback-form-card sticky-top" style="top: 80px;">
+                <h5 class="font-weight-bold mb-1" style="color:#2f2a26;">
+                    <i class="fas fa-heart text-danger mr-2"></i>Share Your Experience
+                </h5>
+                <p class="text-muted small mb-4">We'd love to hear what you think!</p>
+
+                {% with messages = get_flashed_messages(with_categories=true) %}
+                    {% for cat, msg in messages %}
+                    <div class="alert alert-{{ 'success' if cat == 'success' else 'danger' }} alert-dismissible fade show" role="alert">
+                        {{ msg }}
+                        <button type="button" class="close" data-dismiss="alert"><span>&times;</span></button>
+                    </div>
+                    {% endfor %}
+                {% endwith %}
+
+                <form method="POST" action="{{ url_for('pages_bp.submit_testimonial') }}" id="feedbackForm" enctype="multipart/form-data" novalidate>
+                    <input type="hidden" name="csrf_token" value="{{ csrf_token() }}">
+
+                    <!-- Name -->
+                    <div class="form-group">
+                        <label for="customer_name" class="small font-weight-bold">Your Name <span class="text-danger">*</span></label>
+                        <input type="text" class="form-control" id="customer_name" name="customer_name"
+                               placeholder="e.g. Priya Sharma" required maxlength="80"
+                               value="{{ form_data.customer_name if form_data else '' }}">
+                    </div>
+
+                    <!-- Email (optional) -->
+                    <div class="form-group">
+                        <label for="email" class="small font-weight-bold">Email <span class="text-muted">(optional, won't be shown)</span></label>
+                        <input type="email" class="form-control" id="email" name="email"
+                               placeholder="your@email.com" maxlength="120"
+                               value="{{ form_data.email if form_data else '' }}">
+                    </div>
+
+                    <!-- City (optional) -->
+                    <div class="form-group">
+                        <label for="city" class="small font-weight-bold">City <span class="text-muted">(optional)</span></label>
+                        <input type="text" class="form-control" id="city" name="city"
+                               placeholder="e.g. New Delhi" maxlength="60"
+                               value="{{ form_data.city if form_data else '' }}">
+                    </div>
+
+                    <!-- Star Rating -->
+                    <div class="form-group">
+                        <label class="small font-weight-bold d-block">Your Rating <span class="text-danger">*</span></label>
+                        <div class="star-input-group">
+                            {% for i in range(5, 0, -1) %}
+                            <input type="radio" id="star{{ i }}" name="rating" value="{{ i }}"
+                                   {% if form_data and form_data.rating == i|string %}checked{% endif %}
+                                   {% if i == 5 and not form_data %}checked{% endif %}>
+                            <label for="star{{ i }}" title="{{ i }} star{{ 's' if i > 1 else '' }}">&#9733;</label>
+                            {% endfor %}
+                        </div>
+                    </div>
+
+                    <!-- Feedback -->
+                    <div class="form-group">
+                        <label for="feedback" class="small font-weight-bold">Your Feedback <span class="text-danger">*</span></label>
+                        <textarea class="form-control" id="feedback" name="feedback" rows="4"
+                                  placeholder="Tell us about your experience..." required
+                                  maxlength="1000">{{ form_data.feedback if form_data else '' }}</textarea>
+                        <small class="text-muted"><span id="charCount">0</span>/1000 characters</small>
+                    </div>
+
+                    <!-- Photo Upload (NEW) -->
+                    <div class="form-group">
+                        <label for="customer_photo" class="small font-weight-bold">Your Photo <span class="text-muted">(optional)</span></label>
+                        <div class="custom-file">
+                            <input type="file" class="custom-file-input" id="customer_photo" name="customer_photo" accept="image/*">
+                            <label class="custom-file-label" for="customer_photo">Choose file...</label>
+                        </div>
+                        <small class="form-text text-muted">A picture of you or your purchase (JPG/PNG/WEBP).</small>
+                    </div>
+
+                    <button type="submit" class="btn btn-submit-feedback btn-block">
+                        <i class="fas fa-paper-plane mr-2"></i>Submit Feedback
+                    </button>
+                </form>
+            </div>
+        </div>
+
+    </div>
+</div>
+{% endblock %}
+
+{% block scripts %}
+{{ super() }}
+<script>
+$(document).ready(function () {
+    // Character counter
+    $('#feedback').on('input', function () {
+        $('#charCount').text($(this).val().length);
+    });
+    $('#feedback').trigger('input');
+
+    // Update file input label
+    $('.custom-file-input').on('change', function() {
+        let fileName = $(this).val().split('\\').pop();
+        $(this).next('.custom-file-label').addClass("selected").html(fileName);
+    });
+
+    // Lightbox functions
+    window.openLightbox = function(src) {
+        $('#lightboxImage').attr('src', src);
+        $('#testimonialLightbox').css('display', 'flex').hide().fadeIn(300);
+        $('body').css('overflow', 'hidden');
+    };
+
+    $('.close-lightbox, .lightbox-overlay').on('click', function(e) {
+        if (e.target !== document.getElementById('lightboxImage')) {
+            $('#testimonialLightbox').fadeOut(300);
+            $('body').css('overflow', 'auto');
+        }
+    });
+
+    // Form validation
+    $('#feedbackForm').on('submit', function (e) {
+        var name = $.trim($('#customer_name').val());
+        var rating = $('input[name="rating"]:checked').val();
+        var fb = $.trim($('#feedback').val());
+        if (!name || !rating || !fb) {
+            e.preventDefault();
+            alert('Please fill in your name, rating, and feedback before submitting.');
+        }
+    });
+});
+</script>
+{% endblock %}

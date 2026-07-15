@@ -1,0 +1,237 @@
+{% extends "admin/base.html" %}
+
+{% block title %}Inventory Management- {{ brand_name }}{% endblock %}
+
+{% block content %}
+<div class="card shadow mb-4">
+    <div class="card-header py-3">
+        <div class="row">
+            <div class="col-md-6">
+                <h6 class="m-0 font-weight-bold text-primary">Inventory Management</h6>
+            </div>
+            <div class="col-md-6">
+                <form class="form-inline">
+                    <div class="input-group">
+                        <input type="text" name="search" class="form-control" placeholder="Search inventory..."
+                            value="{{ search }}">
+                        <div class="input-group-append">
+                            <button class="btn btn-primary" type="submit">
+                                <i class="fas fa-search"></i>
+                            </button>
+                        </div>
+                    </div>
+                    <div class="ml-3">
+                        <select name="stock" class="form-control" onchange="this.form.submit()">
+                            <option value="all" {% if stock_filter=='all' %}selected{% endif %}>All Items</option>
+                            <option value="low" {% if stock_filter=='low' %}selected{% endif %}>Low Stock</option>
+                            <option value="out" {% if stock_filter=='out' %}selected{% endif %}>Out of Stock</option>
+                        </select>
+                    </div>
+                </form>
+            </div>
+        </div>
+    </div>
+    <div class="card-body">
+        <div class="table-responsive">
+            <table class="table table-bordered">
+                <thead class="thead-light">
+                    <tr>
+                        <th>Image</th>
+                        <th>Name</th>
+                        <th>Stock</th>
+                        <th>Reorder Level</th>
+                        <th>Status</th>
+                        <th>Actions</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    {% for item in inventory %}
+                    <tr data-product-id="{{ item.id }}">
+                        <td>
+                            <img src="{{ url_for('static', filename='img/thumbs/' + item.image) if item.image else url_for('static', filename='img/thumbs/default.jpg') }}"
+                                alt="{{ item.name }}" width="50">
+                        </td>
+                        <td>{{ item.name }}</td>
+                        <td>
+                            <span id="stock-{{ item.id }}"
+                                class="{% if item.stock_quantity <= item.reorder_level %}text-warning font-weight-bold{% endif %}">
+                                {{ item.stock_quantity }}
+                            </span>
+                        </td>
+                        <td>{{ item.reorder_level }}</td>
+                        <td>
+                            {% if item.is_active %}
+                            <span class="badge badge-success">Active</span>
+                            {% else %}
+                            <span class="badge badge-secondary">Inactive</span>
+                            {% endif %}
+                        </td>
+                        <td>
+                            <button class="btn btn-sm btn-primary" data-toggle="modal"
+                                data-target="#adjustModal{{ item.id }}">
+                                <i class="fas fa-edit"></i> Adjust
+                            </button>
+                        </td>
+                    </tr>
+
+                    <!-- Adjust Inventory Modal -->
+                    <div class="modal fade" id="adjustModal{{ item.id }}" tabindex="-1" role="dialog">
+                        <div class="modal-dialog" role="document">
+                            <div class="modal-content">
+                                <div class="modal-header bg-dark text-light">
+                                    <h5 class="modal-title">Adjust Inventory: {{ item.name }}</h5>
+                                    <button type="button" class="close text-light" data-dismiss="modal">
+                                        <span>&times;</span>
+                                    </button>
+                                </div>
+                                <form method="POST"
+                                    action="{{ url_for('admin_bp.admin_adjust_inventory', product_id=item.id) }}">
+                                    <input type="hidden" name="csrf_token" value="{{ csrf_token() }}">
+                                    <div class="modal-body bg-dark">
+                                        <div class="form-group">
+                                            <label class="text-light">Current Stock: {{ item.stock_quantity }}</label>
+                                        </div>
+                                        <div class="form-group">
+                                            <label for="adjustment{{ item.id }}" class="text-light">Adjustment
+                                                (+/-)</label>
+                                            <input type="number" class="form-control bg-secondary text-light"
+                                                id="adjustment{{ item.id }}" name="adjustment" required>
+                                        </div>
+                                        <div class="form-group">
+                                            <label for="adjustment_type{{ item.id }}" class="text-light">Adjustment
+                                                Type</label>
+                                            <select class="form-control bg-secondary text-light"
+                                                id="adjustment_type{{ item.id }}" name="adjustment_type">
+                                                <option value="manual">Manual Adjustment</option>
+                                                <option value="purchase">Purchase</option>
+                                                <option value="sale">Sale</option>
+                                                <option value="return">Return</option>
+                                            </select>
+                                        </div>
+                                        <div class="form-group">
+                                            <label for="reference_id{{ item.id }}" class="text-light">Reference ID
+                                                (optional)</label>
+                                            <input type="number" class="form-control bg-secondary text-light"
+                                                id="reference_id{{ item.id }}" name="reference_id">
+                                        </div>
+                                        <div class="form-group">
+                                            <label for="notes{{ item.id }}" class="text-light">Notes</label>
+                                            <textarea class="form-control bg-secondary text-light"
+                                                id="notes{{ item.id }}" name="notes" rows="2"></textarea>
+                                        </div>
+                                    </div>
+                                    <div class="modal-footer bg-dark">
+                                        <button type="button" class="btn btn-secondary"
+                                            data-dismiss="modal">Cancel</button>
+                                        <button type="submit" class="btn btn-primary">Save Changes</button>
+                                    </div>
+                                </form>
+                            </div>
+                        </div>
+                    </div>
+                    {% endfor %}
+
+                    {% if not inventory %}
+                    <tr>
+                        <td colspan="6" class="text-center">No inventory items found</td>
+                    </tr>
+                    {% endif %}
+                </tbody>
+            </table>
+        </div>
+
+        {% if pagination.pages > 1 %}
+        <nav aria-label="Page navigation">
+            <ul class="pagination justify-content-center">
+                {% if pagination.page > 1 %}
+                <li class="page-item">
+                    <a class="page-link"
+                        href="{{ url_for('admin_bp.admin_inventory', page=pagination.page-1, search=search, stock=stock_filter) }}"
+                        aria-label="Previous">
+                        <span aria-hidden="true">&laquo;</span>
+                    </a>
+                </li>
+                {% endif %}
+
+                {% for page_num in range(1, pagination.pages + 1) %}
+                <li class="page-item {% if page_num == pagination.page %}active{% endif %}">
+                    <a class="page-link"
+                        href="{{ url_for('admin_bp.admin_inventory', page=page_num, search=search, stock=stock_filter) }}">{{
+                        page_num }}</a>
+                </li>
+                {% endfor %}
+
+                {% if pagination.page < pagination.pages %} <li class="page-item">
+                    <a class="page-link"
+                        href="{{ url_for('admin_bp.admin_inventory', page=pagination.page+1, search=search, stock=stock_filter) }}"
+                        aria-label="Next">
+                        <span aria-hidden="true">&raquo;</span>
+                    </a>
+                    </li>
+                    {% endif %}
+            </ul>
+        </nav>
+        {% endif %}
+    </div>
+</div>
+{% endblock %}
+
+{% block scripts %}
+<script>
+    $(document).ready(function () {
+        // Client-side validation for negative stock
+        $(document).on('change', '[id^="adjustment"]', function () {
+            const currentText = $(this).closest('.modal-body').find('label:first').text();
+            const current = parseInt(currentText.split(': ')[1]);
+            const adjustment = parseInt($(this).val()) || 0;
+
+            if (current + adjustment < 0) {
+                alert("Error: This adjustment would result in negative inventory!");
+                $(this).val('');
+                $(this).focus();
+            }
+        });
+
+        // Handle form submission
+        $(document).on('submit', 'form[action*="/inventory/adjust/"]', function (e) {
+            e.preventDefault();
+            const form = $(this);
+            const productId = form.attr('action').split('/').pop();
+
+            // Show loading state
+            const submitBtn = form.find('button[type="submit"]');
+            submitBtn.prop('disabled', true).html(`
+            <span class="spinner-border spinner-border-sm" role="status" aria-hidden="true"></span>
+            Saving...
+        `);
+
+            // Make AJAX request
+            $.ajax({
+                url: form.attr('action'),
+                method: 'POST',
+                data: form.serialize(),
+                success: function (response) {
+                    if (response.success) {
+                        // Update the displayed quantity
+                        const stockSpan = $(`#stock-${productId}`);
+                        stockSpan.text(response.new_quantity);
+
+                        // Toggle warning class
+                        stockSpan.toggleClass('text-warning font-weight-bold', response.low_stock);
+
+                        // Close modal and show success
+                        form.closest('.modal').modal('hide');
+                        alert('Inventory updated successfully!');
+                    }
+                },
+                error: function (xhr) {
+                    alert('Error: ' + (xhr.responseJSON?.message || 'Server error'));
+                },
+                complete: function () {
+                    submitBtn.prop('disabled', false).html('Save Changes');
+                }
+            });
+        });
+    });
+</script>
+{% endblock %}

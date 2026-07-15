@@ -1,0 +1,240 @@
+{% extends "base.html" %}
+
+{% block title %}Edit Address - {{ company_name }}{% endblock %}
+
+{% block styles %}
+{{ super() }}
+<style>
+    .auth-container {
+        padding: 80px 0 100px;
+        background: #fff;
+    }
+
+    .auth-card {
+        background: #fff;
+        border-radius: 30px;
+        border: 1px solid #f0f0f0;
+        box-shadow: 0 20px 50px rgba(0, 0, 0, 0.04);
+        overflow: hidden;
+    }
+
+    .auth-card-header {
+        background: #fdfcfd;
+        padding: 40px;
+        text-align: center;
+        border-bottom: 1px solid #f0f0f0;
+    }
+
+    .auth-card-header h2 {
+        font-family: 'Playfair Display', serif;
+        font-weight: 700;
+        margin-bottom: 0;
+        color: #1a1a1a;
+    }
+
+    .auth-card-body {
+        padding: 50px;
+    }
+
+    .form-label-luxury {
+        font-size: 0.75rem;
+        text-transform: uppercase;
+        letter-spacing: 1.5px;
+        color: #999;
+        font-weight: 700;
+        margin-bottom: 10px;
+        display: block;
+    }
+
+    .form-control-luxury {
+        border: 1px solid #f0f0f0;
+        border-radius: 12px;
+        padding: 12px 20px;
+        height: 50px;
+        font-size: 0.95rem;
+        transition: all 0.3s;
+    }
+
+    .form-control-luxury:focus {
+        border-color: #a64d79;
+        box-shadow: 0 10px 30px rgba(166, 77, 121, 0.05);
+    }
+
+    .form-control-luxury[readonly] {
+        background-color: #f9f9f9;
+        cursor: not-allowed;
+    }
+
+    .btn-auth {
+        background: #1a1a1a;
+        color: #fff;
+        padding: 18px;
+        border-radius: 50px;
+        font-weight: 700;
+        text-transform: uppercase;
+        letter-spacing: 2px;
+        font-size: 0.85rem;
+        border: none;
+        transition: all 0.3s;
+        margin-top: 20px;
+    }
+
+    .btn-auth:hover {
+        background: #a64d79;
+        transform: translateY(-3px);
+        box-shadow: 0 10px 25px rgba(166, 77, 121, 0.2);
+    }
+</style>
+{% endblock %}
+
+{% block content %}
+<div class="auth-container">
+    <div class="container">
+        <div class="row justify-content-center">
+            <div class="col-lg-8" data-reveal="bottom">
+                <div class="auth-card">
+                    <div class="auth-card-header">
+                        <h2>Edit Address</h2>
+                    </div>
+                    <div class="auth-card-body">
+                        <form method="POST">
+                            <input type="hidden" name="csrf_token" value="{{ csrf_token() }}" />
+                            {% if next %}
+                            <input type="hidden" name="next" value="{{ next }}">
+                            {% endif %}
+                            <input type="hidden" id="state_code" name="state_code" value="{{ address.state_code or '' }}">
+
+                            <div class="form-group mb-4">
+                                <label class="form-label-luxury" for="postal_code">Postal Code of India</label>
+                                <input type="text" id="postal_code" name="postal_code" class="form-control form-control-luxury"
+                                    value="{{ address.postal_code }}" readonly required>
+                            </div>
+
+                            <div class="row">
+                                <div class="col-md-6 form-group mb-4">
+                                    <label class="form-label-luxury" for="state">State<span class="text-danger">*</span></label>
+                                    <input type="text" id="state" name="state" class="form-control form-control-luxury" value="{{ address.state }}"
+                                        readonly required>
+                                </div>
+
+                                <div class="col-md-6 form-group mb-4">
+                                    <label class="form-label-luxury" for="city">City<span class="text-danger">*</span></label>
+                                    <input type="text" id="city" name="city" class="form-control form-control-luxury" value="{{ address.city }}"
+                                        readonly required>
+                                </div>
+                            </div>
+
+                            <div id="address-fields">
+                                <div class="form-group mb-4">
+                                    <label class="form-label-luxury" for="address_type">Address Type<span class="text-danger">*</span></label>
+                                    <select id="address_type" name="address_type" class="form-control form-control-luxury">
+                                        <option value="Home" {% if address.address_type|lower=='home' %}selected{% endif %}>
+                                            Home</option>
+                                        <option value="Work" {% if address.address_type|lower=='work' %}selected{% endif %}>
+                                            Work</option>
+                                        <option value="Friends" {% if address.address_type|lower=='friends' %}selected{%
+                                            endif %}>Friends</option>
+                                        <option value="Other" {% if address.address_type|lower=='other' %}selected{% endif
+                                            %}>Other</option>
+                                        <option value="Company" {% if address.address_type|lower=='company' %}selected{%
+                                            endif %}>
+                                            Company</option>
+                                    </select>
+                                </div>
+
+                                <div id="billing-fields" style="display: none;">
+                                    <div class="form-group mb-4">
+                                        <label class="form-label-luxury" for="company_name">Company Name</label>
+                                        <input type="text" id="company_name" name="company_name" class="form-control form-control-luxury"
+                                            placeholder="Company Name (if applicable)"
+                                            value="{{ address.company_name or '' }}">
+                                    </div>
+                                    <div class="form-group mb-4">
+                                        <label class="form-label-luxury" for="gst_number">GST Number<span class="text-danger">*</span></label>
+                                        <input type="text" id="gst_number" name="gst_number" class="form-control form-control-luxury"
+                                            placeholder="Enter 15-digit GSTIN" value="{{ address.gst_number or '' }}"
+                                            maxlength="15">
+                                        <small class="text-muted mt-2 d-block">GST is mandatory for Company addresses.</small>
+                                    </div>
+                                </div>
+
+                                <div class="form-group mb-4">
+                                    <label class="form-label-luxury" for="address_line1">Address Line 1<span class="text-danger">*</span></label>
+                                    <input type="text" id="address_line1" name="address_line1" class="form-control form-control-luxury"
+                                        value="{{ address.address_line1 }}" required>
+                                </div>
+
+                                <div class="form-group mb-4">
+                                    <label class="form-label-luxury" for="address_line2">Address Line 2 (Optional)</label>
+                                    <input type="text" id="address_line2" name="address_line2" class="form-control form-control-luxury"
+                                        value="{{ address.address_line2 or '' }}">
+                                </div>
+
+                                <div class="form-group mb-4">
+                                    <label class="form-label-luxury" for="full_name">Full Name<span class="text-danger">*</span></label>
+                                    <input type="text" id="full_name" name="full_name" class="form-control form-control-luxury"
+                                        value="{{ address.full_name }}" required>
+                                </div>
+
+                                <div class="row">
+                                    <div class="col-md-6 form-group mb-4">
+                                        <label class="form-label-luxury" for="mobile_number">Mobile Number<span class="text-danger">*</span></label>
+                                        <input type="tel" id="mobile_number" name="mobile_number" class="form-control form-control-luxury"
+                                            value="{{ address.mobile_number }}" required>
+                                    </div>
+
+                                    <div class="col-md-6 form-group mb-4">
+                                        <label class="form-label-luxury" for="email">Email Address</label>
+                                        <input type="email" id="email" name="email" class="form-control form-control-luxury"
+                                            value="{{ address.email or '' }}">
+                                    </div>
+                                </div>
+
+                                <div class="form-group mb-4">
+                                    <div class="custom-control custom-checkbox">
+                                        <input type="checkbox" class="custom-control-input" id="is_default" name="is_default" value="1"
+                                            {% if address.is_default %}checked{% endif %}>
+                                        <label class="custom-control-label" for="is_default">Set as default address</label>
+                                    </div>
+                                </div>
+
+                                <button type="submit" class="btn btn-auth btn-block">
+                                    <i class="fas fa-save mr-2"></i> Update Address
+                                </button>
+                                
+                                <div class="text-center mt-4">
+                                    <a href="{{ next if next else url_for('user_bp.profile') }}" class="text-muted small text-uppercase font-weight-bold" style="letter-spacing: 1px;">{% if next
+                                        %}Cancel{% else %}Back to Profile{% endif %}</a>
+                                </div>
+                            </div>
+                        </form>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}
+
+{% block scripts %}
+<script>
+    $(document).ready(function () {
+        // For edit, we'll show all fields immediately since we have existing data
+        $('#address-fields').show();
+
+        // Handle Address Type toggle
+        $('#address_type').change(function () {
+            if ($(this).val().toLowerCase() === 'company') {
+                $('#billing-fields').slideDown();
+                $('#gst_number').prop('required', true);
+            } else {
+                $('#billing-fields').slideUp();
+                $('#gst_number').prop('required', false);
+            }
+        });
+
+        // Trigger on load just in case
+        $('#address_type').trigger('change');
+    });
+</script>
+{% endblock %}

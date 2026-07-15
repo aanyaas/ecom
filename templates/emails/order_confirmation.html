@@ -1,0 +1,101 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <meta charset="utf-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Your Order Confirmed - {{ company_name }}</title>
+    <style>
+        body { font-family: 'Helvetica Neue', Helvetica, Arial, sans-serif; line-height: 1.6; color: #333; margin: 0; padding: 0; background-color: #f9f9f9; }
+        .wrapper { width: 100%; max-width: 600px; margin: 0 auto; background-color: #ffffff; border: 1px solid #eeeeee; }
+        .header { background-color: #a64d79; padding: 30px; text-align: center; color: #ffffff; }
+        .header h1 { margin: 0; font-size: 24px; font-weight: 300; letter-spacing: 2px; text-transform: uppercase; }
+        .content { padding: 40px; }
+        .order-info { margin-bottom: 30px; border-bottom: 1px solid #eeeeee; padding-bottom: 20px; }
+        .order-info h2 { font-size: 18px; color: #a64d79; margin-top: 0; }
+        .gst-table { width: 100%; border-collapse: collapse; margin: 20px 0; font-size: 14px; }
+        .gst-table th { background-color: #f8f8f8; text-align: left; padding: 10px; border-bottom: 2px solid #eeeeee; color: #666; text-transform: uppercase; font-size: 12px; }
+        .gst-table td { padding: 10px; border-bottom: 1px solid #eeeeee; }
+        .text-right { text-align: right; }
+        .text-center { text-align: center; }
+        .total-row { font-weight: bold; background-color: #fdfdfd; }
+        .grand-total { font-size: 18px; color: #a64d79; }
+        .footer { background-color: #f8f8f8; padding: 30px; text-align: center; font-size: 12px; color: #999; }
+        .button { display: inline-block; padding: 12px 25px; background-color: #a64d79; color: #ffffff; text-decoration: none; border-radius: 4px; font-weight: bold; margin-top: 20px; }
+    </style>
+</head>
+<body>
+    <div class="wrapper">
+        <div class="header">
+            <h1>{{ company_name }}</h1>
+        </div>
+        <div class="content">
+            <div class="order-info">
+                <h2>Thank you for your order, {{ billing_address.first_name }}!</h2>
+                <p>We've received your order <strong>#{{ order.id }}</strong> and we're getting it ready for shipment. You'll receive another email with a tracking link once it's on its way.</p>
+                <p><strong>Order Date:</strong> {{ order.order_date }}</p>
+                <p><strong>Payment Method:</strong> {{ order.payment_method|replace('_', ' ')|title }}</p>
+            </div>
+
+            <h3>Order Summary</h3>
+            <table class="gst-table">
+                <thead>
+                    <tr>
+                        <th>Item</th>
+                        <th class="text-center">Qty</th>
+                        <th class="text-right">Total</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    {% for item in gst_breakdown['items'] %}
+                    <tr>
+                        <td><a href="{{ url_for('detail', product_id=item.product_id, _external=True) }}" style="color: #333; text-decoration: none;">{{ item.product_name }}</a></td>
+                        <td class="text-center">{{ "%.0f"|format(item.quantity) }}</td>
+                        <td class="text-right">₹{{ "%.2f"|format(item.total_value) }}</td>
+                    </tr>
+                    {% endfor %}
+                </tbody>
+                <tfoot>
+                    {% if order.discount_amount > 0 %}
+                    <tr>
+                        <td colspan="2" class="text-right">Discount {% if order.coupon_code %}(Code: {{ order.coupon_code }} - {{ "%.0f"|format((order.discount_amount / order.subtotal) * 100) }}% Off){% else %}({{ "%.0f"|format((order.discount_amount / order.subtotal) * 100) }}% Off){% endif %}:</td>
+                        <td class="text-right">-₹{{ "%.2f"|format(order.discount_amount) }}</td>
+                    </tr>
+                    {% endif %}
+                    {% if order.shipping_charge > 0 %}
+                    <tr>
+                        <td colspan="2" class="text-right">Shipping:</td>
+                        <td class="text-right">₹{{ "%.2f"|format(order.shipping_charge) }}</td>
+                    </tr>
+                    {% endif %}
+                    <tr class="total-row">
+                        <td colspan="2" class="text-right grand-total">Grand Total:</td>
+                        <td class="text-right grand-total">₹{{ "%.2f"|format(order.total_amount) }}</td>
+                    </tr>
+                </tfoot>
+            </table>
+
+            <div style="margin-top: 30px;">
+                <div style="float: left; width: 48%;">
+                    <h4 style="color: #a64d79; margin-bottom: 10px;">Shipping Address</h4>
+                    <p style="font-size: 13px; margin: 0;">
+                        {{ billing_address.first_name }} {{ billing_address.last_name }}<br>
+                        {{ billing_address.address1 }}<br>
+                        {% if billing_address.address2 %}{{ billing_address.address2 }}<br>{% endif %}
+                        {{ billing_address.city }}, {{ billing_address.state }} - {{ billing_address.zip_code }}<br>
+                        Phone: {{ billing_address.phone }}
+                    </p>
+                </div>
+                <div style="clear: both;"></div>
+            </div>
+
+            <center>
+                <a href="{{ url_for('order_history', _external=True) }}" class="button">View My Orders</a>
+            </center>
+        </div>
+        <div class="footer">
+            <p>&copy; 2026 {{ company_name }}. All rights reserved.</p>
+            <p>This is an automatically generated email. Please do not reply to this message.</p>
+        </div>
+    </div>
+</body>
+</html>

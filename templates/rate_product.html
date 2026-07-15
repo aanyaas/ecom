@@ -1,0 +1,251 @@
+﻿{% extends "base.html" %}
+
+{% block title %}Rate & Review - {{ product.name }} - {{ company_name }}{% endblock %}
+
+{% block styles %}
+<style>
+    .rate-review-container {
+        padding: 80px 0 100px;
+        background: #fff;
+    }
+    .review-card {
+        background: #fff;
+        border: 1px solid #f0f0f0;
+        border-radius: 30px;
+        box-shadow: 0 30px 70px rgba(0,0,0,0.05);
+        overflow: hidden;
+    }
+    .product-preview-card {
+        background: #fdfcfd;
+        border-radius: 20px;
+        padding: 30px;
+        border: 1px solid #f0f0f0;
+    }
+    .product-preview-card img {
+        border-radius: 15px;
+        box-shadow: 0 10px 30px rgba(0,0,0,0.08);
+        margin-bottom: 25px;
+    }
+    .luxury-title {
+        font-family: 'Playfair Display', serif;
+        font-weight: 700;
+        color: #1a1a1a;
+        font-size: 2.5rem;
+    }
+    .star-rating-luxury {
+        display: flex;
+        flex-direction: row-reverse;
+        justify-content: flex-end;
+        gap: 15px;
+    }
+    .star-rating-luxury input { display: none; }
+    .star-rating-luxury label {
+        font-size: 2.8rem;
+        color: #eee;
+        cursor: pointer;
+        transition: all 0.3s cubic-bezier(0.165, 0.84, 0.44, 1);
+    }
+    .star-rating-luxury input:checked ~ label,
+    .star-rating-luxury label:hover,
+    .star-rating-luxury label:hover ~ label {
+        color: #ffc107;
+        transform: scale(1.1);
+    }
+    .form-luxury .form-control {
+        border: 1px solid #f0f0f0;
+        border-radius: 15px;
+        padding: 15px 25px;
+        background: #fdfcfd;
+        transition: all 0.3s;
+        font-size: 0.95rem;
+    }
+    .form-luxury .form-control:focus {
+        border-color: #a64d79;
+        background: #fff;
+        box-shadow: 0 10px 30px rgba(166, 77, 121, 0.05);
+        outline: none;
+    }
+    .btn-luxury {
+        background: #a64d79;
+        color: #fff;
+        border: none;
+        border-radius: 50px;
+        padding: 18px 45px;
+        font-weight: 700;
+        letter-spacing: 1.5px;
+        text-transform: uppercase;
+        transition: all 0.3s;
+        box-shadow: 0 10px 25px rgba(166, 77, 121, 0.3);
+    }
+    .btn-luxury:hover {
+        background: #1a1a1a;
+        transform: translateY(-3px);
+        box-shadow: 0 15px 35px rgba(0,0,0,0.2);
+        color: #fff;
+    }
+    .media-preview-item {
+        position: relative;
+        border-radius: 15px;
+        overflow: hidden;
+        aspect-ratio: 1;
+        background: #f8f8f8;
+        border: 1px solid #eee;
+    }
+    .media-preview-item img, .media-preview-item video {
+        width: 100%;
+        height: 100%;
+        object-fit: cover;
+    }
+</style>
+{% endblock %}
+
+{% block content %}
+<div class="rate-review-container">
+    <div class="container">
+        <div class="row justify-content-center">
+            <div class="col-lg-10">
+                <div class="d-flex align-items-center mb-4">
+                    <a href="{{ url_for('checkout_bp.order_history') }}" class="btn btn-link text-muted p-0 mr-3">
+                        <i class="fas fa-arrow-left fa-lg"></i>
+                    </a>
+                    <h2 class="luxury-title mb-0">Share Your Story</h2>
+                </div>
+
+                <div class="review-card p-4 p-md-5">
+                    <div class="row">
+                        <!-- Left: Product Summary -->
+                        <div class="col-md-4 mb-4 mb-md-0">
+                            <div class="product-preview-card text-center sticky-top" style="top: 100px;">
+                                {% if product.image and product.image != 'default.jpg' %}
+                                    <img src="{{ url_for('static', filename='img/thumbs/' + product.image) }}" 
+                                        alt="{{ product.name }}" class="img-fluid mb-3">
+                                {% else %}
+                                    <img src="{{ url_for('static', filename='img/thumbs/default.jpg') }}" 
+                                        alt="{{ product.name }}" class="img-fluid mb-3">
+                                {% endif %}
+                                <a href="{{ url_for('shop_bp.detail', product_id=product.id) }}" class="text-dark hover-primary" style="text-decoration: none;">
+                                    <h5 class="font-weight-bold mb-1">{{ product.name }}</h5>
+                                </a>
+                                <p class="text-muted small mb-3">Order #{{ order_id }}</p>
+                                <div class="badge badge-soft-primary px-3 py-2 rounded-pill">Collector's Item</div>
+                            </div>
+                        </div>
+
+                        <!-- Right: Review Form -->
+                        <div class="col-md-8 pl-md-5">
+                            <form method="POST" enctype="multipart/form-data" id="reviewForm" class="form-luxury">
+                                <input type="hidden" name="csrf_token" value="{{ csrf_token() }}"/>
+                                
+                                <div class="form-group mb-5">
+                                    <label class="small text-muted font-weight-bold uppercase mb-3">How would you rate it?</label>
+                                    <div class="star-rating-luxury">
+                                        {% for i in range(5, 0, -1) %}
+                                        <input type="radio" name="rating" id="star{{i}}" value="{{i}}" 
+                                               {% if existing_review and existing_review.rating == i %}checked{% endif %} required>
+                                        <label for="star{{i}}"><i class="fas fa-star"></i></label>
+                                        {% endfor %}
+                                    </div>
+                                </div>
+
+                                <div class="form-group mb-4">
+                                    <label class="small text-muted font-weight-bold uppercase" for="title">Review Title</label>
+                                    <input type="text" class="form-control" id="title" name="title" 
+                                           placeholder="Summarize your experience..."
+                                           value="{{ existing_review.title if existing_review else '' }}" required>
+                                </div>
+
+                                <div class="form-group mb-4">
+                                    <label class="small text-muted font-weight-bold uppercase" for="review_text">Your Experience</label>
+                                    <textarea class="form-control" id="review_text" name="review_text" 
+                                              rows="5" placeholder="Tell us what you loved about this piece..." required>{{ existing_review.review_text if existing_review else '' }}</textarea>
+                                </div>
+
+                                {% if existing_review and existing_review.parsed_media_files %}
+                                <div class="mb-4">
+                                    <label class="small text-muted font-weight-bold uppercase d-block mb-3">Previously Uploaded</label>
+                                    <div class="row no-gutters mx-n1">
+                                        {% for media in existing_review.parsed_media_files %}
+                                        <div class="col-3 p-1">
+                                            <div class="media-preview-item">
+                                                {% if media.type.startswith('image/') %}
+                                                <img src="{{ url_for('static', filename=media.path) }}" alt="Preview">
+                                                {% elif media.type.startswith('video/') %}
+                                                <video><source src="{{ url_for('static', filename=media.path) }}" type="{{ media.type }}"></video>
+                                                {% endif %}
+                                            </div>
+                                        </div>
+                                        {% endfor %}
+                                    </div>
+                                </div>
+                                {% endif %}
+
+                                <div class="form-group mb-5">
+                                    <label class="small text-muted font-weight-bold uppercase" for="media_files">Add Photos or Videos</label>
+                                    <div class="custom-file-luxury">
+                                        <input type="file" class="form-control-file" id="media_files" name="media_files" 
+                                               multiple accept="image/*,video/*" onchange="validateFiles(this)">
+                                        <small class="form-text text-muted mt-2">
+                                            Share up to 5 visual memories. Max 5MB per photo, 50MB per video.
+                                        </small>
+                                    </div>
+                                    <div id="fileError" class="text-danger small mt-2"></div>
+                                </div>
+
+                                <button type="submit" class="btn btn-luxury btn-block" id="submitButton">
+                                    Submit Your Story
+                                </button>
+                            </form>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}
+
+{% block scripts %}
+<script>
+let filesValid = true;
+
+function validateFiles(input) {
+    const maxFiles = 5;
+    const maxImageSize = 5 * 1024 * 1024;
+    const maxVideoSize = 50 * 1024 * 1024;
+    const errorDiv = document.getElementById('fileError');
+    
+    filesValid = true;
+    errorDiv.textContent = '';
+    
+    if (input.files.length > maxFiles) {
+        errorDiv.textContent = `Limit: ${maxFiles} files per review.`;
+        input.value = '';
+        filesValid = false;
+        return false;
+    }
+    
+    for (let i = 0; i < input.files.length; i++) {
+        const file = input.files[i];
+        let maxSize = file.type.startsWith('image/') ? maxImageSize : maxVideoSize;
+        
+        if (file.size > maxSize) {
+            errorDiv.textContent = `"${file.name}" is too large.`;
+            input.value = '';
+            filesValid = false;
+            return false;
+        }
+    }
+    return true;
+}
+
+document.getElementById('reviewForm').addEventListener('submit', function(e) {
+    const submitBtn = document.getElementById('submitButton');
+    if (!filesValid) {
+        e.preventDefault();
+        return false;
+    }
+    submitBtn.innerHTML = '<i class="fas fa-spinner fa-spin mr-2"></i> Submitting...';
+    submitBtn.disabled = true;
+});
+</script>
+{% endblock %}

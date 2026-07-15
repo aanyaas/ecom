@@ -1,0 +1,807 @@
+{% extends "admin/base.html" %}
+
+{% block title %}Dashboard Overview- {{ brand_name }}{% endblock %}
+
+{% block content %}
+<style>
+    /* Ultra-Premium Glassmorphism & Modern UI */
+    :root {
+        --glass-bg: rgba(255, 255, 255, 0.7);
+        --glass-border: rgba(255, 255, 255, 0.5);
+        --glass-shadow: 0 8px 32px 0 rgba(31, 38, 135, 0.07);
+        --primary-gradient: linear-gradient(135deg, #a64d79 0%, #d48ba8 100%);
+        --secondary-gradient: linear-gradient(135deg, #1a1a2e 0%, #16213e 100%);
+        --text-dark: #1e293b;
+        --text-muted: #64748b;
+        --accent-glow: 0 0 20px rgba(166, 77, 121, 0.4);
+    }
+
+    body {
+        background-color: #f8fafc;
+        background-image:
+            radial-gradient(at 0% 0%, rgba(166, 77, 121, 0.15) 0px, transparent 50%),
+            radial-gradient(at 100% 0%, rgba(59, 130, 246, 0.1) 0px, transparent 50%),
+            radial-gradient(at 100% 100%, rgba(166, 77, 121, 0.1) 0px, transparent 50%);
+        background-attachment: fixed;
+        font-family: 'Inter', system-ui, -apple-system, sans-serif;
+    }
+
+    /* Role Badge */
+    .role-badge {
+        background: var(--primary-gradient);
+        color: white;
+        padding: 6px 16px;
+        border-radius: 20px;
+        font-size: 0.85rem;
+        font-weight: 600;
+        letter-spacing: 1px;
+        text-transform: uppercase;
+        box-shadow: var(--accent-glow);
+        animation: pulse 2s infinite;
+    }
+
+    @keyframes pulse {
+        0% {
+            box-shadow: 0 0 0 0 rgba(166, 77, 121, 0.4);
+        }
+
+        70% {
+            box-shadow: 0 0 0 10px rgba(166, 77, 121, 0);
+        }
+
+        100% {
+            box-shadow: 0 0 0 0 rgba(166, 77, 121, 0);
+        }
+    }
+
+    @keyframes fadeUp {
+        from {
+            opacity: 0;
+            transform: translateY(20px);
+        }
+
+        to {
+            opacity: 1;
+            transform: translateY(0);
+        }
+    }
+
+    .dashboard-tabs {
+        display: flex;
+        gap: 24px;
+        margin-bottom: 40px;
+        overflow-x: auto;
+        padding: 10px 10px 20px 10px;
+        animation: fadeUp 0.5s ease-out;
+        scroll-snap-type: x mandatory;
+    }
+
+    .dashboard-tab {
+        flex: 1;
+        min-width: 240px;
+        scroll-snap-align: start;
+        padding: 30px;
+        background: var(--glass-bg);
+        backdrop-filter: blur(20px);
+        -webkit-backdrop-filter: blur(20px);
+        border: 1px solid var(--glass-border);
+        border-radius: 24px;
+        text-decoration: none !important;
+        color: var(--text-dark);
+        transition: all 0.4s cubic-bezier(0.4, 0, 0.2, 1);
+        display: flex;
+        flex-direction: column;
+        justify-content: space-between;
+        box-shadow: var(--glass-shadow);
+        position: relative;
+        overflow: hidden;
+    }
+
+    .dashboard-tab::before {
+        content: '';
+        position: absolute;
+        top: 0;
+        left: 0;
+        right: 0;
+        height: 4px;
+        background: var(--primary-gradient);
+        opacity: 0;
+        transition: opacity 0.3s ease;
+    }
+
+    .dashboard-tab:hover {
+        transform: translateY(-8px) scale(1.02);
+        box-shadow: 0 20px 40px rgba(0, 0, 0, 0.08);
+    }
+
+    .dashboard-tab:hover::before {
+        opacity: 1;
+    }
+
+    .dashboard-tab.active {
+        background: var(--secondary-gradient);
+        color: white;
+        border: none;
+        box-shadow: 0 20px 40px rgba(26, 26, 46, 0.25);
+    }
+
+    .tab-title {
+        font-size: 0.8rem;
+        text-transform: uppercase;
+        letter-spacing: 2px;
+        font-weight: 700;
+        margin-bottom: 12px;
+        opacity: 0.8;
+    }
+
+    .dashboard-tab.active .tab-title {
+        color: #94a3b8;
+    }
+
+    .tab-value {
+        font-size: 2.5rem;
+        font-weight: 800;
+        line-height: 1.1;
+        letter-spacing: -1px;
+    }
+
+    .dashboard-tab.active .tab-value {
+        background: linear-gradient(to right, #fff, #cbd5e0);
+        -webkit-background-clip: text;
+        background-clip: text;
+        -webkit-text-fill-color: transparent;
+    }
+
+    /* Cards */
+    .metric-card-luxury,
+    .card {
+        background: var(--glass-bg) !important;
+        backdrop-filter: blur(16px) !important;
+        -webkit-backdrop-filter: blur(16px);
+        border: 1px solid var(--glass-border) !important;
+        border-radius: 24px !important;
+        box-shadow: var(--glass-shadow) !important;
+        transition: all 0.3s ease;
+        animation: fadeUp 0.6s ease-out backwards;
+    }
+
+    .card-header {
+        background: transparent !important;
+        border-bottom: 1px solid rgba(0, 0, 0, 0.05) !important;
+        padding: 24px !important;
+    }
+
+    .metric-card-luxury:hover,
+    .card:hover {
+        transform: translateY(-4px);
+        box-shadow: 0 15px 35px rgba(0, 0, 0, 0.1) !important;
+    }
+
+    .metric-card-luxury {
+        padding: 30px;
+        position: relative;
+        overflow: hidden;
+    }
+
+    .icon-box-luxury {
+        width: 60px;
+        height: 60px;
+        border-radius: 20px;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        margin-bottom: 24px;
+        font-size: 1.5rem;
+        transition: transform 0.3s ease;
+    }
+
+    .metric-card-luxury:hover .icon-box-luxury {
+        transform: scale(1.1) rotate(5deg);
+    }
+
+    .table {
+        color: var(--text-dark);
+    }
+
+    .table thead th {
+        border-bottom: 2px solid rgba(0, 0, 0, 0.05);
+        color: var(--text-muted);
+        font-weight: 600;
+        text-transform: uppercase;
+        font-size: 0.75rem;
+        letter-spacing: 1px;
+        padding: 16px;
+    }
+
+    .table td {
+        padding: 16px;
+        vertical-align: middle;
+    }
+
+    .badge {
+        padding: 6px 12px;
+        border-radius: 8px;
+        font-weight: 600;
+    }
+
+    /* Staggered animations */
+    .row>div:nth-child(1) {
+        animation-delay: 0.1s;
+    }
+
+    .row>div:nth-child(2) {
+        animation-delay: 0.2s;
+    }
+
+    .row>div:nth-child(3) {
+        animation-delay: 0.3s;
+    }
+
+    .row>div:nth-child(4) {
+        animation-delay: 0.4s;
+    }
+</style>
+
+<div class="d-flex justify-content-between align-items-center mb-3 animation: fadeUp 0.3s">
+    <div>
+        <h2 class="mb-2 font-weight-800" style="letter-spacing: -1px;">Dashboard Overview</h2>
+        <div class="d-flex align-items-center">
+            <span class="role-badge mr-3">{{ admin_role }}</span>
+            <p class="text-muted small mb-0">Role-based insights and enterprise performance</p>
+        </div>
+    </div>
+    <div class="d-flex align-items-center">
+        <div class="dropdown mr-3">
+            <button class="btn btn-white shadow-sm border dropdown-toggle"
+                style="border-radius: 12px; font-weight: 600;" type="button" data-toggle="dropdown">
+                <i class="far fa-calendar-alt mr-2 text-primary"></i> Last {{ request.args.get('range', '30') }} Days
+            </button>
+            <div class="dropdown-menu dropdown-menu-right shadow-sm border-0" style="border-radius: 12px;">
+                <a class="dropdown-item py-2"
+                    href="{{ url_for('admin_bp.admin_dashboard', tab=active_tab, range=7) }}">Last 7 Days</a>
+                <a class="dropdown-item py-2"
+                    href="{{ url_for('admin_bp.admin_dashboard', tab=active_tab, range=30) }}">Last 30 Days</a>
+                <a class="dropdown-item py-2"
+                    href="{{ url_for('admin_bp.admin_dashboard', tab=active_tab, range=90) }}">Last 90 Days</a>
+                <a class="dropdown-item py-2"
+                    href="{{ url_for('admin_bp.admin_dashboard', tab=active_tab, range=365) }}">Last Year</a>
+            </div>
+        </div>
+        <div class="text-muted small bg-white px-3 py-2 shadow-sm border" style="border-radius: 12px;">
+            <i class="fas fa-sync-alt mr-1"></i> {{ updated_at }}
+        </div>
+    </div>
+</div>
+
+<div class="dashboard-tabs">
+    {% if 'business' in allowed_tabs %}
+    <a href="{{ url_for('admin_bp.admin_dashboard', tab='business') }}"
+        class="dashboard-tab {% if active_tab == 'business' %}active{% endif %}">
+        <div>
+            <div class="tab-title">Enterprise Value</div>
+            <div class="tab-value">₹{{ total_revenue|default(0)|round(0)|int }}</div>
+        </div>
+        <div class="tab-subtitle mt-3 font-weight-600 opacity-75">Gross Revenue</div>
+    </a>
+    {% endif %}
+
+    {% if 'products' in allowed_tabs %}
+    <a href="{{ url_for('admin_bp.admin_dashboard', tab='products') }}"
+        class="dashboard-tab {% if active_tab == 'products' %}active{% endif %}">
+        <div>
+            <div class="tab-title">Inventory Health</div>
+            <div class="tab-value">{{ product_counts.active|default(0) }}</div>
+        </div>
+        <div class="tab-subtitle mt-3 font-weight-600 opacity-75">Active Listings</div>
+    </a>
+    {% endif %}
+
+    {% if 'orders' in allowed_tabs %}
+    <a href="{{ url_for('admin_bp.admin_dashboard', tab='orders') }}"
+        class="dashboard-tab {% if active_tab == 'orders' %}active{% endif %}">
+        <div>
+            <div class="tab-title">Fulfillment</div>
+            <div class="tab-value">{{ open_orders_count|default(0) }}</div>
+        </div>
+        <div class="tab-subtitle mt-3 font-weight-600 opacity-75">Open Orders</div>
+    </a>
+    {% endif %}
+
+    {% if 'analytics' in allowed_tabs %}
+    <a href="{{ url_for('admin_bp.admin_dashboard', tab='analytics') }}"
+        class="dashboard-tab {% if active_tab == 'analytics' %}active{% endif %}">
+        <div>
+            <div class="tab-title">Conversion Rate</div>
+            <div class="tab-value">{{ conversion_rate|round(1) }}%</div>
+        </div>
+        <div class="tab-subtitle mt-3 font-weight-600 opacity-75">Visitor to Buyer</div>
+    </a>
+    {% endif %}
+</div>
+
+{% if active_tab in ['business', 'analytics'] %}
+
+<div class="row mb-4">
+    <!-- Performance Trend Chart -->
+    <div class="col-lg-8 mb-4">
+        <div class="card h-100 border-0">
+            <div class="card-header d-flex justify-content-between align-items-center">
+                <h6 class="mb-0 font-weight-700">Performance Trend</h6>
+            </div>
+            <div class="card-body">
+                <div class="chart-container" style="height: 300px;">
+                    <canvas id="revenueChart" data-labels='{{ revenue_labels|tojson|safe }}'
+                        data-revenue='{{ revenue_data|tojson|safe }}'
+                        data-orders='{{ order_data|tojson|safe }}'></canvas>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Feedback Rating Widget -->
+    <div class="col-lg-4 mb-4">
+        <div class="card h-100 border-0">
+            <div class="card-header d-flex justify-content-between align-items-center">
+                <h6 class="mb-0 font-weight-700">Customer Satisfaction</h6>
+            </div>
+            <div class="card-body d-flex flex-column justify-content-center text-center">
+                <div class="display-3 font-weight-800 text-dark mb-2">{{
+                    feedback_rating.avg_rating|round(1)|default('0.0') }}</div>
+                <div class="mb-4">
+                    {% set rating = feedback_rating.avg_rating|default(0)|round|int %}
+                    {% for i in range(5) %}
+                    <i
+                        class="fas fa-star fa-lg {% if i < rating %}text-warning{% else %}text-light{% endif %} mx-1"></i>
+                    {% endfor %}
+                </div>
+                <div class="row w-100 mx-0 mt-auto">
+                    <div class="col-6 border-right">
+                        <div class="text-muted small text-uppercase font-weight-600 mb-1">Positive</div>
+                        <div class="h4 font-weight-700 text-success mb-0">{{ feedback_rating.positive }}</div>
+                    </div>
+                    <div class="col-6">
+                        <div class="text-muted small text-uppercase font-weight-600 mb-1">Negative</div>
+                        <div class="h4 font-weight-700 text-danger mb-0">{{ feedback_rating.negative }}</div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- Additional Analytics Charts -->
+<div class="row mb-4">
+    <!-- Customer Acquisition -->
+    <div class="col-lg-8 mb-4">
+        <div class="card h-100 border-0">
+            <div class="card-header d-flex justify-content-between align-items-center">
+                <h6 class="mb-0 font-weight-700">Customer Acquisition</h6>
+            </div>
+            <div class="card-body">
+                <div class="chart-container" style="height: 300px;">
+                    <canvas id="customerAcquisitionChart" data-labels='{{ customer_acquisition_labels|tojson|safe }}'
+                        data-counts='{{ customer_acquisition_data|tojson|safe }}'></canvas>
+                </div>
+            </div>
+        </div>
+    </div>
+    <!-- Order Status -->
+    <div class="col-lg-4 mb-4">
+        <div class="card h-100 border-0">
+            <div class="card-header d-flex justify-content-between align-items-center">
+                <h6 class="mb-0 font-weight-700">Order Status Breakdown</h6>
+            </div>
+            <div class="card-body d-flex align-items-center justify-content-center">
+                <div class="chart-container" style="height: 250px; width: 100%;">
+                    <canvas id="orderStatusChart" data-statuses='{{ order_statuses|tojson|safe }}'></canvas>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<div class="row mb-4">
+    <!-- Category Performance -->
+    <div class="col-lg-6 mb-4">
+        <div class="card h-100 border-0">
+            <div class="card-header d-flex justify-content-between align-items-center">
+                <h6 class="mb-0 font-weight-700">Category Performance</h6>
+            </div>
+            <div class="card-body">
+                <div class="chart-container" style="height: 300px;">
+                    <canvas id="categoryPerformanceChart"
+                        data-category='{{ category_performance|tojson|safe }}'></canvas>
+                </div>
+            </div>
+        </div>
+    </div>
+    <!-- Sales by Region -->
+    <div class="col-lg-6 mb-4">
+        <div class="card h-100 border-0">
+            <div class="card-header d-flex justify-content-between align-items-center">
+                <h6 class="mb-0 font-weight-700">Sales by Region</h6>
+            </div>
+            <div class="card-body">
+                <div class="chart-container" style="height: 300px;">
+                    <canvas id="salesByRegionChart" data-labels='{{ sales_by_region_labels|tojson|safe }}'
+                        data-data='{{ sales_by_region_data|tojson|safe }}'></canvas>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+{% endif %}
+
+{% if active_tab in ['products', 'business', 'analytics'] %}
+<div class="row mb-4">
+    <div class="col-12">
+        <div class="card border-0">
+            <div class="card-header d-flex justify-content-between align-items-center py-4">
+                <h6 class="mb-0 font-weight-700">Top Performing Products</h6>
+                <a href="{{ url_for('admin_bp.admin_products') }}"
+                    class="btn btn-sm btn-light font-weight-600 rounded-pill px-4">View All</a>
+            </div>
+            <div class="card-body p-0">
+                <div class="table-responsive">
+                    <table class="table table-hover mb-0 align-middle">
+                        <thead class="bg-light">
+                            <tr>
+                                <th class="pl-4">Product Details</th>
+                                <th>Status</th>
+                                <th>Units Sold</th>
+                                <th>Revenue Generated</th>
+                                <th>Current Stock</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            {% for product in product_performance %}
+                            <tr>
+                                <td class="pl-4 py-3">
+                                    <div class="d-flex align-items-center">
+                                        <img src="{{ url_for('static', filename='img/thumbs/' + product.image) if product.image else url_for('static', filename='img/thumbs/default.jpg') }}"
+                                            class="rounded-lg shadow-sm mr-3"
+                                            style="width: 50px; height: 50px; object-fit: cover;">
+                                        <div>
+                                            <div class="font-weight-700 text-dark mb-1">{{ product.name }}</div>
+                                            <div class="text-muted small">SKU: {{ product.sku|default('N/A') }}</div>
+                                        </div>
+                                    </div>
+                                </td>
+                                <td>
+                                    <span
+                                        class="badge badge-soft-{{ 'success' if product.is_active else 'secondary' }} px-3 py-2 rounded-pill">
+                                        {{ 'Active' if product.is_active else 'Inactive' }}
+                                    </span>
+                                </td>
+                                <td class="font-weight-600">{{ product.total_sold }}</td>
+                                <td class="font-weight-700 text-primary">₹{{ product.revenue|round(2) }}</td>
+                                <td>
+                                    <span
+                                        class="{% if product.stock_quantity <= 0 %}text-danger font-weight-700{% else %}font-weight-600{% endif %}">
+                                        {{ product.stock_quantity }}
+                                    </span>
+                                </td>
+                            </tr>
+                            {% endfor %}
+                        </tbody>
+                    </table>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<div class="row mb-4">
+    <!-- Top Customers -->
+    <div class="col-lg-6 mb-4">
+        <div class="card border-0 h-100">
+            <div class="card-header d-flex justify-content-between align-items-center py-4">
+                <h6 class="mb-0 font-weight-700">Top Customers</h6>
+            </div>
+            <div class="card-body p-0">
+                <div class="table-responsive">
+                    <table class="table table-hover mb-0 align-middle">
+                        <thead class="bg-light">
+                            <tr>
+                                <th class="pl-4">Customer</th>
+                                <th>Orders</th>
+                                <th>Revenue</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            {% for customer in top_customers %}
+                            <tr>
+                                <td class="pl-4 py-3">
+                                    <div class="font-weight-700 text-dark mb-1">{{ customer.name }}</div>
+                                    <div class="text-muted small">{{ customer.email }}</div>
+                                </td>
+                                <td class="font-weight-600">{{ customer.total_orders }}</td>
+                                <td class="font-weight-700 text-primary">₹{{ customer.revenue|round(2) }}</td>
+                            </tr>
+                            {% else %}
+                            <tr>
+                                <td colspan="3" class="text-center text-muted">No data available</td>
+                            </tr>
+                            {% endfor %}
+                        </tbody>
+                    </table>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Low Stock Alerts -->
+    <div class="col-lg-6 mb-4">
+        <div class="card border-0 h-100">
+            <div class="card-header d-flex justify-content-between align-items-center py-4">
+                <h6 class="mb-0 font-weight-700">Low Stock Alerts</h6>
+            </div>
+            <div class="card-body p-0">
+                <div class="table-responsive">
+                    <table class="table table-hover mb-0 align-middle">
+                        <thead class="bg-light">
+                            <tr>
+                                <th class="pl-4">Product</th>
+                                <th>Stock</th>
+                                <th>Reorder Level</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            {% for alert in low_stock_alerts %}
+                            <tr>
+                                <td class="pl-4 py-3">
+                                    <div class="font-weight-700 text-dark mb-1">{{ alert.name }}</div>
+                                    <div class="text-muted small">SKU: {{ alert.sku|default('N/A') }}</div>
+                                </td>
+                                <td><span class="badge badge-soft-danger px-3 py-2 rounded-pill">{{ alert.stock_quantity
+                                        }}</span></td>
+                                <td class="font-weight-600 text-warning">{{ alert.reorder_level }}</td>
+                            </tr>
+                            {% else %}
+                            <tr>
+                                <td colspan="3" class="text-center text-muted">Stock levels are healthy</td>
+                            </tr>
+                            {% endfor %}
+                        </tbody>
+                    </table>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+{% endif %}
+
+{% if active_tab in ['orders', 'operations'] %}
+<div class="row mb-4">
+    <div class="col-lg-6 mb-4">
+        <div class="card h-100 border-0">
+            <div class="card-header bg-transparent py-4">
+                <h6 class="mb-0 font-weight-700">Fulfillment Pipeline</h6>
+            </div>
+            <div class="card-body">
+                <div class="row text-center h-100 align-items-center">
+                    <div class="col-4 border-right">
+                        <div class="text-muted small text-uppercase font-weight-600 mb-2">Pending</div>
+                        <h2 class="font-weight-800 text-warning mb-0">{{ order_statuses|selectattr('name', 'equalto',
+                            'Pending')|map(attribute='count')|first|default(0) }}</h2>
+                    </div>
+                    <div class="col-4 border-right">
+                        <div class="text-muted small text-uppercase font-weight-600 mb-2">Processing</div>
+                        <h2 class="font-weight-800 text-info mb-0">{{ order_statuses|selectattr('name', 'equalto',
+                            'Processing')|map(attribute='count')|first|default(0) }}</h2>
+                    </div>
+                    <div class="col-4">
+                        <div class="text-muted small text-uppercase font-weight-600 mb-2">Shipped</div>
+                        <h2 class="font-weight-800 text-primary mb-0">{{ order_statuses|selectattr('name', 'equalto',
+                            'Shipped')|map(attribute='count')|first|default(0) }}</h2>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+    <div class="col-lg-6 mb-4">
+        <div class="card h-100 border-0">
+            <div class="card-header bg-transparent py-4">
+                <h6 class="mb-0 font-weight-700">Returns & Cancellations</h6>
+            </div>
+            <div class="card-body">
+                <div class="row text-center h-100 align-items-center">
+                    <div class="col-6 border-right">
+                        <div class="text-muted small text-uppercase font-weight-600 mb-2">Total Returns</div>
+                        <h2 class="font-weight-800 text-secondary mb-0">{{ return_stats.total_returns|default(0) }}</h2>
+                    </div>
+                    <div class="col-6">
+                        <div class="text-muted small text-uppercase font-weight-600 mb-2">Cancelled Orders</div>
+                        <h2 class="font-weight-800 text-danger mb-0">{{ order_statuses|selectattr('name', 'equalto',
+                            'Cancelled')|map(attribute='count')|first|default(0) }}</h2>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+{% endif %}
+
+{% endblock %}
+
+{% block scripts %}
+{{ super() }}
+<script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+<script>
+    $(document).ready(function () {
+        const chartEl = document.getElementById('revenueChart');
+        if (chartEl) {
+            const chartData = chartEl.dataset;
+            const revenueLabels = JSON.parse(chartData.labels);
+            const revenueData = JSON.parse(chartData.revenue);
+            const ctx = chartEl.getContext('2d');
+
+            const gradient = ctx.createLinearGradient(0, 0, 0, 400);
+            gradient.addColorStop(0, 'rgba(166, 77, 121, 0.4)');
+            gradient.addColorStop(1, 'rgba(166, 77, 121, 0.0)');
+
+            new Chart(ctx, {
+                type: 'line',
+                data: {
+                    labels: revenueLabels,
+                    datasets: [{
+                        label: 'Revenue (₹)',
+                        data: revenueData,
+                        backgroundColor: gradient,
+                        borderColor: '#a64d79',
+                        borderWidth: 4,
+                        pointBackgroundColor: '#fff',
+                        pointBorderColor: '#a64d79',
+                        pointBorderWidth: 3,
+                        pointRadius: 5,
+                        pointHoverRadius: 8,
+                        fill: true,
+                        tension: 0.4
+                    }]
+                },
+                options: {
+                    responsive: true,
+                    maintainAspectRatio: false,
+                    plugins: {
+                        legend: { display: false },
+                        tooltip: {
+                            backgroundColor: 'rgba(255, 255, 255, 0.95)',
+                            titleColor: '#1e293b',
+                            bodyColor: '#475569',
+                            borderColor: 'rgba(0,0,0,0.05)',
+                            borderWidth: 1,
+                            padding: 16,
+                            titleFont: { size: 14, family: 'Inter' },
+                            bodyFont: { size: 14, family: 'Inter', weight: 'bold' },
+                            displayColors: false
+                        }
+                    },
+                    scales: {
+                        x: { grid: { display: false }, ticks: { font: { family: 'Inter' } } },
+                        y: { grid: { color: 'rgba(0,0,0,0.03)', drawBorder: false }, ticks: { font: { family: 'Inter' } } }
+                    }
+                }
+            });
+        }
+
+        // Customer Acquisition Chart
+        const acqEl = document.getElementById('customerAcquisitionChart');
+        if (acqEl) {
+            const data = acqEl.dataset;
+            const labels = JSON.parse(data.labels || '[]');
+            const counts = JSON.parse(data.counts || '[]');
+            const ctx2 = acqEl.getContext('2d');
+
+            const gradient2 = ctx2.createLinearGradient(0, 0, 0, 400);
+            gradient2.addColorStop(0, 'rgba(59, 130, 246, 0.4)');
+            gradient2.addColorStop(1, 'rgba(59, 130, 246, 0.0)');
+
+            new Chart(ctx2, {
+                type: 'line',
+                data: {
+                    labels: labels,
+                    datasets: [{
+                        label: 'New Customers',
+                        data: counts,
+                        backgroundColor: gradient2,
+                        borderColor: '#3b82f6',
+                        borderWidth: 3,
+                        pointBackgroundColor: '#fff',
+                        pointBorderColor: '#3b82f6',
+                        pointRadius: 4,
+                        fill: true,
+                        tension: 0.3
+                    }]
+                },
+                options: {
+                    responsive: true, maintainAspectRatio: false,
+                    plugins: { legend: { display: false } },
+                    scales: {
+                        x: { grid: { display: false } },
+                        y: { beginAtZero: true, grid: { color: 'rgba(0,0,0,0.05)' } }
+                    }
+                }
+            });
+        }
+
+        // Order Status Chart
+        const osEl = document.getElementById('orderStatusChart');
+        if (osEl) {
+            const statuses = JSON.parse(osEl.dataset.statuses || '[]');
+            const labels = statuses.map(s => s.name);
+            const counts = statuses.map(s => s.count);
+            new Chart(osEl.getContext('2d'), {
+                type: 'doughnut',
+                data: {
+                    labels: labels,
+                    datasets: [{
+                        data: counts,
+                        backgroundColor: ['#f59e0b', '#3b82f6', '#10b981', '#64748b', '#ef4444'],
+                        borderWidth: 0
+                    }]
+                },
+                options: {
+                    responsive: true, maintainAspectRatio: false,
+                    cutout: '70%',
+                    plugins: { legend: { position: 'right' } }
+                }
+            });
+        }
+
+        // Category Performance Chart
+        const cpEl = document.getElementById('categoryPerformanceChart');
+        if (cpEl) {
+            const cats = JSON.parse(cpEl.dataset.category || '[]');
+            const labels = cats.map(c => c.category);
+            const revenues = cats.map(c => c.revenue);
+            new Chart(cpEl.getContext('2d'), {
+                type: 'bar',
+                data: {
+                    labels: labels,
+                    datasets: [{
+                        label: 'Revenue',
+                        data: revenues,
+                        backgroundColor: '#a64d79',
+                        borderRadius: 6
+                    }]
+                },
+                options: {
+                    responsive: true, maintainAspectRatio: false,
+                    plugins: { legend: { display: false } },
+                    scales: {
+                        x: { grid: { display: false } },
+                        y: { beginAtZero: true, grid: { color: 'rgba(0,0,0,0.05)' } }
+                    }
+                }
+            });
+        }
+
+        // Sales by Region Chart
+        const srEl = document.getElementById('salesByRegionChart');
+        if (srEl) {
+            const labels = JSON.parse(srEl.dataset.labels || '[]');
+            const dataCounts = JSON.parse(srEl.dataset.data || '[]');
+            new Chart(srEl.getContext('2d'), {
+                type: 'bar',
+                data: {
+                    labels: labels,
+                    datasets: [{
+                        label: 'Orders',
+                        data: dataCounts,
+                        backgroundColor: '#10b981',
+                        borderRadius: 6
+                    }]
+                },
+                options: {
+                    responsive: true, maintainAspectRatio: false,
+                    plugins: { legend: { display: false } },
+                    scales: {
+                        x: { grid: { display: false } },
+                        y: { beginAtZero: true, grid: { color: 'rgba(0,0,0,0.05)' } }
+                    }
+                }
+            });
+        }
+    });
+</script>
+{% endblock %}

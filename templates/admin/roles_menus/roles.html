@@ -1,0 +1,418 @@
+{% extends "admin/base.html" %}
+
+{% block title %}Manage Roles - {{ brand_name }}{% endblock %}
+
+{% block styles %}
+<style>
+    /* Premium Glassmorphism & UI Overhaul */
+    :root {
+        --glass-bg: rgba(255, 255, 255, 0.85);
+        --glass-border: rgba(255, 255, 255, 0.4);
+        --glass-shadow: 0 8px 32px rgba(31, 38, 135, 0.1);
+        --primary-accent: #a64d79;
+        --secondary-accent: #6c757d;
+        --success-accent: #1cc88a;
+        --danger-accent: #e74a3b;
+        --warning-accent: #f6c23e;
+        --info-accent: #36b9cc;
+        --text-dark: #2d3748;
+        --text-muted: #718096;
+    }
+
+    .glass-card {
+        background: var(--glass-bg);
+        backdrop-filter: blur(12px);
+        -webkit-backdrop-filter: blur(12px);
+        border: 1px solid var(--glass-border);
+        border-radius: 16px;
+        box-shadow: var(--glass-shadow);
+        overflow: hidden;
+    }
+
+    .page-header {
+        background: linear-gradient(135deg, rgba(255,255,255,0.9) 0%, rgba(255,255,255,0.4) 100%);
+        border-radius: 16px;
+        padding: 24px;
+        margin-bottom: 24px;
+        box-shadow: var(--glass-shadow);
+        border: 1px solid var(--glass-border);
+        display: flex;
+        justify-content: space-between;
+        align-items: center;
+    }
+
+    .page-title {
+        font-weight: 800;
+        color: var(--primary-accent);
+        margin: 0;
+        font-size: 1.75rem;
+        letter-spacing: -0.5px;
+    }
+
+    .btn-gradient-primary {
+        background: linear-gradient(135deg, var(--primary-accent) 0%, #8a3d63 100%);
+        color: white;
+        border: none;
+        border-radius: 8px;
+        padding: 10px 20px;
+        font-weight: 600;
+        transition: all 0.3s ease;
+        box-shadow: 0 4px 15px rgba(166, 77, 121, 0.3);
+    }
+
+    .btn-gradient-primary:hover {
+        transform: translateY(-2px);
+        box-shadow: 0 6px 20px rgba(166, 77, 121, 0.4);
+        color: white;
+    }
+
+    .btn-glass-secondary {
+        background: rgba(108, 117, 125, 0.1);
+        color: var(--secondary-accent);
+        border: 1px solid rgba(108, 117, 125, 0.2);
+        border-radius: 8px;
+        padding: 10px 20px;
+        font-weight: 600;
+        transition: all 0.3s ease;
+    }
+
+    .btn-glass-secondary:hover {
+        background: rgba(108, 117, 125, 0.2);
+        color: var(--secondary-accent);
+        transform: translateY(-2px);
+    }
+
+    /* Table Styling */
+    .table-custom {
+        margin: 0;
+        width: 100%;
+        border-collapse: separate;
+        border-spacing: 0;
+    }
+
+    .table-custom thead th {
+        background: rgba(248, 249, 252, 0.8);
+        color: var(--text-muted);
+        font-weight: 700;
+        text-transform: uppercase;
+        font-size: 0.75rem;
+        letter-spacing: 1px;
+        padding: 16px 24px;
+        border-bottom: 2px solid rgba(0,0,0,0.05);
+        border-top: none;
+    }
+
+    .table-custom tbody tr {
+        transition: all 0.2s ease;
+        border-bottom: 1px solid rgba(0,0,0,0.03);
+    }
+
+    .table-custom tbody tr:hover {
+        background: rgba(255, 255, 255, 0.9);
+        transform: scale(1.002);
+        box-shadow: 0 4px 12px rgba(0,0,0,0.02);
+        z-index: 10;
+        position: relative;
+    }
+
+    .table-custom td {
+        padding: 16px 24px;
+        vertical-align: middle;
+        color: var(--text-dark);
+        border-top: 1px solid rgba(0,0,0,0.03);
+    }
+
+    .role-name {
+        font-weight: 700;
+        color: var(--primary-accent);
+        font-size: 1.05rem;
+    }
+
+    .role-desc {
+        color: var(--text-muted);
+        font-size: 0.9rem;
+    }
+
+    /* Badges */
+    .badge-custom {
+        padding: 6px 12px;
+        border-radius: 20px;
+        font-weight: 600;
+        font-size: 0.75rem;
+        letter-spacing: 0.5px;
+    }
+
+    .badge-active {
+        background: rgba(28, 200, 138, 0.15);
+        color: #159666;
+        border: 1px solid rgba(28, 200, 138, 0.3);
+    }
+
+    .badge-inactive {
+        background: rgba(133, 135, 150, 0.15);
+        color: #60616f;
+        border: 1px solid rgba(133, 135, 150, 0.3);
+    }
+
+    /* Action Buttons */
+    .action-btn {
+        width: 32px;
+        height: 32px;
+        padding: 0;
+        display: inline-flex;
+        align-items: center;
+        justify-content: center;
+        border-radius: 8px;
+        transition: all 0.2s ease;
+        border: none;
+        margin-right: 4px;
+    }
+
+    .btn-assign { background: rgba(54, 185, 204, 0.15); color: #258391; }
+    .btn-assign:hover { background: var(--info-accent); color: white; transform: translateY(-2px); }
+
+    .btn-toggle-on { background: rgba(28, 200, 138, 0.15); color: #159666; }
+    .btn-toggle-on:hover { background: var(--success-accent); color: white; transform: translateY(-2px); }
+
+    .btn-toggle-off { background: rgba(246, 194, 62, 0.15); color: #dda20a; }
+    .btn-toggle-off:hover { background: var(--warning-accent); color: white; transform: translateY(-2px); }
+
+    .btn-delete { background: rgba(231, 74, 59, 0.15); color: #be2617; }
+    .btn-delete:hover { background: var(--danger-accent); color: white; transform: translateY(-2px); }
+
+    /* Modal Styling */
+    .modal-content {
+        border-radius: 16px;
+        border: none;
+        box-shadow: 0 15px 35px rgba(0,0,0,0.2);
+    }
+    .modal-header {
+        background: rgba(248, 249, 252, 0.8);
+        border-bottom: 1px solid rgba(0,0,0,0.05);
+        border-radius: 16px 16px 0 0;
+    }
+    .modal-title {
+        font-weight: 800;
+        color: var(--primary-accent);
+    }
+    .form-control {
+        border-radius: 8px;
+        border: 1px solid rgba(0,0,0,0.1);
+        padding: 10px 15px;
+        transition: all 0.3s ease;
+    }
+    .form-control:focus {
+        box-shadow: 0 0 0 0.2rem rgba(166, 77, 121, 0.25);
+        border-color: var(--primary-accent);
+    }
+</style>
+{% endblock %}
+
+{% block content %}
+<div class="page-header">
+    <h2 class="page-title"><i class="fas fa-user-shield mr-2"></i> Manage Roles</h2>
+    <div>
+        <a href="{{ url_for('admin_bp.menus_list') }}" class="btn btn-glass-secondary mr-2">
+            <i class="fas fa-list-ul mr-1"></i> Manage Menus
+        </a>
+        <button class="btn btn-gradient-primary" data-toggle="modal" data-target="#addRoleModal">
+            <i class="fas fa-plus mr-2"></i> Add Role
+        </button>
+    </div>
+</div>
+
+<div class="glass-card">
+    <div class="table-responsive">
+        <table class="table-custom">
+            <thead>
+                <tr>
+                    <th>Role Name</th>
+                    <th>Description</th>
+                    <th>Status</th>
+                    <th class="text-right">Actions</th>
+                </tr>
+            </thead>
+            <tbody>
+                {% for role in roles %}
+                <tr>
+                    <td>
+                        <div class="role-name">{{ role.name|title }}</div>
+                    </td>
+                    <td>
+                        <div class="role-desc">{{ role.description or 'No description provided.' }}</div>
+                    </td>
+                    <td>
+                        {% if role.is_active %}
+                        <span class="badge badge-custom badge-active"><i class="fas fa-check-circle mr-1"></i> Active</span>
+                        {% else %}
+                        <span class="badge badge-custom badge-inactive"><i class="fas fa-times-circle mr-1"></i> Inactive</span>
+                        {% endif %}
+                    </td>
+                    <td class="text-right">
+                        <a href="{{ url_for('admin_bp.assign_menus', role_id=role.id) }}" class="btn action-btn btn-assign"
+                            title="Assign Menus">
+                            <i class="fas fa-sitemap"></i>
+                        </a>
+                        {% if role.name != 'admin' %}
+                            <button type="button" class="btn action-btn btn-toggle-status {{ 'btn-toggle-off' if role.is_active else 'btn-toggle-on' }}"
+                                title="{{ 'Deactivate' if role.is_active else 'Activate' }}"
+                                data-id="{{ role.id }}" data-active="{{ 'true' if role.is_active else 'false' }}" data-name="{{ role.name|title }}">
+                                <i class="fas fa-{{ 'ban' if role.is_active else 'check' }}"></i>
+                            </button>
+                            <button type="button" class="btn action-btn btn-delete-role" title="Delete Role"
+                                data-id="{{ role.id }}" data-name="{{ role.name|title }}">
+                                <i class="fas fa-trash"></i>
+                            </button>
+                        {% else %}
+                            <button type="button" class="btn action-btn btn-glass-secondary" disabled title="Admin role cannot be modified">
+                                <i class="fas fa-lock"></i>
+                            </button>
+                        {% endif %}
+                    </td>
+                </tr>
+                {% else %}
+                <tr>
+                    <td colspan="4" class="text-center py-5">
+                        <div class="text-muted mb-3"><i class="fas fa-folder-open fa-3x"></i></div>
+                        <h5 class="font-weight-bold">No Roles Found</h5>
+                        <p class="mb-0">Click 'Add Role' to create your first custom role.</p>
+                    </td>
+                </tr>
+                {% endfor %}
+            </tbody>
+        </table>
+    </div>
+</div>
+
+<!-- Add Role Modal -->
+<div class="modal fade" id="addRoleModal" tabindex="-1" role="dialog" aria-hidden="true">
+    <div class="modal-dialog modal-dialog-centered" role="document">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h5 class="modal-title"><i class="fas fa-plus-circle mr-2"></i> Create New Role</h5>
+                <button type="button" class="close" data-dismiss="modal" aria-label="Close">
+                    <span aria-hidden="true">&times;</span>
+                </button>
+            </div>
+            <form id="addRoleForm" action="{{ url_for('admin_bp.add_role') }}" method="POST">
+                <div class="modal-body p-4">
+                    <input type="hidden" name="csrf_token" id="csrf_token" value="{{ csrf_token() }}">
+                    <div class="form-group mb-4">
+                        <label class="font-weight-bold text-dark mb-2">Role Name <span class="text-danger">*</span></label>
+                        <input type="text" name="name" class="form-control" required placeholder="e.g., Support Staff">
+                        <small class="text-muted mt-1 d-block">This should be a unique identifier for the role.</small>
+                    </div>
+                    <div class="form-group mb-0">
+                        <label class="font-weight-bold text-dark mb-2">Description</label>
+                        <textarea name="description" class="form-control" rows="3" placeholder="Briefly describe what this role entails..."></textarea>
+                    </div>
+                </div>
+                <div class="modal-footer bg-light">
+                    <button type="button" class="btn btn-secondary rounded-pill px-4" data-dismiss="modal">Cancel</button>
+                    <button type="submit" class="btn btn-gradient-primary rounded-pill px-4" id="btnSaveRole">
+                        <i class="fas fa-save mr-1"></i> Save Role
+                    </button>
+                </div>
+            </form>
+        </div>
+    </div>
+</div>
+{% endblock %}
+
+{% block scripts %}
+{{ super() }}
+<script src="https://cdn.jsdelivr.net/npm/sweetalert2@11"></script>
+<script>
+    const csrfToken = document.getElementById('csrf_token').value;
+
+    // Handle Add Role Form
+    $('#addRoleForm').submit(function (e) {
+        e.preventDefault();
+        const $btn = $('#btnSaveRole');
+        const originalText = $btn.html();
+        
+        $btn.html('<i class="fas fa-spinner fa-spin mr-1"></i> Saving...').prop('disabled', true);
+        
+        $.post($(this).attr('action'), $(this).serialize(), function (res) {
+            if (res.success) {
+                $('#addRoleModal').modal('hide');
+                Swal.fire({
+                    icon: 'success',
+                    title: 'Role Created!',
+                    text: res.message,
+                    timer: 2000,
+                    showConfirmButton: false
+                }).then(() => location.reload());
+            } else {
+                Swal.fire('Error', res.message, 'error');
+                $btn.html(originalText).prop('disabled', false);
+            }
+        }).fail(function (err) {
+            Swal.fire('Error', err.responseJSON?.message || 'An unexpected error occurred.', 'error');
+            $btn.html(originalText).prop('disabled', false);
+        });
+    });
+
+    // Handle Delete Role
+    $('.btn-delete-role').click(function () {
+        const roleId = $(this).data('id');
+        const roleName = $(this).data('name');
+        
+        Swal.fire({
+            title: `Delete ${roleName}?`,
+            text: "This action cannot be undone. Users with this role may lose access.",
+            icon: 'warning',
+            showCancelButton: true,
+            confirmButtonColor: '#e74a3b',
+            cancelButtonColor: '#858796',
+            confirmButtonText: 'Yes, delete it!'
+        }).then((result) => {
+            if (result.isConfirmed) {
+                $.post(`/admin/roles/delete/${roleId}`, { csrf_token: csrfToken }, function (res) {
+                    if (res.success) {
+                        Swal.fire('Deleted!', res.message, 'success').then(() => location.reload());
+                    } else {
+                        Swal.fire('Error', res.message, 'error');
+                    }
+                }).fail(function (err) {
+                    Swal.fire('Error', err.responseJSON?.message || 'Failed to delete role.', 'error');
+                });
+            }
+        });
+    });
+
+    // Handle Toggle Role Status
+    $('.btn-toggle-status').click(function () {
+        const roleId = $(this).data('id');
+        const isCurrentlyActive = $(this).data('active') === true;
+        const roleName = $(this).data('name');
+        
+        const actionText = isCurrentlyActive ? 'Deactivate' : 'Activate';
+        const confirmColor = isCurrentlyActive ? '#f6c23e' : '#1cc88a';
+        
+        Swal.fire({
+            title: `${actionText} ${roleName}?`,
+            text: isCurrentlyActive ? 
+                "Users with this role will lose their access permissions." : 
+                "Users with this role will regain their access permissions.",
+            icon: 'question',
+            showCancelButton: true,
+            confirmButtonColor: confirmColor,
+            cancelButtonColor: '#858796',
+            confirmButtonText: `Yes, ${actionText}`
+        }).then((result) => {
+            if (result.isConfirmed) {
+                $.post(`/admin/roles/toggle/${roleId}`, { csrf_token: csrfToken }, function (res) {
+                    if (res.success) {
+                        Swal.fire('Updated!', res.message, 'success').then(() => location.reload());
+                    } else {
+                        Swal.fire('Error', res.message, 'error');
+                    }
+                }).fail(function (err) {
+                    Swal.fire('Error', err.responseJSON?.message || 'Failed to update status.', 'error');
+                });
+            }
+        });
+    });
+</script>
+{% endblock %}

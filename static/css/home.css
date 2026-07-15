@@ -1,0 +1,579 @@
+/* ==========================================================================
+   Home Page Styles - Aanyaas Enterprises
+   CSS Methodology: BEM (Block, Element, Modifier) and Responsive Architecture
+   ========================================================================== */
+
+/* 1. Hero Block (.hero / .carousel)
+   ========================================================================== */
+.carousel-item {
+    height: 85vh !important;
+    position: relative;
+}
+
+.carousel-item::after {
+    content: '';
+    position: absolute;
+    top: 0; left: 0; width: 100%; height: 100%;
+    background: rgba(0,0,0,0.2);
+}
+
+.carousel-caption {
+    background: transparent !important;
+    backdrop-filter: none !important;
+    border: none !important;
+    box-shadow: none !important;
+    text-align: left !important;
+    left: 8% !important;
+    right: auto !important;
+    width: 60% !important;
+    max-width: 700px !important;
+    z-index: 10;
+    top: 50%;
+    transform: translateY(-50%);
+    bottom: auto !important;
+}
+
+/* BEM: hero elements with legacy support */
+.hero__title,
+.carousel-caption h3 {
+    font-family: 'Playfair Display', serif;
+    font-size: 4.5rem !important;
+    font-weight: 700;
+    line-height: 1.1;
+    margin-bottom: 35px;
+    color: #fff;
+    text-shadow: 0 4px 10px rgba(0,0,0,0.2);
+}
+
+.hero__subtitle,
+.carousel-caption h4 {
+    font-family: 'Montserrat', sans-serif;
+    text-transform: uppercase;
+    letter-spacing: 6px;
+    font-size: 0.85rem !important;
+    margin-bottom: 25px;
+    color: #fff;
+    opacity: 0.9;
+    font-weight: 600;
+}
+
+.hero__btn,
+.carousel-caption .btn-primary {
+    padding: 18px 45px;
+    font-size: 0.9rem;
+    letter-spacing: 2px;
+    text-transform: uppercase;
+    font-weight: 700;
+    border-radius: 0;
+    background: #fff;
+    color: #1a1a1a;
+    border: none;
+    transition: all 0.4s ease;
+}
+
+.hero__btn:hover,
+.carousel-caption .btn-primary:hover {
+    background: #a64d79;
+    color: #fff;
+    transform: translateY(-3px);
+}
+
+/* 2. Category Grid Block (.category-card / .cat-item)
+   ========================================================================== */
+.category-card,
+.cat-item {
+    position: relative;
+    overflow: hidden;
+    border-radius: 20px;
+    height: 450px;
+    margin-bottom: 30px;
+    box-shadow: 0 15px 35px rgba(0,0,0,0.08);
+    transition: all 0.5s cubic-bezier(0.165, 0.84, 0.44, 1);
+}
+
+.category-card__image-container,
+.cat-img {
+    display: block;
+    width: 100%;
+    height: 100%;
+    margin-bottom: 0 !important;
+}
+
+.category-card__image,
+.cat-img img {
+    width: 100%;
+    height: 100%;
+    object-fit: cover;
+    transition: transform 1.2s cubic-bezier(0.165, 0.84, 0.44, 1);
+}
+
+.category-card__overlay,
+.cat-overlay {
+    position: absolute;
+    top: 0; left: 0; width: 100%; height: 100%;
+    background: linear-gradient(to bottom, transparent 40%, rgba(0,0,0,0.8) 100%);
+    z-index: 1;
+    opacity: 0.8;
+    transition: opacity 0.5s ease;
+}
+
+.category-card__info,
+.cat-info {
+    position: absolute;
+    bottom: 40px;
+    left: 40px;
+    right: 40px;
+    z-index: 2;
+    color: #fff;
+    transform: translateY(10px);
+    transition: all 0.5s ease;
+}
+
+.category-card__title,
+.cat-info h5 {
+    font-family: 'Playfair Display', serif;
+    font-size: 1.8rem;
+    font-weight: 700;
+    margin-bottom: 8px;
+}
+
+.category-card__count,
+.cat-info p {
+    font-family: 'Montserrat', sans-serif;
+    font-size: 0.8rem;
+    letter-spacing: 2px;
+    text-transform: uppercase;
+    margin-bottom: 0;
+    opacity: 0;
+    transform: translateY(20px);
+    transition: all 0.5s ease;
+}
+
+/* Category Hover Modifiers */
+.category-card:hover,
+.cat-item:hover {
+    transform: translateY(-10px);
+    box-shadow: 0 25px 50px rgba(166, 77, 121, 0.15);
+}
+
+.category-card:hover .category-card__image,
+.cat-item:hover .cat-img img {
+    transform: scale(1.1);
+}
+
+.category-card:hover .category-card__overlay,
+.cat-item:hover .cat-overlay {
+    opacity: 1;
+}
+
+.category-card:hover .category-card__info,
+.cat-item:hover .cat-info {
+    transform: translateY(0);
+}
+
+.category-card:hover .category-card__count,
+.cat-item:hover .cat-info p {
+    opacity: 1;
+    transform: translateY(0);
+    transition-delay: 0.1s;
+}
+
+/* 3. Section Header Block (.section-header / .section-title)
+   ========================================================================== */
+.section-header,
+.section-title {
+    position: relative;
+    display: inline-block;
+}
+
+.section-header::after,
+.section-title::after {
+    content: '';
+    position: absolute;
+    bottom: -15px;
+    left: 50%;
+    transform: translateX(-50%);
+    width: 60px;
+    height: 3px;
+    background: #a64d79;
+}
+
+.section-header__title,
+.section-title h2 {
+    font-family: 'Playfair Display', serif;
+    font-size: 2.8rem;
+    font-weight: 700;
+    color: #1a1a1a;
+}
+
+/* 4. Product Card Block (.product-card / .product-item)
+   ========================================================================== */
+.product-card,
+.product-item {
+    background: #fff;
+    border-radius: 25px !important;
+    overflow: hidden;
+    border: none !important;
+    transition: all 0.4s cubic-bezier(0.165, 0.84, 0.44, 1);
+    box-shadow: 0 10px 25px rgba(0,0,0,0.04);
+    margin-bottom: 40px;
+}
+
+.product-card__img-container,
+.product-img {
+    height: 320px !important;
+    background: #f8f8f8;
+    position: relative;
+    overflow: hidden;
+}
+
+/* Custom Zoom Micro-interaction on Hover */
+.product-card__image,
+.product-img img {
+    width: 100%;
+    height: 100%;
+    object-fit: cover;
+    transition: transform 0.8s cubic-bezier(0.165, 0.84, 0.44, 1);
+}
+
+.product-card:hover .product-card__image,
+.product-item:hover .product-img img {
+    transform: scale(1.08);
+}
+
+.product-card__img-link,
+.product-img a {
+    display: block;
+    width: 100%;
+    height: 100%;
+}
+
+.product-card__actions,
+.product-action {
+    background: rgba(255, 255, 255, 0.95);
+    backdrop-filter: blur(5px);
+    padding: 12px;
+    border-radius: 50px;
+    position: absolute;
+    bottom: 25px;
+    left: 50%;
+    transform: translateX(-50%);
+    box-shadow: 0 10px 20px rgba(0,0,0,0.1);
+    display: flex;
+    transition: all 0.3s ease;
+}
+
+.product-card__btn,
+.product-action .btn {
+    width: 45px;
+    height: 45px;
+    border-radius: 50% !important;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    margin: 0 5px;
+    transition: all 0.3s ease;
+    background: transparent;
+    color: #1a1a1a;
+    border: 1px solid #eee;
+}
+
+.product-card__btn:hover,
+.product-action .btn:hover {
+    background: #a64d79;
+    color: #fff;
+    border-color: #a64d79;
+    transform: scale(1.1);
+}
+
+.product-card__details,
+.product-details {
+    padding: 25px 20px !important;
+    text-align: left !important;
+}
+
+.product-card__name,
+.product-name-link {
+    font-family: 'Montserrat', sans-serif;
+    font-weight: 600;
+    font-size: 1rem;
+    color: #1a1a1a;
+    margin-bottom: 12px;
+    height: 2.8rem;
+    line-height: 1.4;
+    text-decoration: none;
+    display: block;
+}
+
+.product-card__price,
+.price-tag {
+    font-family: 'Playfair Display', serif;
+    font-size: 1.4rem;
+    font-weight: 700;
+    color: #a64d79;
+}
+
+.product-card:hover,
+.product-item:hover {
+    transform: translateY(-12px);
+    box-shadow: 0 30px 60px rgba(0,0,0,0.1);
+}
+
+/* 5. Instagram Block (.instagram)
+   ========================================================================== */
+.instagram,
+.instagram-section {
+    background: #fff;
+    padding-bottom: 80px;
+}
+
+.instagram__grid,
+.instagram-grid {
+    display: flex;
+    flex-wrap: nowrap;
+    overflow-x: auto;
+    gap: 15px;
+    padding: 20px 0;
+    scrollbar-width: none;
+}
+
+.instagram__grid::-webkit-scrollbar,
+.instagram-grid::-webkit-scrollbar {
+    display: none;
+}
+
+.instagram__item,
+.instagram-item {
+    flex: 0 0 calc(16.666% - 13px);
+    min-width: 200px;
+    aspect-ratio: 1 / 1;
+    position: relative;
+    overflow: hidden;
+    border-radius: 15px;
+    cursor: pointer;
+    transition: transform 0.4s ease;
+    background: #f8f9fa;
+}
+
+.instagram__item:hover,
+.instagram-item:hover {
+    transform: translateY(-8px);
+}
+
+.instagram__image,
+.instagram-item img {
+    width: 100%;
+    height: 100%;
+    object-fit: cover;
+    transition: 0.5s ease;
+}
+
+.instagram__overlay,
+.instagram-overlay {
+    position: absolute;
+    top: 0;
+    left: 0;
+    width: 100%;
+    height: 100%;
+    background: rgba(0, 0, 0, 0.4);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    opacity: 0;
+    transition: 0.3s ease;
+    color: #fff;
+    font-size: 1.5rem;
+}
+
+.instagram__item:hover .instagram__overlay,
+.instagram-item:hover .instagram-overlay {
+    opacity: 1;
+}
+
+.instagram__item:hover .instagram__image,
+.instagram-item:hover img {
+    transform: scale(1.1);
+}
+
+.instagram__video-icon,
+.insta-video-icon {
+    position: absolute;
+    top: 10px;
+    right: 10px;
+    color: white;
+    text-shadow: 0 0 5px rgba(0, 0, 0, 0.5);
+    font-size: 1rem;
+    z-index: 5;
+}
+
+.instagram__error-state,
+.insta-error-state {
+    text-align: center;
+    padding: 40px;
+    background: #fdf6f9;
+    border-radius: 20px;
+    border: 1px dashed #ba6286;
+}
+
+/* 6. Responsive Mobile Breakpoints
+   ========================================================================== */
+@media (max-width: 992px) {
+    .instagram__item,
+    .instagram-item {
+        flex: 0 0 calc(33.333% - 10px);
+    }
+}
+
+@media (max-width: 768px) {
+    .carousel-item {
+        height: 60vh !important;
+    }
+    .carousel-caption {
+        left: 5% !important;
+        width: 90% !important;
+        text-align: center !important;
+    }
+    .hero__title,
+    .carousel-caption h3 {
+        font-size: 2.5rem !important;
+    }
+    .category-card,
+    .cat-item {
+        height: 350px;
+    }
+    .section-header__title,
+    .section-title h2 {
+        font-size: 2rem;
+    }
+}
+
+@media (max-width: 576px) {
+    .instagram__item,
+    .instagram-item {
+        flex: 0 0 calc(50% - 8px);
+    }
+}
+
+/* 7. Premium Testimonial Custom Avatar & Lightbox Zoom
+   ========================================================================== */
+.testimonial-img-wrapper {
+    width: 80px;
+    height: 80px;
+    border-radius: 50%;
+    overflow: hidden;
+    margin: 0 auto 15px;
+    border: 3px solid rgba(186, 98, 134, 0.2);
+    cursor: pointer;
+    transition: all 0.4s cubic-bezier(0.165, 0.84, 0.44, 1);
+}
+
+.testimonial-img-wrapper:hover {
+    transform: scale(1.08);
+    border-color: #ba6286;
+    box-shadow: 0 10px 20px rgba(186, 98, 134, 0.2);
+}
+
+.testimonial-img-wrapper img {
+    width: 100%;
+    height: 100%;
+    object-fit: cover;
+}
+
+/* 8. Custom Pulse Animation for Cart Count Badge
+   ========================================================================== */
+@keyframes cartPulse {
+    0% { transform: scale(1); }
+    50% { transform: scale(1.4); }
+    100% { transform: scale(1); }
+}
+
+.cart-badge--pulse {
+    animation: cartPulse 0.4s ease-out;
+}
+/* 9. Feature Box and Offer Blocks
+   ========================================================================== */
+.feature-box {
+    background: #fff;
+    padding: 30px;
+    border-radius: 15px;
+    box-shadow: 0 10px 20px rgba(0,0,0,0.05);
+    height: 100%;
+    transition: all 0.4s cubic-bezier(0.165, 0.84, 0.44, 1);
+    transform: translateY(0);
+}
+
+.feature-box:hover {
+    transform: translateY(-10px);
+    box-shadow: 0 20px 40px rgba(166, 77, 121, 0.15);
+}
+
+.feature-box h1 {
+    transition: transform 0.4s ease, color 0.4s ease;
+}
+
+.feature-box:hover h1 {
+    transform: scale(1.2) rotate(-5deg);
+    color: #a64d79 !important;
+}
+
+.feature-box h5 {
+    color: #1a1a1a;
+    transition: color 0.4s ease;
+}
+
+.feature-box:hover h5 {
+    color: #a64d79;
+}
+
+.offer-block {
+    position: relative;
+    overflow: hidden;
+    border-radius: 20px;
+    height: 350px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    text-align: center;
+    color: #fff;
+    background-size: cover;
+    background-position: center;
+    box-shadow: 0 15px 35px rgba(0,0,0,0.08);
+}
+
+.offer-festive {
+    background-image: url('../img/carousel-1.jpg');
+}
+
+.offer-decor {
+    background-image: url('../img/carousel-2.jpg');
+}
+
+.offer-overlay {
+    position: absolute;
+    top: 0; left: 0; right: 0; bottom: 0;
+    background: rgba(0, 0, 0, 0.4);
+    z-index: 1;
+}
+
+.offer-content {
+    position: relative;
+    z-index: 2;
+    padding: 30px;
+}
+
+.offer-content h1, .offer-content h5 {
+    color: #fff;
+    margin-bottom: 15px;
+}
+
+.offer-content p {
+    color: #f8f8f8;
+}
+
+/* 10. Instagram Section Text Color Fix
+   ========================================================================== */
+.instagram-section h2,
+.instagram-section h5,
+.insta-error-state h5 {
+    color: #1a1a1a !important;
+}

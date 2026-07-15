@@ -1,0 +1,336 @@
+{% extends "admin/base.html" %}
+
+{% block styles %}
+<style>
+    /* Premium Glassmorphism Global Settings Overhaul */
+    :root {
+        --glass-bg: rgba(255, 255, 255, 0.85);
+        --glass-border: rgba(255, 255, 255, 0.4);
+        --glass-shadow: 0 10px 30px rgba(0, 0, 0, 0.05);
+        --primary-accent: #a64d79;
+        --secondary-accent: #1a1a2e;
+        --text-dark: #2d3748;
+        --text-muted: #718096;
+    }
+
+    body {
+        background-color: #f4f7f6;
+        background-image: 
+            radial-gradient(at 0% 0%, hsla(331,65%,85%,1) 0, transparent 50%), 
+            radial-gradient(at 100% 0%, hsla(236,40%,85%,1) 0, transparent 50%);
+        background-attachment: fixed;
+        font-family: 'Inter', sans-serif;
+    }
+
+    @keyframes fadeUp {
+        from { opacity: 0; transform: translateY(20px); }
+        to { opacity: 1; transform: translateY(0); }
+    }
+
+    .info-card-luxury {
+        background: var(--glass-bg) !important;
+        backdrop-filter: blur(12px) !important;
+        -webkit-backdrop-filter: blur(12px);
+        border: 1px solid var(--glass-border) !important;
+        border-radius: 24px !important;
+        box-shadow: var(--glass-shadow) !important;
+        overflow: hidden;
+        animation: fadeUp 0.7s ease-out backwards;
+    }
+
+    .form-control {
+        background-color: rgba(255,255,255,0.7) !important;
+        border: 1px solid var(--glass-border) !important;
+        border-radius: 12px;
+        color: var(--text-dark);
+        padding: 0.75rem 1rem;
+        transition: all 0.3s ease;
+    }
+    .form-control:focus {
+        background-color: #fff !important;
+        border-color: var(--primary-accent) !important;
+        box-shadow: 0 0 0 0.2rem rgba(166, 77, 121, 0.25) !important;
+    }
+    textarea.form-control {
+        border-radius: 16px;
+    }
+    .btn-primary {
+        background-color: var(--primary-accent);
+        border-color: var(--primary-accent);
+        border-radius: 12px;
+        font-weight: 600;
+        letter-spacing: 0.5px;
+        padding: 12px 24px;
+        transition: all 0.3s ease;
+    }
+    .btn-primary:hover {
+        transform: translateY(-2px);
+        box-shadow: 0 4px 15px rgba(166, 77, 121, 0.4);
+    }
+    
+    .form-label {
+        font-weight: 700;
+        color: var(--text-dark);
+        margin-bottom: 0.5rem;
+    }
+    
+    h5 {
+        font-weight: 800;
+        color: var(--primary-accent);
+        margin-bottom: 1.5rem;
+    }
+
+    /* Tabs UI */
+    .nav-tabs {
+        border-bottom: 2px solid var(--glass-border);
+    }
+    .nav-tabs .nav-link {
+        font-weight: 600;
+        color: var(--text-muted);
+        border: none;
+        padding: 15px 25px;
+        border-bottom: 3px solid transparent;
+        transition: all 0.3s ease;
+        background: transparent;
+    }
+    .nav-tabs .nav-link:hover {
+        color: var(--primary-accent);
+    }
+    .nav-tabs .nav-link.active {
+        color: var(--primary-accent);
+        background-color: transparent;
+        border-color: transparent;
+        border-bottom: 3px solid var(--primary-accent);
+    }
+    
+    .tab-content {
+        padding-top: 2rem;
+    }
+</style>
+{% endblock %}
+
+{% block content %}
+<div class="container-fluid py-4">
+    <div class="d-sm-flex align-items-center justify-content-between mb-4">
+        <h1 class="h3 mb-0 text-gray-800" style="font-weight: 800; color: var(--text-dark);"><i class="fas fa-cogs mr-2 text-primary"></i>Global Store Settings</h1>
+        <button type="button" class="btn btn-primary shadow-sm" id="saveAllBtn" onclick="document.getElementById('settingsForm').dispatchEvent(new Event('submit'))">
+            <i class="fas fa-save fa-sm text-white-50 mr-2"></i>Save Settings
+        </button>
+    </div>
+
+    <div class="row">
+        <div class="col-12">
+            <div class="card info-card-luxury my-2" style="animation-delay: 0.1s;">
+                <div class="card-header bg-transparent border-0 pt-0 pb-0 px-0">
+                    <nav>
+                        <div class="nav nav-tabs nav-fill" id="nav-tab" role="tablist">
+                            <a class="nav-item nav-link active" id="nav-brand-tab" data-toggle="tab" href="#nav-brand" role="tab" aria-controls="nav-brand" aria-selected="true"><i class="fas fa-building mr-2"></i>Brand & Social</a>
+                            <a class="nav-item nav-link" id="nav-shipping-tab" data-toggle="tab" href="#nav-shipping" role="tab" aria-controls="nav-shipping" aria-selected="false"><i class="fas fa-truck mr-2"></i>Shipping</a>
+                            <a class="nav-item nav-link" id="nav-instagram-tab" data-toggle="tab" href="#nav-instagram" role="tab" aria-controls="nav-instagram" aria-selected="false"><i class="fab fa-instagram mr-2"></i>Instagram</a>
+                            <a class="nav-item nav-link" id="nav-advanced-tab" data-toggle="tab" href="#nav-advanced" role="tab" aria-controls="nav-advanced" aria-selected="false"><i class="fas fa-code mr-2"></i>Advanced JSON</a>
+                        </div>
+                    </nav>
+                </div>
+                <div class="card-body px-4 pb-4">
+                    <form action="{{ url_for('admin_bp.global_settings') }}" method="POST" id="settingsForm">
+                        <input type="hidden" name="csrf_token" value="{{ csrf_token() }}">
+
+                        <div class="tab-content" id="nav-tabContent">
+                            <!-- Brand & Social -->
+                            <div class="tab-pane fade show active" id="nav-brand" role="tabpanel" aria-labelledby="nav-brand-tab">
+                                <h5 class="border-bottom pb-2">Brand & Social Media</h5>
+                                <div class="row mb-4">
+                                    <div class="col-md-6 mb-3">
+                                        <label class="form-label">Brand Name (Short Name)</label>
+                                        <input type="text" name="BRAND_NAME" class="form-control" value="{{ config.get('BRAND_NAME', '') }}" required>
+                                    </div>
+                                    <div class="col-md-6 mb-3">
+                                        <label class="form-label">Facebook Profile URL</label>
+                                        <input type="url" name="SOCIAL_FACEBOOK" class="form-control" value="{{ config.get('SOCIAL_FACEBOOK', '') }}" required>
+                                    </div>
+                                    <div class="col-md-6">
+                                        <label class="form-label">Instagram Profile URL</label>
+                                        <input type="url" name="SOCIAL_INSTAGRAM" class="form-control" value="{{ config.get('SOCIAL_INSTAGRAM', '') }}" required>
+                                    </div>
+                                    <div class="col-md-6">
+                                        <label class="form-label">YouTube Channel URL</label>
+                                        <input type="url" name="SOCIAL_YOUTUBE" class="form-control" value="{{ config.get('SOCIAL_YOUTUBE', '') }}" required>
+                                    </div>
+                                </div>
+                            </div>
+
+                            <!-- Shipping & Checkout -->
+                            <div class="tab-pane fade" id="nav-shipping" role="tabpanel" aria-labelledby="nav-shipping-tab">
+                                <h5 class="border-bottom pb-2">Shipping & Checkout</h5>
+                                <div class="row mb-4">
+                                    <div class="col-md-6">
+                                        <label class="form-label">Free Shipping Threshold</label>
+                                        <input type="number" step="0.01" name="FREE_SHIPPING_THRESHOLD" class="form-control" value="{{ config.get('FREE_SHIPPING_THRESHOLD', '') }}" required>
+                                    </div>
+                                    <div class="col-md-6">
+                                        <label class="form-label">Default Shipping Charge</label>
+                                        <input type="number" step="0.01" name="DEFAULT_SHIPPING_CHARGE" class="form-control" value="{{ config.get('DEFAULT_SHIPPING_CHARGE', '') }}" required>
+                                    </div>
+                                </div>
+                            </div>
+
+                            <!-- Instagram Configuration -->
+                            <div class="tab-pane fade" id="nav-instagram" role="tabpanel" aria-labelledby="nav-instagram-tab">
+                                <h5 class="border-bottom pb-2">Instagram Configuration</h5>
+                                <div class="row mb-4">
+                                    <div class="col-md-6">
+                                        <label class="form-label">Instagram Cache Timeout (seconds)</label>
+                                        <input type="number" name="INSTAGRAM_CACHE_TIMEOUT" class="form-control" value="{{ config.get('INSTAGRAM_CACHE_TIMEOUT', '') }}" required>
+                                    </div>
+                                    <div class="col-md-6">
+                                        <label class="form-label">Instagram Media Count</label>
+                                        <input type="number" name="INSTAGRAM_MEDIA_COUNT" class="form-control" value="{{ config.get('INSTAGRAM_MEDIA_COUNT', '') }}" required>
+                                    </div>
+                                </div>
+                            </div>
+
+                            <!-- Advanced Configurations -->
+                            <div class="tab-pane fade" id="nav-advanced" role="tabpanel" aria-labelledby="nav-advanced-tab">
+                                <h5 class="border-bottom pb-2">Advanced Configurations (JSON Format)</h5>
+                                <div class="alert alert-warning text-dark border-0 shadow-sm" style="border-radius: 12px;">
+                                    <i class="fas fa-exclamation-triangle mr-2"></i> <strong>Warning:</strong> Ensure you enter valid JSON. Malformed JSON will cause errors on the website.
+                                </div>
+
+                                <div class="row">
+                                    <div class="col-md-6 mb-3">
+                                        <label class="form-label">Color Map (Mapping Color Names to Hex/Gradients)</label>
+                                        <textarea name="COLOR_MAP" class="form-control py-2 json-input" rows="6" style="font-family: monospace; font-size: 13px;" required>{{ json.dumps(config.get('COLOR_MAP', {}), indent=4) }}</textarea>
+                                    </div>
+
+                                    <div class="col-md-6 mb-3">
+                                        <label class="form-label">Color Name Map (Short code to Full name)</label>
+                                        <textarea name="COLOR_NAME_MAP" class="form-control py-2 json-input" rows="6" style="font-family: monospace; font-size: 13px;" required>{{ json.dumps(config.get('COLOR_NAME_MAP', {}), indent=4) }}</textarea>
+                                    </div>
+
+                                    <div class="col-md-6 mb-3">
+                                        <label class="form-label">Valid Coupons</label>
+                                        <textarea name="VALID_COUPONS" class="form-control py-2 json-input" rows="6" style="font-family: monospace; font-size: 13px;" required>{{ json.dumps(config.get('VALID_COUPONS', {}), indent=4) }}</textarea>
+                                    </div>
+
+                                    <div class="col-md-6 mb-3">
+                                        <label class="form-label">Color Choices (Dropdown List Options)</label>
+                                        <textarea name="COLOR_CHOICES" class="form-control py-2 json-input" rows="6" style="font-family: monospace; font-size: 13px;" required>{{ json.dumps(config.get('COLOR_CHOICES', []), indent=4) }}</textarea>
+                                    </div>
+
+                                    <div class="col-md-6 mb-3">
+                                        <label class="form-label">Size Choices (Dropdown List Options)</label>
+                                        <textarea name="SIZE_CHOICES" class="form-control py-2 json-input" rows="6" style="font-family: monospace; font-size: 13px;" required>{{ json.dumps(config.get('SIZE_CHOICES', []), indent=4) }}</textarea>
+                                    </div>
+
+                                    <div class="col-md-6 mb-3">
+                                        <label class="form-label">GST Rate Choices (Dropdown List Options)</label>
+                                        <textarea name="GST_CHOICES" class="form-control py-2 json-input" rows="6" style="font-family: monospace; font-size: 13px;" required>{{ json.dumps(config.get('GST_CHOICES', []), indent=4) }}</textarea>
+                                    </div>
+
+                                    <div class="col-12 mb-3">
+                                        <label class="form-label">Material Choices (Dropdown List Options)</label>
+                                        <textarea name="MATERIAL_CHOICES" class="form-control py-2 json-input" rows="6" style="font-family: monospace; font-size: 13px;" required>{{ json.dumps(config.get('MATERIAL_CHOICES', []), indent=4) }}</textarea>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                    </form>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}
+
+{% block scripts %}
+<script>
+    // Validates JSON on blur
+    document.querySelectorAll('.json-input').forEach(function(textarea) {
+        textarea.addEventListener('blur', function() {
+            try {
+                const parsed = JSON.parse(this.value);
+                this.value = JSON.stringify(parsed, null, 4); // auto-format
+                this.classList.remove('is-invalid');
+                this.classList.add('is-valid');
+            } catch (e) {
+                this.classList.remove('is-valid');
+                this.classList.add('is-invalid');
+                Swal.fire({
+                    icon: 'error',
+                    title: 'Invalid JSON format',
+                    text: 'Please correct the syntax in ' + this.previousElementSibling.innerText,
+                });
+            }
+        });
+    });
+
+    // AJAX Form Submission
+    document.getElementById('settingsForm').addEventListener('submit', function(e) {
+        e.preventDefault();
+        
+        // Validate all JSON fields before submitting
+        let hasError = false;
+        document.querySelectorAll('.json-input').forEach(function(textarea) {
+            try {
+                JSON.parse(textarea.value);
+            } catch (e) {
+                hasError = true;
+                textarea.classList.add('is-invalid');
+            }
+        });
+
+        if (hasError) {
+            Swal.fire({
+                icon: 'error',
+                title: 'Invalid JSON',
+                text: 'Please correct any malformed JSON before saving.'
+            });
+            return;
+        }
+
+        var form = this;
+        var saveBtn = document.getElementById('saveAllBtn');
+        var formData = new FormData(form);
+        
+        saveBtn.innerHTML = '<i class="fas fa-spinner fa-spin mr-2"></i>Saving...';
+        saveBtn.disabled = true;
+
+        fetch(form.action, {
+            method: 'POST',
+            body: formData,
+            headers: {
+                'X-Requested-With': 'XMLHttpRequest'
+            }
+        })
+        .then(response => response.json())
+        .then(data => {
+            if(data.success) {
+                Swal.fire({
+                    icon: 'success',
+                    title: 'Success!',
+                    text: data.message,
+                    timer: 2000,
+                    showConfirmButton: false
+                });
+            } else {
+                Swal.fire({
+                    icon: 'error',
+                    title: 'Error',
+                    text: data.message
+                });
+            }
+        })
+        .catch(error => {
+            Swal.fire({
+                icon: 'error',
+                title: 'Error',
+                text: 'An unexpected error occurred.'
+            });
+        })
+        .finally(() => {
+            saveBtn.innerHTML = '<i class="fas fa-save fa-sm text-white-50 mr-2"></i>Save Settings';
+            saveBtn.disabled = false;
+        });
+    });
+</script>
+{% endblock %}

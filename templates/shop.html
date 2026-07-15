@@ -1,0 +1,580 @@
+{% extends "base.html" %}
+
+{% set shop_title = "Shop All Handmade Jewellery" %}
+{% set shop_desc = "Browse our full collection of exquisite handmade jewellery and handicrafts." %}
+
+{% if request.args.get('search') %}
+    {% set shop_title = "Search Results for '" ~ request.args.get('search') ~ "'" %}
+    {% set shop_desc = "Explore search results for " ~ request.args.get('search') ~ " at {{ company_name }}." %}
+{% elif request.args.get('category') and request.args.get('category') != 'all' %}
+    {% set shop_title = "Shop " ~ request.args.get('category')|title ~ " Collection" %}
+    {% set shop_desc = "Discover our beautiful collection of " ~ request.args.get('category')|title ~ ". Handmade with love." %}
+{% endif %}
+
+{% block title %}{{ shop_title }}{% endblock %}
+{% block meta_description %}{{ shop_desc }}{% endblock %}
+{% block og_title %}{{ shop_title }} | {{ company_name }}{% endblock %}
+{% block og_description %}{{ shop_desc }}{% endblock %}
+
+{% block content %}
+
+<!-- Shop Start -->
+<div class="container-fluid pt-1">
+    <div class="row px-xl-5">
+        <!-- Shop Sidebar Start -->
+        <div class="col-lg-3 col-md-12 shop-sidebar-container" id="shopSidebar">
+            <!-- Combined Filter Form -->
+            <form method="GET" action="{{ url_for('shop_bp.shop') }}" id="shopFilters" class="filter-card">
+                <!-- Active Filters Display -->
+                {% set active_filters = [] %}
+                {% if request.args.get('min_price') and request.args.get('max_price') and
+                (request.args.get('min_price')|int != global_min_price|int or request.args.get('max_price')|int !=
+                global_max_price|int) %}
+                {% set _ = active_filters.append('Price: ₹' + request.args.get('min_price') + ' - ₹' +
+                request.args.get('max_price')) %}
+                {% endif %}
+                {% if request.args.get('category') and request.args.get('category') != 'all' %}
+                {% set _ = active_filters.append('Category: ' + request.args.get('category')|title) %}
+                {% endif %}
+                {% if request.args.getlist('material') %}
+                {% set _ = active_filters.append('Materials: ' + request.args.getlist('material')|join(', ')|title) %}
+                {% endif %}
+                {% if request.args.getlist('color') %}
+                {% set active_colors = [] %}
+                {% for c in request.args.getlist('color') %}
+                    {% set _ = active_colors.append(c|color_name) %}
+                {% endfor %}
+                {% set _ = active_filters.append('Colors: ' + active_colors|join(', ')) %}
+                {% endif %}
+                {% if request.args.get('q') %}
+                {% set _ = active_filters.append('Search: "' + request.args.get('q') + '"') %}
+                {% endif %}
+                {% if active_filters %}
+                <div class="card mb-4">
+                    <div class="card-header d-flex justify-content-between align-items-center">
+                        <h5>Active Filters</h5>
+                        <a href="{{ url_for('shop_bp.shop') }}" class="btn btn-sm btn-outline-secondary"
+                            style="border-radius: 20px;">Clear All</a>
+                    </div>
+                    <div class="card-body py-2">
+                        <div class="d-flex flex-wrap gap-2">
+                            {% for filter in active_filters %}
+                            <span class="badge active-filter-badge">
+                                {{ filter }}
+                                <i class="fas fa-times-circle remove-filter-icon" data-filter="{{ filter }}" role="button" tabindex="0" aria-label="Remove filter: {{ filter }}"></i>
+                            </span>
+                            {% endfor %}
+                        </div>
+                    </div>
+                </div>
+                {% endif %}
+
+                <!-- Color Filter (New) -->
+                <div class="card mb-4">
+                    <div class="card-header d-flex justify-content-between align-items-center" data-toggle="collapse"
+                        data-target="#collapseColor" aria-expanded="true" aria-controls="collapseColor"
+                        style="cursor: pointer;" role="button" tabindex="0" aria-label="Toggle Color Filter">
+                        <h5>Color</h5>
+                        <i class="fas fa-minus toggle-icon" aria-hidden="true"></i>
+                    </div>
+                    <div id="collapseColor" class="collapse show">
+                        <div class="card-body">
+                            <div class="d-flex flex-wrap color-filter-grid">
+                                <!-- All Colors Option -->
+                                <div class="color-swatch-wrapper" title="All Colors">
+                                    <input type="checkbox" class="color-checkbox d-none" id="color-all" name="color_all"
+                                        {% if not request.args.getlist('color') %}checked{% endif %}>
+                                    <label class="color-swatch-label border rounded-circle" for="color-all" aria-label="Select All Colors">
+                                        <i class="fas fa-th-large text-muted" style="font-size: 11px;" aria-hidden="true"></i>
+                                    </label>
+                                </div>
+
+                                {% for color, count in color_counts.items() %}
+                                {% set color_val = color|color_name %}
+                                <div class="color-swatch-wrapper" title="{{ color_val }} ({{ count }})">
+                                    <input type="checkbox" class="color-checkbox d-none" id="color-{{ loop.index }}"
+                                        name="color" value="{{ color }}" {% if color in request.args.getlist('color')
+                                        %}checked{% endif %}>
+                                    <label class="color-swatch-label" for="color-{{ loop.index }}"
+                                        data-color-name="{{ color_val }}"
+                                        data-bg="{{ color_map.get(color_val, '#eee') }}" aria-label="Filter by color: {{ color_val }}">
+                                    </label>
+                                </div>
+                                {% endfor %}
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Price Filter (Collapsible) -->
+                <div class="card mb-4">
+                    <div class="card-header d-flex justify-content-between align-items-center" data-toggle="collapse"
+                        data-target="#collapsePrice" aria-expanded="false" aria-controls="collapsePrice" role="button" tabindex="0" aria-label="Toggle Price Filter">
+                        <h5>Price</h5>
+                        <i class="fas fa-plus toggle-icon" aria-hidden="true"></i>
+                    </div>
+                    <div id="collapsePrice" class="collapse">
+                        <div class="card-body">
+                            <!-- Hidden fields for min/max price (submitted with form) -->
+                            <input type="hidden" name="min_price" id="min_price" value="{{ selected_min_price }}">
+                            <input type="hidden" name="max_price" id="max_price" value="{{ selected_max_price }}">
+
+                            <!-- Range slider container -->
+                            <div id="price-slider" class="mt-3 mb-4"></div>
+
+                            <!-- Min/Max number inputs for direct editing -->
+                            <div class="d-flex justify-content-between align-items-center mt-3">
+                                <div class="input-group input-group-sm" style="width: 45%">
+                                    <div class="input-group-prepend">
+                                        <span class="input-group-text">₹</span>
+                                    </div>
+                                    <input type="number" id="min_price_input" class="form-control form-control-sm"
+                                        step="1" value="{{ selected_min_price }}">
+                                </div>
+                                <span class="text-muted">–</span>
+                                <div class="input-group input-group-sm" style="width: 45%">
+                                    <div class="input-group-prepend">
+                                        <span class="input-group-text">₹</span>
+                                    </div>
+                                    <input type="number" id="max_price_input" class="form-control form-control-sm"
+                                        step="1" value="{{ selected_max_price }}">
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Category Filter (Collapsible) -->
+                <div class="card mb-4">
+                    <div class="card-header d-flex justify-content-between align-items-center" data-toggle="collapse"
+                        data-target="#collapseCategory" aria-expanded="false" aria-controls="collapseCategory" role="button" tabindex="0" aria-label="Toggle Category Filter">
+                        <h5>Category</h5>
+                        <i class="fas fa-plus toggle-icon" aria-hidden="true"></i>
+                    </div>
+                    <div id="collapseCategory" class="collapse">
+                        <div class="card-body">
+                            <div
+                                class="custom-control custom-radio d-flex align-items-center justify-content-between mb-3">
+                                <input type="radio" name="category" class="custom-control-input" value="all"
+                                    id="category-all" {% if not request.args.get('category') or
+                                    request.args.get('category')=='all' %}checked{% endif %}>
+                                <label class="custom-control-label" for="category-all">All Categories</label>
+                                <span class="badge badge-secondary rounded-pill">{{ products_total_count }}</span>
+                            </div>
+                            {% for cat in nav_categories %}
+                            {% if cat.subcategories %}
+                            {% for sub in cat.subcategories %}
+                            <div
+                                class="custom-control custom-radio d-flex align-items-center justify-content-between mb-3">
+                                <input type="radio" name="category" class="custom-control-input" value="{{ sub.slug }}"
+                                    id="category-{{ sub.id }}" {% if request.args.get('category')==sub.slug %}checked{%
+                                    endif %}>
+                                <label class="custom-control-label" for="category-{{ sub.id }}">{{ sub.name }}</label>
+                                <span class="badge badge-secondary rounded-pill">{{ category_counts.get(sub.slug, 0)
+                                    }}</span>
+                            </div>
+                            {% endfor %}
+                            {% else %}
+                            <div
+                                class="custom-control custom-radio d-flex align-items-center justify-content-between mb-3">
+                                <input type="radio" name="category" class="custom-control-input" value="{{ cat.slug }}"
+                                    id="category-{{ cat.id }}" {% if request.args.get('category')==cat.slug %}checked{%
+                                    endif %}>
+                                <label class="custom-control-label" for="category-{{ cat.id }}">{{ cat.name }}</label>
+                                <span class="badge badge-secondary rounded-pill">{{ category_counts.get(cat.slug, 0)
+                                    }}</span>
+                            </div>
+                            {% endif %}
+                            {% endfor %}
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Material Filter (Collapsible) -->
+                <div class="card mb-4">
+                    <div class="card-header d-flex justify-content-between align-items-center" data-toggle="collapse"
+                        data-target="#collapseMaterial" aria-expanded="false" aria-controls="collapseMaterial" role="button" tabindex="0" aria-label="Toggle Material Filter">
+                        <h5>Material</h5>
+                        <i class="fas fa-plus toggle-icon" aria-hidden="true"></i>
+                    </div>
+                    <div id="collapseMaterial" class="collapse">
+                        <div class="card-body">
+                            <div
+                                class="custom-control custom-checkbox d-flex align-items-center justify-content-between mb-3">
+                                <input type="checkbox" class="custom-control-input" id="material-all"
+                                    name="material_all" {% if not request.args.getlist('material') %}checked{% endif %}>
+                                <label class="custom-control-label" for="material-all">All Materials</label>
+                                <span class="badge badge-secondary rounded-pill">{{ products_total_count }}</span>
+                            </div>
+                            {% for material, count in material_counts.items() %}
+                            <div
+                                class="custom-control custom-checkbox d-flex align-items-center justify-content-between mb-3">
+                                <input type="checkbox" class="custom-control-input" id="material-{{ loop.index }}"
+                                    name="material" value="{{ material }}" {% if material in
+                                    request.args.getlist('material') %}checked{% endif %}>
+                                <label class="custom-control-label" for="material-{{ loop.index }}">{{ material|title
+                                    }}</label>
+                                <span class="badge badge-secondary rounded-pill">{{ count }}</span>
+                            </div>
+                            {% endfor %}
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Hidden fields for search and sort -->
+                {% if request.args.get('q') %}
+                <input type="hidden" name="q" value="{{ request.args.get('q') }}">
+                {% endif %}
+                {% if request.args.get('sort') %}
+                <input type="hidden" name="sort" value="{{ request.args.get('sort') }}">
+                {% endif %}
+                <input type="hidden" name="page" value="1">
+
+                <div class="filter-actions">
+                    <button type="submit" class="btn-apply">Apply Filters</button>
+                    <a href="{{ url_for('shop_bp.shop') }}" class="btn-reset">Reset</a>
+                </div>
+            </form>
+        </div>
+        <!-- Shop Sidebar End -->
+
+        <!-- Shop Product Start -->
+        <div class="col-lg-9 col-md-12">
+            <div class="row pb-3">
+                <!-- Results & Sort Row (now on one line) -->
+                <div class="col-12 pb-1 mb-4">
+                    <div class="d-flex align-items-center justify-content-between flex-wrap">
+                        <div class="d-flex align-items-center mb-2 mb-md-0">
+                            <button class="btn btn-sm btn-outline-primary d-lg-none mr-3" id="mobileFilterToggle">
+                                <i class="fa fa-filter mr-1"></i> Filters
+                            </button>
+                            <p class="mb-0 text-muted" style="font-size: 0.9rem;">
+                                Showing <strong>{{ products|length }}</strong> of <strong>{{ pagination.total
+                                    }}</strong>
+                            </p>
+                        </div>
+                        <div class="dropdown">
+                            <button class="btn btn-outline-secondary dropdown-toggle" type="button" id="sortDropdown"
+                                data-toggle="dropdown" aria-haspopup="true" aria-expanded="false">
+                                Sort by: {{ sort_options.get(request.args.get('sort', 'latest'), 'Latest') }}
+                            </button>
+                            <div class="dropdown-menu dropdown-menu-right" aria-labelledby="sortDropdown">
+                                <a class="dropdown-item {% if request.args.get('sort') == 'latest' %}active{% endif %}"
+                                    href="{{ url_for('shop_bp.shop', **dict(request.args, sort='latest', page=1)) }}">Latest</a>
+                                <a class="dropdown-item {% if request.args.get('sort') == 'price-low' %}active{% endif %}"
+                                    href="{{ url_for('shop_bp.shop', **dict(request.args, sort='price-low', page=1)) }}">Price:
+                                    Low to High</a>
+                                <a class="dropdown-item {% if request.args.get('sort') == 'price-high' %}active{% endif %}"
+                                    href="{{ url_for('shop_bp.shop', **dict(request.args, sort='price-high', page=1)) }}">Price:
+                                    High to Low</a>
+                                <a class="dropdown-item {% if request.args.get('sort') == 'popular' %}active{% endif %}"
+                                    href="{{ url_for('shop_bp.shop', **dict(request.args, sort='popular', page=1)) }}">Popularity</a>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Grid View Container -->
+                <div class="col-12">
+                    <div class="row">
+                        {% if products %}
+                        {% for product in products %}
+                        <div class="col-lg-4 col-md-6 col-sm-6 pb-1 reveal">
+                            <div class="card product-item border-0">
+                                <div
+                                    class="card-img-top product-img position-relative overflow-hidden bg-transparent p-0">
+                                    <a href="{{ url_for('shop_bp.detail', product_id=product.id) }}" class="d-block">
+                                        <img class="img-fluid w-100"
+                                            src="{{ url_for('static', filename='img/thumbs/' ~ product.image|default('default.jpg')) }}"
+                                            alt="{{ product.name }}" loading="lazy">
+                                    </a>
+                                    {% if product.mrp and product.mrp > product.price %}
+                                    {% set discount_percent = ((product.mrp - product.price) / product.mrp *
+                                    100)|round|int %}
+                                    <div class="product-discount-badge">
+                                        <span>-{{ discount_percent }}%</span>
+                                    </div>
+                                    {% endif %}
+
+                                    {% if product.stock_quantity <= 0 %} <div class="product-soldout-badge">
+                                        <span>Sold Out</span>
+                                </div>
+                                {% endif %}
+
+                                <div class="product-action">
+                                    <a class="btn" href="{{ url_for('shop_bp.detail', product_id=product.id) }}"
+                                        aria-label="View Product {{ product.name }}"><i class="fa fa-eye" aria-hidden="true"></i></a>
+                                    <button class="btn add-to-wishlist-btn" onclick="addToWishlist('{{ product.id }}')"
+                                        aria-label="Add {{ product.name }} to Wishlist">
+                                        <i class="{% if product.id in wishlist_product_ids %}fas text-danger{% else %}far{% endif %} fa-heart" aria-hidden="true"></i>
+                                    </button>
+                                    {% if product.stock_quantity > 0 %}
+                                    {% if product.id not in cart_product_ids %}
+                                    <button class="btn add-to-cart-btn" data-product-id="{{ product.id }}" aria-label="Add {{ product.name }} to Cart">
+                                        <i class="fa fa-shopping-bag" aria-hidden="true"></i>
+                                    </button>
+                                    {% else %}
+                                    <a href="{{ url_for('cart_bp.cart') }}" class="btn"
+                                        style="background: #a64d79; color: #fff; border-color: #a64d79;" aria-label="View Cart">
+                                        <i class="fa fa-check" aria-hidden="true"></i>
+                                    </a>
+                                    {% endif %}
+                                    {% endif %}
+                                </div>
+                            </div>
+                            <div class="card-body product-details">
+                                <a href="{{ url_for('shop_bp.detail', product_id=product.id) }}"
+                                    class="product-name-link text-truncate d-block">{{ product.name }}</a>
+                                <div class="d-flex align-items-baseline mb-2">
+                                    <span class="price-tag">₹{{ product.price|round|int }}</span>
+                                    {% if product.mrp and product.mrp > product.price %}
+                                    <del class="text-muted small ml-2">₹{{ product.mrp|round|int }}</del>
+                                    {% endif %}
+                                </div>
+                                <div class="d-flex align-items-center">
+                                    {% set rating = product.avg_rating|default(0)|float %}
+                                    <div class="text-primary mr-2" style="font-size: 0.75rem;">
+                                        {% for i in range(1, 6) %}
+                                        {% if i <= rating|round %}<i class="fas fa-star"></i>
+                                            {% elif i <= rating %}<i class="fas fa-star-half-alt"></i>
+                                                {% else %}<i class="far fa-star"></i>
+                                                {% endif %}
+                                                {% endfor %}
+                                    </div>
+                                    <small class="text-muted" style="font-size: 0.7rem;">({{
+                                        product.review_count|default(0) }})</small>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                    {% endfor %}
+                    {% else %}
+                    <div class="col-12 text-center py-5">
+                        <div class="empty-state">
+                            <i class="fas fa-search fa-3x text-muted mb-3"></i>
+                            <h4 class="font-weight-semi-bold">No products found</h4>
+                            <p class="text-muted">Try adjusting your filters or search terms</p>
+                            <a href="{{ url_for('shop_bp.shop') }}" class="btn btn-primary mt-3">Reset Filters</a>
+                        </div>
+                    </div>
+                    {% endif %}
+                </div>
+            </div>
+
+            {% if pagination and pagination.pages > 1 %}
+            <div class="col-12 pb-1">
+                <nav aria-label="Page navigation">
+                    <ul class="pagination justify-content-center mb-3">
+                        {% if pagination.has_prev %}
+                        <li class="page-item">
+                            <a class="page-link" href="{{ pagination.get_page_url(pagination.prev_num) }}"
+                                aria-label="Previous">
+                                <span aria-hidden="true">&laquo;</span>
+                                <span class="sr-only">Previous</span>
+                            </a>
+                        </li>
+                        {% else %}
+                        <li class="page-item disabled">
+                            <a class="page-link" href="#" aria-label="Previous">
+                                <span aria-hidden="true">&laquo;</span>
+                                <span class="sr-only">Previous</span>
+                            </a>
+                        </li>
+                        {% endif %}
+
+                        {% for page_num in pagination.iter_pages(left_edge=2, left_current=2, right_current=5,
+                        right_edge=2) %}
+                        {% if page_num %}
+                        <li class="page-item {% if page_num == pagination.page %}active{% endif %}">
+                            <a class="page-link" href="{{ pagination.get_page_url(page_num) }}">{{ page_num }}</a>
+                        </li>
+                        {% else %}
+                        <li class="page-item disabled"><span class="page-link">...</span></li>
+                        {% endif %}
+                        {% endfor %}
+
+                        {% if pagination.has_next %}
+                        <li class="page-item">
+                            <a class="page-link" href="{{ pagination.get_page_url(pagination.next_num) }}"
+                                aria-label="Next">
+                                <span aria-hidden="true">&raquo;</span>
+                                <span class="sr-only">Next</span>
+                            </a>
+                        </li>
+                        {% else %}
+                        <li class="page-item disabled">
+                            <a class="page-link" href="#" aria-label="Next">
+                                <span aria-hidden="true">&raquo;</span>
+                                <span class="sr-only">Next</span>
+                            </a>
+                        </li>
+                        {% endif %}
+                    </ul>
+                </nav>
+            </div>
+            {% endif %}
+        </div>
+    </div>
+    <!-- Shop Product End -->
+</div>
+</div>
+<!-- Shop End -->
+{% endblock %}
+
+{% block styles %}
+{{ super() }}
+<link rel="stylesheet" href="{{ url_for('static', filename='css/shop.css') }}">
+{% endblock %}
+
+{% block scripts %}
+{{ super() }}
+<script>
+    $(document).ready(function () {
+        // Mobile Filter Toggle
+        $('#mobileFilterToggle').on('click', function () {
+            $('#shopSidebar').toggleClass('active');
+            $(this).toggleClass('active');
+            if ($(this).hasClass('active')) {
+                $(this).html('<i class="fa fa-times mr-1"></i> Close Filters');
+            } else {
+                $(this).html('<i class="fa fa-filter mr-1"></i> Filters');
+            }
+        });
+        $('.remove-filter-icon').on('click', function () {
+            const filterText = $(this).parent().text().replace($(this).text(), '').trim();
+            // Parse filter type (e.g., "Price: ₹200 - ₹500")
+            // This is a bit complex – simpler: reload the page without that filter.
+            // For production, you could rebuild the URL by removing the corresponding query param.
+            // For brevity, just redirect to shop without filters.
+            window.location.href = "{{ url_for('shop_bp.shop') }}";
+        });
+        // Set swatch backgrounds from data-bg attribute
+        $('.color-swatch-label[data-bg]').each(function () {
+            $(this).css('background', $(this).data('bg'));
+        });
+
+        $.get("{{ url_for('cart_bp.get_cart_count') }}", function (data) {
+            if (data.totalquantity > 0) {
+                $(".cart-count").text(data.totalquantity);
+            }
+        });
+
+        // ========== PRICE SLIDER INITIALISATION ==========
+        const minPriceGlobal = Number('{{ global_min_price }}');
+        const maxPriceGlobal = Number('{{ global_max_price }}');
+        const currentMin = Number('{{ selected_min_price }}');
+        const currentMax = Number('{{ selected_max_price }}');
+
+        const slider = document.getElementById('price-slider');
+        if (slider) {
+            noUiSlider.create(slider, {
+                start: [currentMin, currentMax],
+                connect: true,
+                range: {
+                    'min': minPriceGlobal,
+                    'max': maxPriceGlobal
+                },
+                tooltips: true,
+                format: wNumb({
+                    decimals: 0,
+                    thousand: ',',
+                    prefix: '₹'
+                })
+            });
+
+            // Update hidden fields and number inputs when slider changes
+            slider.noUiSlider.on('update', function (values, handle) {
+                const minVal = Math.round(parseFloat(values[0].replace(/[^0-9.-]/g, '')));
+                const maxVal = Math.round(parseFloat(values[1].replace(/[^0-9.-]/g, '')));
+                $('#min_price').val(minVal);
+                $('#max_price').val(maxVal);
+                $('#min_price_input').val(minVal);
+                $('#max_price_input').val(maxVal);
+            });
+
+            // Submit the filter form when the user finishes sliding
+            slider.noUiSlider.on('end', function () {
+                $('#shopFilters').submit();
+            });
+        }
+
+        // Sync number inputs with slider and submit
+        $('#min_price_input, #max_price_input').on('change', function () {
+            let newMin = parseInt($('#min_price_input').val(), 10);
+            let newMax = parseInt($('#max_price_input').val(), 10);
+            if (isNaN(newMin)) newMin = minPriceGlobal;
+            if (isNaN(newMax)) newMax = maxPriceGlobal;
+            if (newMin < minPriceGlobal) newMin = minPriceGlobal;
+            if (newMax > maxPriceGlobal) newMax = maxPriceGlobal;
+            if (newMin > newMax) newMin = newMax;
+
+            slider.noUiSlider.set([newMin, newMax]);
+            $('#shopFilters').submit();
+        });
+        // ========== END PRICE SLIDER ==========
+
+        // Material filter logic
+        $('input[name="material"]').change(function () {
+            if ($('input[name="material"]:checked').length > 0) {
+                $('#material-all').prop('checked', false);
+            } else {
+                $('#material-all').prop('checked', true);
+            }
+            $('#shopFilters').submit();
+        });
+
+        $('#material-all').change(function () {
+            if ($(this).is(':checked')) {
+                $('input[name="material"]').prop('checked', false);
+                $('#shopFilters').submit();
+            }
+        });
+
+        // Color filter logic
+        $('input[name="color"]').change(function () {
+            if ($('input[name="color"]:checked').length > 0) {
+                $('#color-all').prop('checked', false);
+            } else {
+                $('#color-all').prop('checked', true);
+            }
+            $('#shopFilters').submit();
+        });
+
+        $('#color-all').change(function () {
+            if ($(this).is(':checked')) {
+                $('input[name="color"]').prop('checked', false);
+                $('#shopFilters').submit();
+            }
+        });
+
+        // Category radio buttons
+        $('input[type="radio"]').change(function () {
+            $('#shopFilters').submit();
+        });
+
+        $('input[name="category"]').change(function () {
+            $('input[name="page"]').val(1);
+            $('#shopFilters').submit();
+        });
+
+        // Toggle plus/minus icons for collapsible sections
+        $('.collapse').on('show.bs.collapse', function () {
+            $(this).siblings('.card-header').find('.toggle-icon').removeClass('fa-plus').addClass('fa-minus');
+        }).on('hide.bs.collapse', function () {
+            $(this).siblings('.card-header').find('.toggle-icon').removeClass('fa-minus').addClass('fa-plus');
+        });
+
+        // Initialize icons based on initial collapse state
+        $('.collapse').each(function () {
+            var icon = $(this).siblings('.card-header').find('.toggle-icon');
+            if ($(this).hasClass('show')) {
+                icon.removeClass('fa-plus').addClass('fa-minus');
+            } else {
+                icon.removeClass('fa-minus').addClass('fa-plus');
+            }
+        });
+
+
+    });
+</script>
+{% endblock %}

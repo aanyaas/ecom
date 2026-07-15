@@ -1,0 +1,471 @@
+{% extends "admin/base.html" %}
+
+{% block title %}Order Management- {{ brand_name }}{% endblock %}
+
+{% block content %}
+<style>
+    /* Premium Glassmorphism Orders Overhaul */
+    :root {
+        --glass-bg: rgba(255, 255, 255, 0.85);
+        --glass-border: rgba(255, 255, 255, 0.4);
+        --glass-shadow: 0 10px 30px rgba(0, 0, 0, 0.05);
+        --primary-accent: #a64d79;
+        --secondary-accent: #1a1a2e;
+        --text-dark: #2d3748;
+        --text-muted: #718096;
+    }
+
+    body {
+        background-color: #f4f7f6;
+        background-image:
+            radial-gradient(at 0% 0%, hsla(331, 65%, 85%, 1) 0, transparent 50%),
+            radial-gradient(at 100% 0%, hsla(236, 40%, 85%, 1) 0, transparent 50%);
+        background-attachment: fixed;
+        font-family: 'Inter', sans-serif;
+    }
+
+    /* Animated entrance */
+    @keyframes fadeUp {
+        from {
+            opacity: 0;
+            transform: translateY(20px);
+        }
+
+        to {
+            opacity: 1;
+            transform: translateY(0);
+        }
+    }
+
+    .card {
+        background: var(--glass-bg) !important;
+        backdrop-filter: blur(12px) !important;
+        -webkit-backdrop-filter: blur(12px);
+        border: 1px solid var(--glass-border) !important;
+        border-radius: 24px !important;
+        box-shadow: var(--glass-shadow) !important;
+        animation: fadeUp 0.7s ease-out backwards;
+    }
+
+    .card-header {
+        background: transparent !important;
+        border-bottom: 1px solid rgba(0, 0, 0, 0.05) !important;
+        padding: 25px 30px !important;
+    }
+
+    .form-control,
+    .btn {
+        border-radius: 12px;
+    }
+
+    .btn-outline-secondary {
+        border-color: var(--primary-accent);
+        color: var(--primary-accent);
+        transition: all 0.3s ease;
+    }
+
+    .btn-outline-secondary:hover {
+        background: linear-gradient(135deg, var(--primary-accent), #c26792);
+        color: white;
+        border-color: transparent;
+        transform: translateY(-2px);
+        box-shadow: 0 6px 20px rgba(166, 77, 121, 0.4);
+    }
+
+    .table {
+        color: var(--text-dark);
+        margin-bottom: 0;
+    }
+
+    .table thead th {
+        border-bottom: 2px solid rgba(0, 0, 0, 0.05);
+        border-top: none;
+        color: var(--text-muted);
+        font-weight: 600;
+        text-transform: uppercase;
+        font-size: 0.75rem;
+        letter-spacing: 1px;
+        padding: 20px 25px;
+    }
+
+    .table tbody td {
+        padding: 20px 25px;
+        vertical-align: middle;
+        border-bottom: 1px solid rgba(0, 0, 0, 0.03);
+    }
+
+    .table-hover tbody tr:hover {
+        background-color: rgba(255, 255, 255, 0.6);
+        transform: scale(1.002);
+        box-shadow: 0 5px 15px rgba(0, 0, 0, 0.03);
+        transition: all 0.3s ease;
+    }
+
+    .badge {
+        padding: 6px 12px;
+        border-radius: 8px;
+        font-weight: 600;
+        letter-spacing: 0.5px;
+    }
+
+    th a {
+        color: inherit;
+        text-decoration: none;
+        display: flex;
+        align-items: center;
+        justify-content: space-between;
+        transition: color 0.3s;
+    }
+
+    th a:hover {
+        color: var(--primary-accent);
+    }
+</style>
+
+<div class="d-flex justify-content-between align-items-center mb-1 mt-2">
+    <div style="animation: fadeUp 0.5s ease-out;">
+        <h2 class="mb-1" style="font-size: 2rem; font-weight: 800; color: var(--text-dark);">Orders</h2>
+    </div>
+    <div class="d-flex align-items-center" style="animation: fadeUp 0.6s ease-out;">
+        <form method="POST" action="{{ url_for('admin_bp.sync_external_orders') }}" class="mr-2 mb-0"
+            id="syncExternalForm">
+            <input type="hidden" name="csrf_token" value="{{ csrf_token() }}" />
+            <button type="button" class="btn btn-sm btn-outline-primary"
+                style="border-radius: 50px; font-weight: 600; padding: 0.4rem 1.2rem;" onclick="confirmSync()">
+                <i class="fas fa-sync-alt mr-2"></i> Sync Channels
+            </button>
+        </form>
+        <a href="{{ url_for('admin_bp.export_orders', status=status_filter, search=search, time_period=time_period) }}" class="btn btn-sm btn-outline-success" style="border-radius: 50px; font-weight: 600; padding: 0.4rem 1.2rem;">
+            <i class="fas fa-file-csv mr-2"></i> Export
+        </a>
+    </div>
+</div>
+
+<div class="nav-tabs-custom mb-3 mt-2" style="display: flex; gap: 10px; padding-bottom: 5px; overflow-x: auto;">
+    <a href="{{ url_for('admin_bp.admin_orders', status='pending', search=search) }}" class="btn btn-sm {% if status_filter == 'pending' %}btn-primary text-white shadow-sm{% else %}btn-outline-secondary bg-white text-dark{% endif %}" style="border-radius: 20px; border: 1px solid var(--glass-border); min-width: 100px;">
+        <span class="font-weight-bold mr-1">{{ status_counts.get('pending', 0) }}</span> Pending
+    </a>
+    <a href="{{ url_for('admin_bp.admin_orders', status='processing', search=search) }}" class="btn btn-sm {% if status_filter == 'processing' %}btn-info text-white shadow-sm{% else %}btn-outline-secondary bg-white text-dark{% endif %}" style="border-radius: 20px; border: 1px solid var(--glass-border); min-width: 100px;">
+        <span class="font-weight-bold mr-1">{{ status_counts.get('processing', 0) }}</span> Processing
+    </a>
+    <a href="{{ url_for('admin_bp.admin_orders', status='rtd', search=search) }}" class="btn btn-sm {% if status_filter == 'rtd' %}btn-warning text-dark shadow-sm{% else %}btn-outline-secondary bg-white text-dark{% endif %}" style="border-radius: 20px; border: 1px solid var(--glass-border); min-width: 100px;">
+        <span class="font-weight-bold mr-1">{{ status_counts.get('rtd', 0) }}</span> RTD
+    </a>
+    <a href="{{ url_for('admin_bp.admin_orders', status='shipped', search=search) }}" class="btn btn-sm {% if status_filter == 'shipped' %}btn-primary text-white shadow-sm{% else %}btn-outline-secondary bg-white text-dark{% endif %}" style="border-radius: 20px; border: 1px solid var(--glass-border); min-width: 100px;">
+        <span class="font-weight-bold mr-1">{{ status_counts.get('shipped', 0) }}</span> Shipped
+    </a>
+    <a href="{{ url_for('admin_bp.admin_orders', status='delivered', search=search) }}" class="btn btn-sm {% if status_filter == 'delivered' %}btn-success text-white shadow-sm{% else %}btn-outline-secondary bg-white text-dark{% endif %}" style="border-radius: 20px; border: 1px solid var(--glass-border); min-width: 100px;">
+        <span class="font-weight-bold mr-1">{{ status_counts.get('delivered', 0) }}</span> Delivered
+    </a>
+    <a href="{{ url_for('admin_bp.admin_orders', status='cancelled', search=search) }}" class="btn btn-sm {% if status_filter == 'cancelled' %}btn-danger text-white shadow-sm{% else %}btn-outline-secondary bg-white text-dark{% endif %}" style="border-radius: 20px; border: 1px solid var(--glass-border); min-width: 100px;">
+        <span class="font-weight-bold mr-1">{{ status_counts.get('cancelled', 0) }}</span> Cancelled
+    </a>
+    <a href="{{ url_for('admin_bp.admin_orders', status='all', search=search) }}" class="btn btn-sm {% if status_filter == 'all' %}btn-dark text-white shadow-sm{% else %}btn-outline-secondary bg-white text-dark{% endif %}" style="border-radius: 20px; border: 1px solid var(--glass-border); min-width: 100px;">
+        All Orders
+    </a>
+</div>
+
+<div class="card border-0 shadow-sm mb-4">
+    <div class="card-header py-3">
+        <form class="row align-items-center mx-0 w-100" method="get" id="filterForm">
+            <input type="hidden" name="status" value="{{ status_filter }}">
+            <div class="col-md-8 mb-2 mb-md-0 d-flex align-items-center">
+                <div class="input-group input-group-sm mr-3" style="max-width: 300px;">
+                    <div class="input-group-prepend">
+                        <span class="input-group-text bg-light border-right-0" style="border-radius: 12px 0 0 12px;"><i
+                                class="fas fa-search text-muted"></i></span>
+                    </div>
+                    <input type="text" name="search" class="form-control bg-light border-left-0" placeholder="Search orders..."
+                        value="{{ search if search }}" style="border-radius: 0 12px 12px 0;">
+                </div>
+
+                <div class="btn-group btn-group-sm" role="group" aria-label="Date Filters" style="box-shadow: 0 2px 5px rgba(0,0,0,0.05); border-radius: 8px;">
+                    <input type="hidden" name="time_period" id="time_period_input" value="{{ time_period }}">
+                    <button type="button" class="btn {% if time_period == 'today' %}btn-primary{% else %}btn-outline-secondary bg-white text-dark{% endif %}" onclick="setDateFilter('today')">Today</button>
+                    <button type="button" class="btn {% if time_period == 'last_7_days' %}btn-primary{% else %}btn-outline-secondary bg-white text-dark{% endif %}" onclick="setDateFilter('last_7_days')">Last 7 Days</button>
+                    <button type="button" class="btn {% if time_period == 'all' %}btn-primary{% else %}btn-outline-secondary bg-white text-dark{% endif %}" onclick="setDateFilter('all')">All Time</button>
+                </div>
+            </div>
+            
+            <div class="col-md-4 text-right">
+                <button type="submit" class="btn btn-sm btn-outline-secondary px-3">Filter</button>
+                <a href="{{ url_for('admin_bp.admin_orders', status=status_filter) }}" class="btn btn-sm btn-link text-muted">Reset</a>
+            </div>
+        </form>
+    </div>
+
+    <div class="card-body p-0">
+        <form id="bulkActionForm" method="POST" action="{{ url_for('admin_bp.bulk_update_orders') }}">
+            <input type="hidden" name="csrf_token" value="{{ csrf_token() }}" />
+            <div class="p-3 bg-light border-bottom d-flex align-items-center justify-content-between"
+                style="border-radius: 24px 24px 0 0; overflow-x: auto;">
+                <div class="d-flex align-items-center flex-nowrap" style="gap: 8px;">
+                    <select name="bulk_action" id="bulk_action" class="form-control form-control-sm mr-2"
+                        style="width: 200px; border-radius: 8px;">
+                        <option value="">Actions...</option>
+                        <option value="processing">Mark as Processing</option>
+                        <option value="rtd">Mark as Ready to Dispatch</option>
+                        <option value="shipped">Mark as Shipped</option>
+                        <option value="delivered">Mark as Delivered</option>
+                        <option value="cancelled">Mark as Cancelled</option>
+                        <option value="paid">Mark as Paid</option>
+                        <option disabled>──────────</option>
+                        <option value="print_invoices">Print Invoices</option>
+                        <option value="print_labels">Print Shipping Labels</option>
+                    </select>
+                    <button type="button" class="btn btn-sm btn-primary px-3" style="border-radius: 8px;"
+                        onclick="confirmBulkActionDropdown()">Apply</button>
+                </div>
+                <div class="small text-muted font-weight-600 ml-3 text-nowrap">
+                    <span id="selectedCount">0</span> selected
+                </div>
+            </div>
+            <div class="table-responsive">
+                <table class="table table-hover align-items-center mb-0">
+                    <thead>
+                        <tr>
+                            <th class="border-top-0" style="width: 40px; padding-left: 20px;">
+                                <div class="custom-control custom-checkbox">
+                                    <input type="checkbox" class="custom-control-input" id="selectAll">
+                                    <label class="custom-control-label" for="selectAll"></label>
+                                </div>
+                            </th>
+                            <th class="border-top-0" style="width: 80px;">
+                                <a href="{{ url_for('admin_bp.admin_orders', sort='id', order='asc' if sort_column == 'id' and current_order == 'desc' else 'desc', status=status_filter, search=search, time_period=time_period, start_date=request.args.get('start_date', ''), end_date=request.args.get('end_date', '')) }}"
+                                    class="text-muted text-uppercase x-small font-weight-700">
+                                    ID {% if sort_column == 'id' %}<i
+                                        class="fas fa-sort-{{ 'up' if current_order == 'asc' else 'down' }}"></i>{%
+                                    endif %}
+                                </a>
+                            </th>
+                            <th class="border-top-0">
+                                <a href="{{ url_for('admin_bp.admin_orders', sort='customer', order='asc' if sort_column == 'customer' and current_order == 'desc' else 'desc', status=status_filter, search=search, time_period=time_period, start_date=request.args.get('start_date', ''), end_date=request.args.get('end_date', '')) }}"
+                                    class="text-muted text-uppercase x-small font-weight-700">
+                                    Customer {% if sort_column == 'customer' %}<i
+                                        class="fas fa-sort-{{ 'up' if current_order == 'asc' else 'down' }}"></i>{%
+                                    endif %}
+                                </a>
+                            </th>
+                            <th class="border-top-0">
+                                <a href="{{ url_for('admin_bp.admin_orders', sort='order_date', order='asc' if sort_column == 'order_date' and current_order == 'desc' else 'desc', status=status_filter, search=search, time_period=time_period, start_date=request.args.get('start_date', ''), end_date=request.args.get('end_date', '')) }}"
+                                    class="text-muted text-uppercase x-small font-weight-700">
+                                    Date {% if sort_column == 'order_date' %}<i
+                                        class="fas fa-sort-{{ 'up' if current_order == 'asc' else 'down' }}"></i>{%
+                                    endif %}
+                                </a>
+                            </th>
+                            <th class="border-top-0 text-uppercase x-small font-weight-700 text-muted">Items</th>
+                            <th class="border-top-0">
+                                <a href="{{ url_for('admin_bp.admin_orders', sort='total_amount', order='asc' if sort_column == 'total_amount' and current_order == 'desc' else 'desc', status=status_filter, search=search, time_period=time_period, start_date=request.args.get('start_date', ''), end_date=request.args.get('end_date', '')) }}"
+                                    class="text-muted text-uppercase x-small font-weight-700">
+                                    Amount {% if sort_column == 'total_amount' %}<i
+                                        class="fas fa-sort-{{ 'up' if current_order == 'asc' else 'down' }}"></i>{%
+                                    endif %}
+                                </a>
+                            </th>
+                            <th class="border-top-0 text-uppercase x-small font-weight-700 text-muted">Payment</th>
+                            <th class="border-top-0 text-uppercase x-small font-weight-700 text-muted">Status</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        {% for order in orders %}
+                        <tr>
+                            <td style="padding-left: 20px;">
+                                <div class="custom-control custom-checkbox">
+                                    <input type="checkbox" class="custom-control-input order-select" name="order_ids"
+                                        value="{{ order.id }}" id="check_{{ order.id }}">
+                                    <label class="custom-control-label" for="check_{{ order.id }}"></label>
+                                </div>
+                            </td>
+                            <td>
+                                <a href="{{ url_for('admin_bp.admin_order_detail', order_id=order.id) }}"
+                                    class="font-weight-700 text-primary">
+                                    #{{ order.id }}
+                                </a>
+                            </td>
+                            <td>
+                                {% set display_name = order.customer.split(' ')[1:]|join(' ') if ' ' in order.customer
+                                else order.customer %}
+                                <span class="font-weight-600">{{ display_name }}</span>
+                            </td>
+                            <td>
+                                <div class="small">{{ order.order_date.strftime('%d %b, %Y') if order.order_date else
+                                    'N/A' }}</div>
+                            </td>
+                            <td>
+                                <span class="badge badge-light border">{{ order.item_count }} Items</span>
+                            </td>
+                            <td>
+                                <span class="font-weight-700 text-dark">₹{{ "%.2f"|format(order.total_amount) }}</span>
+                            </td>
+                            <td>
+                                {% if order.payment_status == 'paid' %}
+                                <span class="badge badge-soft-success px-2 py-1">
+                                    <i class="fas fa-check-circle mr-1"></i> Paid
+                                </span>
+                                {% else %}
+                                <span class="badge badge-soft-warning px-2 py-1">
+                                    <i class="fas fa-clock mr-1"></i> {{ order.payment_status|title if
+                                    order.payment_status else 'Unpaid' }}
+                                </span>
+                                {% endif %}
+                            </td>
+                            <td>
+                                {% set status_color = 'warning' if order.status == 'pending'
+                                else 'info' if order.status == 'processing'
+                                else 'primary' if order.status == 'shipped'
+                                else 'success' if order.status == 'delivered'
+                                else 'danger' if order.status == 'cancelled'
+                                else 'secondary' if order.status == 'refunded' or order.status == 'partial refunded'
+                                else 'secondary' if order.status == 'return_requested'
+                                else 'secondary' %}
+                                <span class="badge badge-soft-{{ status_color }} px-2 py-1">
+                                    {{ order.status.replace('_', ' ')|title }}
+                                </span>
+                            </td>
+                        </tr>
+                        {% else %}
+                        <tr>
+                            <td colspan="7" class="text-center py-5">
+                                <div class="text-muted mb-3"><i class="fas fa-receipt fa-3x"></i></div>
+                                <p class="mb-0">No orders found in this category.</p>
+                            </td>
+                        </tr>
+                        {% endfor %}
+                    </tbody>
+                </table>
+            </div>
+        </form>
+    </div>
+
+    {% if pagination.pages > 1 %}
+    <div class="card-footer bg-white border-top-0 py-3 text-right">
+        <nav aria-label="Page navigation" class="d-inline-block">
+            <ul class="pagination pagination-sm mb-0">
+                {% if pagination.page > 1 %}
+                <li class="page-item">
+                    <a class="page-link"
+                        href="{{ url_for('admin_bp.admin_orders', page=pagination.page-1, status=status_filter, search=search, time_period=time_period, start_date=request.args.get('start_date', ''), end_date=request.args.get('end_date', '')) }}">
+                        <i class="fas fa-chevron-left"></i>
+                    </a>
+                </li>
+                {% endif %}
+
+                {% for page_num in range(1, pagination.pages + 1) %}
+                <li class="page-item {% if page_num == pagination.page %}active{% endif %}">
+                    <a class="page-link"
+                        href="{{ url_for('admin_bp.admin_orders', page=page_num, status=status_filter, search=search, time_period=time_period, start_date=request.args.get('start_date', ''), end_date=request.args.get('end_date', '')) }}">{{
+                        page_num }}</a>
+                </li>
+                {% endfor %}
+
+                {% if pagination.page < pagination.pages %} <li class="page-item">
+                    <a class="page-link"
+                        href="{{ url_for('admin_bp.admin_orders', page=pagination.page+1, status=status_filter, search=search, time_period=time_period, start_date=request.args.get('start_date', ''), end_date=request.args.get('end_date', '')) }}">
+                        <i class="fas fa-chevron-right"></i>
+                    </a>
+                    </li>
+                    {% endif %}
+            </ul>
+        </nav>
+    </div>
+    {% endif %}
+</div>
+<script>
+    document.addEventListener("DOMContentLoaded", function () {
+        var selectAll = document.getElementById('selectAll');
+        var checkboxes = document.querySelectorAll('.order-select');
+        var countSpan = document.getElementById('selectedCount');
+
+        function updateCount() {
+            var count = document.querySelectorAll('.order-select:checked').length;
+            if (countSpan) countSpan.textContent = count;
+        }
+
+        if (selectAll) {
+            selectAll.addEventListener('change', function () {
+                checkboxes.forEach(function (cb) {
+                    cb.checked = selectAll.checked;
+                });
+                updateCount();
+            });
+        }
+
+        checkboxes.forEach(function (cb) {
+            cb.addEventListener('change', updateCount);
+        });
+    });
+
+    function confirmBulkActionDropdown() {
+        var count = document.querySelectorAll('.order-select:checked').length;
+        var actionDropdown = document.getElementById('bulk_action');
+        var actionValue = actionDropdown.value;
+
+        if (count === 0) {
+            Swal.fire({
+                icon: 'warning',
+                title: 'No Orders Selected',
+                text: 'Please select at least one order to apply a bulk action.',
+                confirmButtonColor: 'var(--primary-color)'
+            });
+            return;
+        }
+
+        if (actionValue === "") {
+            Swal.fire({
+                icon: 'warning',
+                title: 'No Action Selected',
+                text: 'Please choose an action from the dropdown menu first.',
+                confirmButtonColor: 'var(--primary-color)'
+            });
+            return;
+        }
+
+        var actionText = actionDropdown.options[actionDropdown.selectedIndex].text;
+
+        Swal.fire({
+            title: 'Are you sure?',
+            text: "You are about to update " + count + " order(s) to '" + actionText + "'.",
+            icon: 'question',
+            showCancelButton: true,
+            confirmButtonColor: 'var(--primary-color)',
+            cancelButtonColor: '#6c757d',
+            confirmButtonText: 'Yes, apply it!'
+        }).then((result) => {
+            if (result.isConfirmed) {
+                if (actionValue === 'print_invoices' || actionValue === 'print_labels') {
+                    // For printing, we might want to submit differently or let the backend return a PDF
+                    // The easiest is to submit the form in a new tab if possible, but standard form submit is fine.
+                    document.getElementById('bulkActionForm').target = "_blank";
+                } else {
+                    document.getElementById('bulkActionForm').target = "";
+                }
+                document.getElementById('bulkActionForm').submit();
+            }
+        });
+    }
+
+    function setDateFilter(period) {
+        document.getElementById('time_period_input').value = period;
+        document.getElementById('filterForm').submit();
+    }
+
+    function confirmSync() {
+        Swal.fire({
+            title: 'Sync External Channels?',
+            text: "This will fetch the latest orders from Amazon, Flipkart, and other connected platforms.",
+            icon: 'info',
+            showCancelButton: true,
+            confirmButtonColor: 'var(--primary-color)',
+            cancelButtonColor: '#6c757d',
+            confirmButtonText: 'Yes, Sync Now',
+            showLoaderOnConfirm: true,
+            preConfirm: () => {
+                document.getElementById('syncExternalForm').submit();
+            }
+        });
+    }
+
+
+</script>
+{% endblock %}

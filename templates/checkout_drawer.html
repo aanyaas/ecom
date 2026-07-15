@@ -1,0 +1,886 @@
+<!-- Checkout Drawer Content -->
+<style>
+    /* Scoped Checkout Drawer Styles */
+    #checkoutDrawerContent {
+        flex: 1;
+        overflow-y: auto;
+        padding-bottom: 20px;
+    }
+
+    .checkout-drawer-header {
+        position: static;
+        background: #fff;
+        z-index: 10;
+        padding: 15px 20px;
+        border-bottom: 1px solid #eee;
+        display: flex;
+        align-items: center;
+        gap: 15px;
+    }
+
+    .checkout-drawer-header h5 {
+        margin: 0;
+        font-family: 'Playfair Display', serif;
+        font-weight: 700;
+        flex-grow: 1;
+        text-align: center;
+    }
+
+    .back-to-cart {
+        background: none;
+        border: none;
+        color: #1a1a1a;
+        font-size: 1.2rem;
+        cursor: pointer;
+    }
+
+    .checkout-section {
+        background: #fff;
+        margin-bottom: 10px;
+        padding: 20px;
+        border-bottom: 1px solid #eee;
+    }
+
+    .checkout-section-header {
+        display: flex;
+        align-items: center;
+        gap: 10px;
+        margin-bottom: 15px;
+        font-weight: 700;
+        color: #1a1a1a;
+        font-size: 1.1rem;
+    }
+
+    /* Expandable Order Summary */
+    .order-summary-header {
+        cursor: pointer;
+        display: flex;
+        justify-content: space-between;
+        align-items: center;
+    }
+
+    .order-summary-content {
+        display: none;
+        margin-top: 15px;
+    }
+
+    .order-summary-content.active {
+        display: block;
+    }
+
+    .summary-item-img {
+        width: 50px;
+        height: 50px;
+        object-fit: cover;
+        border-radius: 8px;
+    }
+
+    .payment-card-drawer {
+        border: 1px solid #eee;
+        border-radius: 12px;
+        padding: 15px;
+        margin-bottom: 10px;
+        cursor: pointer;
+        display: flex;
+        align-items: center;
+        gap: 15px;
+        transition: all 0.2s;
+    }
+
+    .payment-card-drawer.active {
+        border-color: #a64d79;
+        background: #fdf5f8;
+    }
+
+    .sticky-footer {
+        position: relative;
+        background: #fff;
+        padding: 20px;
+        box-shadow: 0 -5px 20px rgba(0, 0, 0, 0.05);
+        border-top: 1px solid #eee;
+        z-index: 10;
+    }
+
+    .form-control-drawer {
+        border-radius: 8px;
+        border: 1px solid #eee;
+        padding: 10px 15px;
+        font-size: 0.9rem;
+        width: 100%;
+        margin-bottom: 10px;
+    }
+
+    .form-control-drawer:focus {
+        border-color: #a64d79;
+        outline: none;
+    }
+
+    .coupon-badge-drawer {
+        border: 1px dashed #a64d79;
+        border-radius: 6px;
+        padding: 8px 12px;
+        margin-right: 8px;
+        margin-bottom: 8px;
+        display: inline-block;
+        cursor: pointer;
+        font-size: 0.8rem;
+    }
+
+    .invalid-feedback-drawer {
+        color: #dc3545;
+        font-size: 0.8rem;
+        display: none;
+        margin-top: -5px;
+        margin-bottom: 10px;
+    }
+
+    .overlay-border-active {
+        border-color: #a64d79 !important;
+    }
+
+    .overlay-border-default {
+        border-color: #eee !important;
+    }
+</style>
+
+<div class="checkout-drawer-header">
+    <button class="back-to-cart" onclick="closeCheckoutDrawer()"><i class="fas fa-arrow-left"></i></button>
+    <h5>Secure Checkout</h5>
+    <div style="width: 24px;"></div> <!-- Spacer for center alignment -->
+</div>
+
+<div id="checkoutDrawerContent">
+    <form id="drawer-checkout-form">
+        <input type="hidden" name="csrf_token" value="{{ csrf_token() }}">
+        <input type="hidden" name="honeypot" value="">
+        <input type="hidden" name="same_as_shipping" value="on"> <!-- Simplify logic by using same address -->
+        <input type="hidden" name="coupon_code" value="{{ coupon_code }}">
+
+        <!-- Order Summary -->
+        <div class="checkout-section pb-3 pt-3" style="background: #f8f9fa;">
+            <div class="order-summary-header"
+                onclick="$('.order-summary-content').toggleClass('active'); $(this).find('.fa-chevron-down').toggleClass('fa-rotate-180');">
+                <div class="font-weight-bold"><i class="fas fa-shopping-bag mr-2" style="color: #a64d79;"></i> Order
+                    Summary ({{ cart_items|length }} items)</div>
+                <div><span class="font-weight-bold" id="drawer-summary-header-total">₹{{ "%.2f"|format(total) }}</span> <i
+                        class="fas fa-chevron-down ml-2" style="transition: 0.3s; color: #888;"></i></div>
+            </div>
+
+            <div class="order-summary-content">
+                <div class="mt-3 mb-3 border-bottom pb-3">
+                    {% for item in cart_items %}
+                    <div class="d-flex align-items-center mb-2">
+                        <img src="/static/img/thumbs/{{ item.image or 'default-product.jpg' }}"
+                            class="summary-item-img mr-3"
+                            onerror="this.onerror=null;this.src='/static/img/default-product.jpg';">
+                        <div class="flex-grow-1">
+                            <div class="small font-weight-bold">{{ item['name'] }}</div>
+                            <div class="small text-muted">Qty: {{ item.get('quantity', 1) }}</div>
+                        </div>
+                        <div class="small font-weight-bold">₹{{ "%.2f"|format(item['unit_price'] * item.get('quantity',
+                            1)) }}</div>
+                    </div>
+                    {% endfor %}
+                </div>
+
+                <div class="d-flex justify-content-between mb-1 small">
+                    <span class="text-muted">Subtotal</span>
+                    <span class="font-weight-bold">₹{{ "%.2f"|format(subtotal) }}</span>
+                </div>
+                <div class="d-flex justify-content-between mb-1 small">
+                    <span class="text-muted">Shipping</span>
+                    <span class="font-weight-bold text-success">
+                        {% if subtotal >= free_shipping_threshold %}FREE{% else %}₹{{
+                        "%.2f"|format(default_shipping_charge) }}{% endif %}
+                    </span>
+                </div>
+                {% if discount_amount > 0 %}
+                <div class="d-flex justify-content-between mb-1 small">
+                    <span class="text-muted">Discount</span>
+                    <span class="font-weight-bold text-danger">-₹{{ "%.2f"|format(discount_amount) }}</span>
+                </div>
+                {% endif %}
+            </div>
+        </div>
+
+        <!-- Deliver To -->
+        <div class="checkout-section">
+            <div class="checkout-section-header d-flex justify-content-between align-items-center">
+                <div><i class="fas fa-map-marker-alt" style="color: #a64d79;"></i> Deliver To</div>
+                {% if user_addresses %}
+                <a href="javascript:void(0)" id="drawer-edit-address-btn" class="small font-weight-bold"
+                    style="color: #666; text-decoration: none;">Edit &gt;</a>
+                {% endif %}
+            </div>
+
+            {% if user_addresses %}
+            <!-- Default Address Display -->
+            <div id="drawer-default-address-display" class="mb-3 p-3"
+                style="background: #fdfdfd; border: 1px solid #eee; border-radius: 8px;">
+                {% set default_addr = user_addresses|selectattr('is_default', 'equalto', 1)|first or user_addresses[0]
+                %}
+                <div class="font-weight-bold mb-1" style="word-break: break-word;">{{ default_addr.full_name }}</div>
+                <div class="small text-muted mb-1" style="word-break: break-word;">
+                    {{ default_addr.address_line1 }}{% if default_addr.address_line2 %}, {{ default_addr.address_line2
+                    }}{% endif %},<br>
+                    {{ default_addr.city }}, {{ default_addr.state }} - {{ default_addr.postal_code }}
+                </div>
+                <div class="small text-muted"><i class="fas fa-phone-alt mr-1"></i> {{ default_addr.mobile_number }}</div>
+                {% if default_addr.email %}
+                <div class="small text-muted"><i class="fas fa-envelope mr-1"></i> {{ default_addr.email }}</div>
+                {% endif %}
+            </div>
+            {% else %}
+            <!-- No Address Placeholder & Add Button -->
+            <div id="drawer-default-address-display" class="mb-3 p-3 text-center"
+                style="background: #fdfdfd; border: 1px dashed #7c8855; border-radius: 8px;">
+                <p class="small text-muted mb-2">No delivery address selected</p>
+                <button type="button" id="drawer-add-address-empty-btn" class="btn btn-sm text-white font-weight-bold px-3"
+                    style="background: #7c8855; border-radius: 20px;">
+                    <i class="fas fa-plus mr-1"></i> Add Address
+                </button>
+            </div>
+            {% endif %}
+
+            <input type="hidden" name="shipping_address_id" id="drawer-shipping-address-hidden"
+                value="{% if user_addresses %}{{ (user_addresses|selectattr('is_default', 'equalto', 1)|first or user_addresses[0]).id }}{% else %}new{% endif %}">
+        </div>
+
+        <!-- Delivery Overlay -->
+        <div id="drawer-delivery-overlay"
+            style="position: absolute; top: 0; left: 0; width: 100%; height: 100%; background: #f8f9fa; z-index: 50; display: none; flex-direction: column;">
+            <div class="checkout-drawer-header shadow-sm" style="background: white;">
+                <button type="button" id="close-delivery-overlay"
+                    style="background: none; border: none; font-size: 1.2rem; color: #1a1a1a;">
+                    <i class="fas fa-arrow-left"></i>
+                </button>
+                <h5 class="text-left ml-3" style="flex-grow: 1;">Delivery</h5>
+                <button type="button" id="close-delivery-overlay-x"
+                    style="background: none; border: none; font-size: 1.2rem; color: #1a1a1a;">
+                    <i class="fas fa-times"></i>
+                </button>
+            </div>
+
+            <div class="p-3" style="overflow-y: auto; flex-grow: 1;">
+                <button type="button" id="btn-show-new-address" class="btn btn-block mb-3 p-2 font-weight-bold"
+                    style="background: white; border: 1px dashed #7c8855; border-radius: 8px; color: #7c8855;">
+                    <i class="fas fa-plus-circle"></i> Add new address
+                </button>
+
+                <div id="drawer-address-cards-list">
+                    {% for address in user_addresses %}
+                    <label
+                        class="address-card-overlay d-block p-3 mb-2 {% if address.is_default or loop.first %}overlay-border-active{% else %}overlay-border-default{% endif %}"
+                        style="background: white; border-width: 1px; border-style: solid; border-radius: 8px; cursor: pointer;">
+                        <div class="d-flex align-items-start">
+                            <div class="mr-3 mt-1">
+                                <input type="radio" name="overlay_shipping_address" value="{{ address.id }}" {% if
+                                    address.is_default or loop.first %}checked{% endif %} style="accent-color: #a64d79;"
+                                    data-fullname="{{ address.full_name }}" data-line1="{{ address.address_line1 }}"
+                                    data-line2="{{ address.address_line2 or '' }}" data-city="{{ address.city }}"
+                                    data-state="{{ address.state }}" data-zip="{{ address.postal_code }}"
+                                    data-phone="{{ address.mobile_number }}"
+                                    data-email="{{ address.email or '' }}">
+                            </div>
+                            <div class="flex-grow-1">
+                                <div class="d-flex justify-content-between align-items-center mb-1">
+                                    <span class="font-weight-bold">{{ address.address_type|capitalize if
+                                        address.address_type else 'Home' }}</span>
+                                    <div class="dropdown" style="position: relative; z-index: 2;">
+                                        <i class="fas fa-ellipsis-v text-muted p-2" style="cursor: pointer;"
+                                            data-toggle="dropdown" aria-haspopup="true" aria-expanded="false"
+                                            onclick="event.preventDefault(); event.stopPropagation();"></i>
+                                        <div class="dropdown-menu dropdown-menu-right shadow-sm border-0"
+                                            style="border-radius: 12px; min-width: 120px; z-index: 1050;">
+                                            <a class="dropdown-item small py-2"
+                                                href="{{ url_for('user_bp.edit_address', address_id=address.id) }}?next=/shop%3Fopen_checkout=1"
+                                                onclick="event.stopPropagation();"><i
+                                                    class="fas fa-pen mr-2 text-primary"></i> Edit</a>
+                                            {% if not address.is_default %}
+                                            <a class="dropdown-item small py-2 text-danger delete-drawer-address"
+                                                href="#" data-id="{{ address.id }}"
+                                                onclick="event.stopPropagation();"><i class="fas fa-trash-alt mr-2"></i>
+                                                Delete</a>
+                                            {% endif %}
+                                        </div>
+                                    </div>
+                                </div>
+                                <div class="small text-dark mb-1 font-weight-bold" style="word-break: break-word;">{{ address.full_name }}</div>
+                                <div class="small text-muted mb-1" style="word-break: break-word;">
+                                    {{ address.address_line1 }}{% if address.address_line2 %}, {{ address.address_line2
+                                    }}{% endif %},<br>
+                                    {{ address.city }}, {{ address.state }} - {{ address.postal_code }}
+                                </div>
+                                <div class="small text-muted"><i class="fas fa-phone-alt mr-1"></i> {{
+                                    address.mobile_number }}</div>
+                                {% if address.email %}
+                                <div class="small text-muted"><i class="fas fa-envelope mr-1"></i> {{
+                                    address.email }}</div>
+                                {% endif %}
+                            </div>
+                        </div>
+                    </label>
+                    {% endfor %}
+                </div>
+            </div>
+
+            <div style="background: white; border-top: 1px solid #eee; padding: 15px;">
+                <button type="button" id="confirm-delivery-address" class="btn btn-block text-white font-weight-bold"
+                    style="background: #7c8855; border-radius: 8px; height: 50px; font-size: 1.1rem;">
+                    Proceed to Pay
+                </button>
+            </div>
+        </div>
+
+        <!-- Add New Address Overlay -->
+        <div id="drawer-add-new-address-overlay"
+            style="position: absolute; top: 0; left: 0; width: 100%; height: 100%; background: #fff; z-index: 60; display: none; flex-direction: column;">
+            <div class="checkout-drawer-header shadow-sm" style="background: white;">
+                <button type="button" id="close-add-new-address-overlay"
+                    style="background: none; border: none; font-size: 1.2rem; color: #1a1a1a;">
+                    <i class="fas fa-arrow-left"></i>
+                </button>
+                <h5 class="text-left ml-3" style="flex-grow: 1;">Add new address</h5>
+                <button type="button" id="close-add-new-address-overlay-x"
+                    style="background: none; border: none; font-size: 1.2rem; color: #1a1a1a;">
+                    <i class="fas fa-times"></i>
+                </button>
+            </div>
+
+            <div class="p-4" style="overflow-y: auto; flex-grow: 1;">
+                <div id="drawer-new-address-form">
+                    <div class="row">
+                        <div class="col-12"><input type="tel" name="shipping_zip_code" id="drawer-zip"
+                                placeholder="Pincode *" class="form-control-drawer" maxlength="6"
+                                oninput="this.value = this.value.replace(/[^0-9]/g, '')"
+                                style="border-bottom: 1px solid #eee; border-radius: 0; border-top: none; border-left: none; border-right: none; padding-left: 0;">
+                        </div>
+                        <div class="col-12"><input type="text" name="shipping_address1" placeholder="Address *"
+                                class="form-control-drawer mt-2" maxlength="100"
+                                style="border-bottom: 1px solid #eee; border-radius: 0; border-top: none; border-left: none; border-right: none; padding-left: 0;">
+                        </div>
+                        <div class="col-12"><input type="text" name="shipping_address2" placeholder="Locality"
+                                class="form-control-drawer mt-2" maxlength="100"
+                                style="border-bottom: 1px solid #eee; border-radius: 0; border-top: none; border-left: none; border-right: none; padding-left: 0;">
+                        </div>
+                        <div class="col-12 d-flex mt-2 mb-2 align-items-center" id="drawer-state-city-container"
+                            style="border-bottom: 1px solid #eee; padding-bottom: 10px;">
+                            <div class="mr-2"><i class="fas fa-globe text-muted"></i></div>
+                            <div class="flex-grow-1 text-muted small"><span id="drawer-state-city-label">Choose City,
+                                    State | India</span></div>
+                            <button type="button" id="drawer-zip-fetch" class="btn btn-sm btn-light"
+                                style="padding: 0 10px; border-radius: 12px;"><i class="fas fa-pencil-alt"></i></button>
+                        </div>
+                        <div class="col-6 pr-1"><input type="text" name="shipping_city" id="drawer-city"
+                                placeholder="City *" class="form-control-drawer d-none"></div>
+                        <div class="col-6 pl-1"><input type="text" name="shipping_state" id="drawer-state"
+                                placeholder="State *" class="form-control-drawer d-none"></div>
+                        <input type="hidden" name="shipping_state_code" id="drawer-state-code">
+
+                        <div class="col-12 mt-3">
+                            <label class="small text-muted mb-0">Phone number *</label>
+                            <div class="d-flex align-items-center" style="border-bottom: 1px solid #eee;">
+                                <span class="mr-2 text-dark font-weight-bold" style="white-space: nowrap;">IN +91</span>
+                                <input type="tel" name="shipping_phone" class="form-control-drawer mb-0"
+                                    value="{{ user.mobile_number or '' }}" maxlength="10"
+                                    style="border: none; padding-left: 5px; flex-grow: 1;">
+                            </div>
+                        </div>
+
+                        <div class="col-12 mt-3">
+                            <label class="small text-muted mb-0">Full Name *</label>
+                            <input type="text" name="shipping_first_name" class="form-control-drawer" maxlength="50"
+                                value="{% if user %}{{ (user.first_name or '') + ' ' + (user.last_name or '') }}{% endif %}"
+                                style="border-bottom: 1px solid #eee; border-radius: 0; border-top: none; border-left: none; border-right: none; padding-left: 0;">
+                            <input type="hidden" name="shipping_last_name" value="">
+                        </div>
+
+                        <div class="col-12 mt-3">
+                            <label class="small text-muted mb-0">Email *</label>
+                            <input type="email" name="shipping_email" class="form-control-drawer" maxlength="50"
+                                value="{% if user %}{{ user.email or '' }}{% endif %}"
+                                style="border-bottom: 1px solid #eee; border-radius: 0; border-top: none; border-left: none; border-right: none; padding-left: 0;">
+                        </div>
+
+                        <div class="col-12 mt-4">
+                            <div class="small text-muted mb-2">Save as</div>
+                            <div class="d-flex" style="gap: 10px;">
+                                <label class="btn btn-outline-secondary btn-sm rounded-pill save-as-btn active">
+                                    <input type="radio" name="address_type" value="Home" checked class="d-none">
+                                    <i class="fas fa-home"></i> Home
+                                </label>
+                                <label class="btn btn-outline-secondary btn-sm rounded-pill save-as-btn">
+                                    <input type="radio" name="address_type" value="Friends" class="d-none">
+                                    <i class="fas fa-users"></i> Friends
+                                </label>
+                                <label class="btn btn-outline-secondary btn-sm rounded-pill save-as-btn">
+                                    <input type="radio" name="address_type" value="Work" class="d-none">
+                                    <i class="fas fa-briefcase"></i> Work
+                                </label>
+                                <label class="btn btn-outline-secondary btn-sm rounded-pill save-as-btn">
+                                    <input type="radio" name="address_type" value="Other" class="d-none">
+                                    <i class="fas fa-map-marker-alt"></i> Other
+                                </label>
+                            </div>
+                        </div>
+
+                        <div class="col-12 mt-3">
+                            <label class="small text-muted mb-0"><input type="checkbox" name="save_shipping_address"
+                                    value="1" checked> Save this address for future use</label>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <div style="background: white; border-top: 1px solid #eee; padding: 15px;">
+                <div id="new-address-error" class="text-danger small mb-2 text-center" style="display: none;"></div>
+                <button type="button" id="confirm-new-address" class="btn btn-block text-white font-weight-bold"
+                    style="background: #7c8855; border-radius: 8px; height: 50px; font-size: 1.1rem;">
+                    Save and continue
+                </button>
+            </div>
+        </div>
+
+
+        <!-- Gift Card & Loyalty Points -->
+        <div class="checkout-section">
+            <div class="checkout-section-header">
+                <i class="fas fa-gift" style="color: #a64d79;"></i> Gift Card & Loyalty Points
+            </div>
+
+            {% if user and user_loyalty_points %}
+            <div class="d-block p-3 mb-0" style="border: 1px solid #eee; border-radius: 12px;">
+                <label style="cursor: pointer; width: 100%; margin-bottom: 0;">
+                    <div class="d-flex align-items-center">
+                        <input class="mr-3" type="checkbox" name="use_loyalty_points" id="use-loyalty-points-drawer" value="1" style="accent-color: #a64d79; transform: scale(1.3);">
+                        <div class="flex-grow-1">
+                            <div class="font-weight-bold">Use Loyalty Points</div>
+                            <div class="small text-muted">Available: {{ user_loyalty_points }} points (₹{{ "%.2f"|format(user_loyalty_points / 4.0) }})</div>
+                        </div>
+                    </div>
+                </label>
+                <div class="points-input-drawer-container mt-2" style="display: none; padding-left: 30px;">
+                    <span class="small text-info d-block mb-1"><i class="fas fa-info-circle"></i> 4 points = ₹1</span>
+                    <label class="small mb-1">Points to redeem:</label>
+                    <input type="number" class="form-control form-control-sm" name="points_to_redeem" id="points-to-redeem-drawer" min="1" max="{{ user_loyalty_points }}" placeholder="Enter points">
+                </div>
+            </div>
+            {% endif %}
+        </div>
+
+        <!-- Payment Method -->
+        <div class="checkout-section" style="border-bottom: none;">
+            <div class="checkout-section-header">
+                <i class="fas fa-credit-card" style="color: #a64d79;"></i> Payment Method
+            </div>
+
+            <label class="payment-card-drawer active">
+                <input type="radio" name="payment_method" value="online" checked style="display:none;">
+                <i class="fas fa-globe text-primary" style="font-size: 1.5rem;"></i>
+                <div class="flex-grow-1">
+                    <div class="font-weight-bold">Online Payment</div>
+                    <div class="small text-muted">UPI, Cards, Netbanking</div>
+                </div>
+                <i class="fas fa-check-circle check-icon text-success" style="font-size: 1.2rem;"></i>
+            </label>
+
+            <label class="payment-card-drawer">
+                <input type="radio" name="payment_method" value="cod" style="display:none;">
+                <i class="fas fa-hand-holding-usd text-warning" style="font-size: 1.5rem;"></i>
+                <div class="flex-grow-1">
+                    <div class="font-weight-bold">Cash on Delivery</div>
+                    <div class="small text-muted">Pay at doorstep</div>
+                </div>
+                <i class="fas fa-check-circle check-icon text-success d-none" style="font-size: 1.2rem;"></i>
+            </label>
+
+            <div class="invalid-feedback-drawer" id="payment-method-error">Please select a payment method</div>
+        </div>
+    </form>
+</div>
+
+<!-- Sticky Footer -->
+<div class="sticky-footer">
+    <div class="d-flex justify-content-between align-items-center mb-3">
+        <div class="font-weight-bold text-muted">Total Amount:</div>
+        <div class="h4 mb-0 font-weight-bold" style="color: #a64d79;" id="drawer-total-amount">₹{{ "%.2f"|format(total) }}</div>
+    </div>
+    <button type="button" id="drawer-place-order" class="btn btn-block text-white font-weight-bold"
+        style="background: linear-gradient(135deg, #a64d79, #9e4d70); border-radius: 12px; height: 50px; font-size: 1.1rem;">
+        PLACE ORDER
+    </button>
+</div>
+
+<script>
+    function closeCheckoutDrawer() {
+        $('#checkoutDrawer').removeClass('active');
+        $('#cartDrawer').addClass('active');
+        if (window.refreshCartDrawer) window.refreshCartDrawer();
+    }
+
+    // Custom dropdown toggle for 3 dots in dynamic HTML
+    $(document).off('click', '.fa-ellipsis-v').on('click', '.fa-ellipsis-v', function (e) {
+        e.preventDefault();
+        e.stopPropagation();
+        var $menu = $(this).siblings('.dropdown-menu');
+        $('.dropdown-menu').not($menu).removeClass('show');
+        $menu.toggleClass('show');
+    });
+
+    $(document).on('click', function () {
+        $('.dropdown-menu').removeClass('show');
+    });
+
+    // Use event delegation for all drawer actions so they survive AJAX reloads
+    $(document).off('click', '#drawer-edit-address-btn').on('click', '#drawer-edit-address-btn', function () {
+        $('#drawer-delivery-overlay').css('display', 'flex').hide().fadeIn(200);
+    });
+
+    $(document).off('click', '#close-delivery-overlay, #close-delivery-overlay-x').on('click', '#close-delivery-overlay, #close-delivery-overlay-x', function () {
+        $('#drawer-delivery-overlay').fadeOut(200);
+    });
+
+    $(document).off('click', '#btn-show-new-address').on('click', '#btn-show-new-address', function () {
+        $('#drawer-add-new-address-overlay').css('display', 'flex').hide().fadeIn(200);
+    });
+
+    $(document).off('click', '#drawer-add-address-empty-btn').on('click', '#drawer-add-address-empty-btn', function () {
+        $('#drawer-add-new-address-overlay').css('display', 'flex').hide().fadeIn(200);
+    });
+
+    $(document).off('click', '#close-add-new-address-overlay, #close-add-new-address-overlay-x').on('click', '#close-add-new-address-overlay, #close-add-new-address-overlay-x', function () {
+        $('#drawer-add-new-address-overlay').fadeOut(200);
+    });
+
+    $(document).off('change', 'input[name="overlay_shipping_address"]').on('change', 'input[name="overlay_shipping_address"]', function () {
+        $('.address-card-overlay').removeClass('overlay-border-active').addClass('overlay-border-default');
+        $(this).closest('.address-card-overlay').removeClass('overlay-border-default').addClass('overlay-border-active');
+        $('#drawer-shipping-address-hidden').val($(this).val());
+    });
+
+    $(document).off('click', '#confirm-delivery-address').on('click', '#confirm-delivery-address', function () {
+        var selectedVal = $('#drawer-shipping-address-hidden').val();
+        if (selectedVal && selectedVal !== 'new') {
+            var $selectedInput = $('input[name="overlay_shipping_address"]:checked');
+            var name = $selectedInput.data('fullname');
+            var addr1 = $selectedInput.data('line1');
+            var addr2 = $selectedInput.data('line2');
+            var city = $selectedInput.data('city');
+            var state = $selectedInput.data('state');
+            var zip = $selectedInput.data('zip');
+            var phone = $selectedInput.data('phone');
+            var email = $selectedInput.data('email');
+
+            var html = '<div class="font-weight-bold mb-1">' + name + '</div>' +
+                '<div class="small text-muted mb-1">' + addr1 + (addr2 ? ', ' + addr2 : '') + '<br>' + city + ', ' + state + ' - ' + zip + '</div>' +
+                '<div class="small text-muted"><i class="fas fa-phone-alt mr-1"></i> ' + phone + '</div>';
+            if (email) {
+                html += '<div class="small text-muted"><i class="fas fa-envelope mr-1"></i> ' + email + '</div>';
+            }
+            $('#drawer-default-address-display').html(html);
+        }
+        $('#drawer-delivery-overlay').fadeOut(200);
+    });
+
+    $(document).off('click', '#confirm-new-address').on('click', '#confirm-new-address', function () {
+        $('input[name="overlay_shipping_address"]').prop('checked', false);
+        $('.address-card-overlay').removeClass('overlay-border-active').addClass('overlay-border-default');
+        $('#drawer-shipping-address-hidden').val('new');
+
+        var addressType = $('input[name="address_type"]:checked').val() || 'Home';
+        var name = $('[name="shipping_first_name"]').val().trim();
+        var email = $('[name="shipping_email"]').val().trim();
+        var addr1 = $('[name="shipping_address1"]').val().trim();
+        var addr2 = $('[name="shipping_address2"]').val().trim();
+        var city = $('[name="shipping_city"]').val() || 'City';
+        var state = $('[name="shipping_state"]').val() || 'State';
+        var zip = $('[name="shipping_zip_code"]').val();
+        var phone = $('[name="shipping_phone"]').val();
+
+        $('#new-address-error').hide();
+
+        var requiredFields = ['shipping_first_name', 'shipping_email', 'shipping_phone', 'shipping_address1', 'shipping_city', 'shipping_state', 'shipping_zip_code'];
+        var valid = true;
+        
+        $('#drawer-state-city-container').css('border-bottom', '1px solid #eee');
+        
+        requiredFields.forEach(function (f) {
+            var $field = $('[name="' + f + '"]');
+            var isFieldHidden = $field.hasClass('d-none');
+            
+            if (!$field.val() || $field.val().trim() === '') {
+                if (isFieldHidden && (f === 'shipping_city' || f === 'shipping_state')) {
+                    $('#drawer-state-city-container').css('border-bottom', '2px solid #dc3545');
+                } else {
+                    $field.css('border-bottom', '2px solid #dc3545');
+                }
+                valid = false;
+            } else {
+                if (!isFieldHidden || (f !== 'shipping_city' && f !== 'shipping_state')) {
+                    $field.css('border-bottom', '1px solid #eee');
+                }
+            }
+        });
+
+        if (!valid) {
+            $('#new-address-error').text('Please fill out all highlighted required fields.').fadeIn();
+            return;
+        }
+
+        if (phone.length !== 10 || !/^\d+$/.test(phone)) {
+            $('[name="shipping_phone"]').css('border-bottom', '2px solid #dc3545');
+            $('#new-address-error').text('Please enter a valid 10-digit mobile number.').fadeIn();
+            return;
+        }
+
+        var html = '<div class="font-weight-bold mb-1">' + addressType + '</div>' +
+            '<div class="small text-dark mb-1 font-weight-bold">' + name + '</div>' +
+            '<div class="small text-muted mb-1">' + addr1 + (addr2 ? ', ' + addr2 : '') + '<br>' + city + ', ' + state + ' - ' + zip + '</div>' +
+            '<div class="small text-muted"><i class="fas fa-phone-alt mr-1"></i> ' + phone + '</div>';
+        if (email) {
+            html += '<div class="small text-muted"><i class="fas fa-envelope mr-1"></i> ' + email + '</div>';
+        }
+        $('#drawer-default-address-display').html(html);
+
+        $('#drawer-add-new-address-overlay').fadeOut(200);
+        $('#drawer-delivery-overlay').fadeOut(200);
+    });
+
+    $(document).off('click', '#drawer-zip-fetch').on('click', '#drawer-zip-fetch', function () {
+        var pincode = $('#drawer-zip').val();
+        if (pincode.length === 6) {
+            var $btn = $(this);
+            var originalHtml = $btn.html();
+            $btn.html('<i class="fas fa-spinner fa-spin"></i>');
+            $.ajax({
+                url: "{{ url_for('pages_bp.get_pincode_details') }}",
+                type: 'POST',
+                data: {
+                    pincode: pincode,
+                    csrf_token: "{{ csrf_token() }}"
+                },
+                success: function (response) {
+                    $btn.html(originalHtml);
+                    if (response.success) {
+                        $('#drawer-city').val(response.city).addClass('d-none');
+                        $('#drawer-state').val(response.state).addClass('d-none');
+                        $('#drawer-state-city-label').text(response.city + ', ' + response.state + ' | India');
+                        $('#drawer-state-code').val(response.state_code);
+                    } else {
+                        if (response.states && response.states.length > 0) {
+                            var stateSelect = $('<select class="form-control-drawer" name="shipping_state" id="drawer-state" style="border-bottom: 1px solid #eee; border-radius: 0; border-top: none; border-left: none; border-right: none; padding-left: 0; width: 100%; height: 38px; background: transparent;" required><option value="">Select State</option></select>');
+                            response.states.forEach(function (state) {
+                                stateSelect.append('<option value="' + state + '">' + state + '</option>');
+                            });
+                            $('#drawer-state').replaceWith(stateSelect);
+                            stateSelect.focus();
+
+                            var citySelect = $('<select class="form-control-drawer" name="shipping_city" id="drawer-city" style="border-bottom: 1px solid #eee; border-radius: 0; border-top: none; border-left: none; border-right: none; padding-left: 0; width: 100%; height: 38px; background: transparent;" required><option value="">Select City</option></select>');
+                            $('#drawer-city').replaceWith(citySelect);
+                        } else {
+                            $('#drawer-city').val('').removeClass('d-none').attr('placeholder', 'Enter City *').focus();
+                            $('#drawer-state').val('').removeClass('d-none').attr('placeholder', 'Enter State *');
+                        }
+                        $('#drawer-state-city-label').text('Enter City & State below | India');
+                    }
+                },
+                error: function () {
+                    $btn.html(originalHtml);
+                    $('#drawer-city').val('').removeClass('d-none').attr('placeholder', 'Enter City *').focus();
+                    $('#drawer-state').val('').removeClass('d-none').attr('placeholder', 'Enter State *');
+                    $('#drawer-state-city-label').text('Enter City & State below | India');
+                }
+            });
+        }
+    });
+
+    $(document).off('change', '#drawer-state').on('change', '#drawer-state', function () {
+        var state = $(this).val();
+        if (state) {
+            $.ajax({
+                url: "{{ url_for('pages_bp.get_state_code') }}",
+                type: 'POST',
+                data: { state: state, csrf_token: "{{ csrf_token() }}" },
+                success: function (response) {
+                    if (response.success) {
+                        $('#drawer-state-code').val(response.state_code);
+                    }
+                }
+            });
+            $.ajax({
+                url: "{{ url_for('pages_bp.get_cities_by_state') }}",
+                type: 'POST',
+                data: { state: state, csrf_token: "{{ csrf_token() }}" },
+                success: function (response) {
+                    var oldCity = $('#drawer-city');
+                    if (response.success && response.cities && response.cities.length > 0) {
+                        var citySelect = $('<select class="form-control-drawer" name="shipping_city" id="drawer-city" style="border-bottom: 1px solid #eee; border-radius: 0; border-top: none; border-left: none; border-right: none; padding-left: 0; width: 100%; height: 38px; background: transparent;" required><option value="">Select City</option></select>');
+                        response.cities.forEach(function (city) {
+                            citySelect.append('<option value="' + city + '">' + city + '</option>');
+                        });
+                        oldCity.replaceWith(citySelect);
+                    } else {
+                        var cityInput = $('<input type="text" class="form-control-drawer" name="shipping_city" id="drawer-city" placeholder="City *" style="border-bottom: 1px solid #eee; border-radius: 0; border-top: none; border-left: none; border-right: none; padding-left: 0; width: 100%; height: 38px; background: transparent;" required>');
+                        oldCity.replaceWith(cityInput);
+                    }
+                }
+            });
+        }
+    });
+
+    var drawerPincodeTimer = null;
+    $(document).off('input', '#drawer-zip').on('input', '#drawer-zip', function () {
+        clearTimeout(drawerPincodeTimer);
+        const pincode = $(this).val().trim();
+        if (pincode.length === 6 && /^\d+$/.test(pincode)) {
+            drawerPincodeTimer = setTimeout(function () {
+                $('#drawer-zip-fetch').trigger('click');
+            }, 400);
+        }
+    });
+
+    $(document).off('change', 'input[name="address_type"]').on('change', 'input[name="address_type"]', function () {
+        $('.save-as-btn').removeClass('active');
+        $(this).closest('.save-as-btn').addClass('active');
+    });
+
+    $(document).off('click', '.payment-card-drawer').on('click', '.payment-card-drawer', function () {
+        $('.payment-card-drawer').removeClass('active');
+        $('.payment-card-drawer .check-icon').addClass('d-none');
+
+        $(this).addClass('active');
+        $(this).find('input').prop('checked', true);
+        $(this).find('.check-icon').removeClass('d-none');
+    });
+
+    $(document).off('click', '#drawer-place-order').on('click', '#drawer-place-order', function (e) {
+        e.preventDefault();
+
+        var address = $('#drawer-shipping-address-hidden').val();
+        if (!address) {
+            alert('Please select or add a delivery address.');
+            return;
+        }
+
+        if (address === 'new') {
+            var required = ['shipping_first_name', 'shipping_email', 'shipping_phone', 'shipping_address1', 'shipping_city', 'shipping_state', 'shipping_zip_code'];
+            var valid = true;
+            $('#drawer-state-city-container').css('border-bottom', '1px solid #eee');
+            required.forEach(function (f) {
+                var $field = $('[name="' + f + '"]');
+                var isFieldHidden = $field.hasClass('d-none');
+                
+                if (!$field.val()) {
+                    if (isFieldHidden && (f === 'shipping_city' || f === 'shipping_state')) {
+                        $('#drawer-state-city-container').css('border-bottom', '2px solid #dc3545');
+                    } else {
+                        $field.css('border-bottom', '2px solid #dc3545');
+                    }
+                    valid = false;
+                } else {
+                    if (!isFieldHidden || (f !== 'shipping_city' && f !== 'shipping_state')) {
+                        $field.css('border-bottom', '1px solid #eee');
+                    }
+                }
+            });
+            if (!valid) {
+                var btn = $('#confirm-new-address');
+                if (btn.length > 0) {
+                    $('#drawer-add-new-address-overlay').fadeIn(200);
+                    $('#new-address-error').text('Please fill out all highlighted required fields.').fadeIn();
+                } else {
+                    alert('Please fill out all required fields in the new address form.');
+                }
+                return;
+            }
+        }
+
+        var $btn = $(this);
+        var originalText = $btn.html();
+        $btn.prop('disabled', true).html('<i class="fas fa-spinner fa-spin"></i> Processing...');
+
+        $.ajax({
+            url: '/checkout',
+            method: 'POST',
+            data: $('#drawer-checkout-form').serialize(),
+            success: function (res) {
+                if (res.success) {
+                    window.location.href = res.redirect;
+                } else {
+                    alert(res.message);
+                    $btn.prop('disabled', false).html(originalText);
+                }
+            },
+            error: function (xhr) {
+                var errorMsg = 'Error placing order. Please try again.';
+                if (xhr.responseJSON && xhr.responseJSON.message) {
+                    errorMsg = xhr.responseJSON.message;
+                } else if (xhr.responseJSON && xhr.responseJSON.errors) {
+                    var firstErr = Object.values(xhr.responseJSON.errors)[0];
+                    if (firstErr) errorMsg = firstErr;
+                }
+                alert(errorMsg);
+                $btn.prop('disabled', false).html(originalText);
+            }
+        });
+    });
+    $(document).off('click', '.delete-drawer-address').on('click', '.delete-drawer-address', function (e) {
+        e.preventDefault();
+        e.stopPropagation();
+
+        const addressId = $(this).data('id');
+        const $container = $(this).closest('.address-card-overlay');
+
+        showCustomConfirm('Are you sure you want to remove this address?', function() {
+            $.ajax({
+                url: "{{ url_for('user_bp.delete_address', address_id=0) }}".replace('0', addressId),
+                method: 'POST',
+                headers: { 'X-CSRFToken': "{{ csrf_token() }}" },
+                success: function (response) {
+                    if (response.success) {
+                        $container.fadeOut(400, function () { $(this).remove(); });
+                    } else {
+                        alert(response.message || 'Failed to delete address');
+                    }
+                },
+                error: function () {
+                    alert('An error occurred while deleting the address.');
+                }
+            });
+        });
+    });
+
+    function updateDrawerLoyaltyTotal() {
+        let baseTotal = parseFloat("{{ total }}");
+        let newTotal = baseTotal;
+        if ($('#use-loyalty-points-drawer').is(':checked')) {
+            let maxPoints = parseInt("{{ user_loyalty_points if user_loyalty_points else 0 }}");
+            let pointsToRedeem = parseInt($('#points-to-redeem-drawer').val()) || maxPoints;
+            if (pointsToRedeem > maxPoints) pointsToRedeem = maxPoints;
+            
+            let maxAllowedPoints = Math.floor(baseTotal * 4);
+            if (pointsToRedeem > maxAllowedPoints) pointsToRedeem = maxAllowedPoints;
+            
+            let loyaltyDiscount = pointsToRedeem / 4.0;
+            newTotal -= loyaltyDiscount;
+        }
+        $('#drawer-total-amount').text('₹' + newTotal.toFixed(2));
+        $('#drawer-summary-header-total').text('₹' + newTotal.toFixed(2));
+    }
+
+    $(document).off('change', '#use-loyalty-points-drawer').on('change', '#use-loyalty-points-drawer', function () {
+        if ($(this).is(':checked')) {
+            $('.points-input-drawer-container').slideDown();
+            let maxPoints = parseInt("{{ user_loyalty_points if user_loyalty_points else 0 }}");
+            $('#points-to-redeem-drawer').val(maxPoints);
+        } else {
+            $('.points-input-drawer-container').slideUp();
+            $('#points-to-redeem-drawer').val('');
+        }
+        updateDrawerLoyaltyTotal();
+    });
+
+    $(document).off('input', '#points-to-redeem-drawer').on('input', '#points-to-redeem-drawer', function () {
+        updateDrawerLoyaltyTotal();
+    });
+</script>

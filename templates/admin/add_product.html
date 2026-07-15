@@ -1,0 +1,1269 @@
+{% extends "admin/base.html" %}
+
+{% block title %}{% if is_variant|default(False) %}Add Variant{% elif product %}Edit{% else %}Add{% endif %} Product - {{ brand_name }}{% endblock %}
+
+{% block styles %}
+<style>
+    /* Premium Glassmorphism Add/Edit Product Overhaul */
+    :root {
+        --glass-bg: rgba(255, 255, 255, 0.85);
+        --glass-border: rgba(255, 255, 255, 0.4);
+        --glass-shadow: 0 8px 32px rgba(31, 38, 135, 0.1);
+        --primary-accent: #a64d79;
+        --secondary-accent: #6c757d;
+        --success-accent: #1cc88a;
+        --text-dark: #2d3748;
+        --text-muted: #718096;
+    }
+
+    .glass-card {
+        background: var(--glass-bg);
+        backdrop-filter: blur(12px);
+        -webkit-backdrop-filter: blur(12px);
+        border: 1px solid var(--glass-border);
+        border-radius: 16px;
+        box-shadow: var(--glass-shadow);
+        overflow: hidden;
+    }
+
+    .page-header {
+        background: linear-gradient(135deg, rgba(255,255,255,0.9) 0%, rgba(255,255,255,0.4) 100%);
+        border-radius: 16px;
+        padding: 24px;
+        margin-bottom: 24px;
+        box-shadow: var(--glass-shadow);
+        border: 1px solid var(--glass-border);
+        display: flex;
+        justify-content: space-between;
+        align-items: center;
+    }
+
+    .page-title {
+        font-weight: 800;
+        color: var(--primary-accent);
+        margin: 0;
+        font-size: 1.75rem;
+        letter-spacing: -0.5px;
+    }
+
+    .btn-gradient-primary {
+        background: linear-gradient(135deg, var(--primary-accent) 0%, #8a3d63 100%);
+        color: white;
+        border: none;
+        border-radius: 8px;
+        padding: 10px 20px;
+        font-weight: 600;
+        transition: all 0.3s ease;
+        box-shadow: 0 4px 15px rgba(166, 77, 121, 0.3);
+    }
+
+    .btn-gradient-primary:hover {
+        transform: translateY(-2px);
+        box-shadow: 0 6px 20px rgba(166, 77, 121, 0.4);
+        color: white;
+    }
+
+    .btn-glass-secondary {
+        background: rgba(108, 117, 125, 0.1);
+        color: var(--secondary-accent);
+        border: 1px solid rgba(108, 117, 125, 0.2);
+        border-radius: 8px;
+        padding: 10px 20px;
+        font-weight: 600;
+        transition: all 0.3s ease;
+    }
+
+    .btn-glass-secondary:hover {
+        background: rgba(108, 117, 125, 0.2);
+        color: var(--secondary-accent);
+        transform: translateY(-2px);
+    }
+
+    .form-control, .custom-select {
+        border-radius: 8px;
+        border: 1px solid rgba(0,0,0,0.1);
+        padding: 12px 15px;
+        height: auto;
+        transition: all 0.3s ease;
+        background: rgba(255, 255, 255, 0.9);
+    }
+
+    .form-control:focus, .custom-select:focus {
+        box-shadow: 0 0 0 0.2rem rgba(166, 77, 121, 0.25);
+        border-color: var(--primary-accent);
+        background: #fff;
+    }
+
+    label {
+        font-weight: 600;
+        color: var(--text-dark);
+        margin-bottom: 0.5rem;
+    }
+    
+    .card-header-custom {
+        background: rgba(248, 249, 252, 0.8);
+        border-bottom: 1px solid rgba(0,0,0,0.05);
+        padding: 1.25rem 1.5rem;
+    }
+
+    /* Image slots */
+    .custom-file-label {
+        border-radius: 8px;
+        background-color: rgba(255, 255, 255, 0.7);
+        border: 1px solid var(--glass-border);
+    }
+</style>
+{% endblock %}
+
+{% block content %}
+<div class="page-header">
+    <h2 class="page-title">
+        <i class="fas {% if is_variant|default(False) %}fa-copy{% elif product %}fa-edit{% else %}fa-plus-circle{% endif %} mr-2"></i> 
+        {% if is_variant|default(False) %}Add Variant from Existing{% elif product %}Edit Product{% else %}Add Product{% endif %}
+    </h2>
+    <a href="{{ url_for('admin_bp.admin_products') }}" class="btn btn-glass-secondary">
+        <i class="fas fa-arrow-left mr-1"></i> Back to Products
+    </a>
+</div>
+
+<div class="glass-card mb-4">
+    <div class="card-header-custom">
+        <h5 class="m-0 font-weight-bold text-primary">Product Details</h5>
+    </div>
+    <div class="card-body p-4">
+        <form method="POST" enctype="multipart/form-data" id="productForm">
+            {{ form.csrf_token }}
+
+            <!-- Category -->
+            <div class="form-group">
+                {{ form.category.label }}
+                {{ form.category(class="form-control") }}
+                {% if form.category.errors %}
+                <div class="invalid-feedback d-block">
+                    {% for error in form.category.errors %}
+                    <span>{{ error }}</span>
+                    {% endfor %}
+                </div>
+                {% endif %}
+            </div>
+
+            <!-- Product Name -->
+            <div class="form-group">
+                {{ form.name.label }}
+                {{ form.name(class="form-control", id="product_name") }}
+                <small class="text-muted" id="nameCharCount">0 / 200 characters</small>
+                {% if form.name.errors %}
+                <div class="invalid-feedback d-block">
+                    {% for error in form.name.errors %}
+                    <span>{{ error }}</span>
+                    {% endfor %}
+                </div>
+                {% endif %}
+            </div>
+            <!-- Product Features -->
+            <div class="form-group">
+                {{ form.product_features.label }}
+                {{ form.product_features(class="form-control", rows=3, id="product_features") }}
+                <small class="text-muted" id="featuresCharCount">0 / 1000 characters</small>
+            </div>
+            <!-- Description with character counter -->
+            <div class="form-group">
+                {{ form.description.label }}
+                {{ form.description(class="form-control", rows=3, id="product_description") }}
+                <small class="text-muted" id="charCount">0 / 1000 characters</small>
+                {% if form.description.errors %}
+                <div class="invalid-feedback d-block">
+                    {% for error in form.description.errors %}
+                    <span>{{ error }}</span>
+                    {% endfor %}
+                </div>
+                {% endif %}
+            </div>
+
+            <!--Care Instructions -->
+            <div class="form-group">
+                {{ form.care_instructions.label }}
+                {{ form.care_instructions(class="form-control", rows=3, id="care_instructions") }}
+                <small class="text-muted" id="careCharCount">0 / 1000 characters</small>
+            </div>
+
+            <!-- SEO Meta Data -->
+            <div class="card info-card-luxury mt-4 mb-4"
+                style="animation-delay: 0.15s; background: rgba(255,255,255,0.5) !important;">
+                <div class="card-header border-bottom-0 pt-3 pb-0">
+                    <h5 class="text-primary font-weight-bold m-0"><i class="fas fa-search mr-2"></i>SEO Meta Data</h5>
+                    <small class="text-muted">Leave blank to auto-generate from Product Name</small>
+                </div>
+                <div class="card-body">
+                    <div class="form-group">
+                        {{ form.meta_title.label }}
+                        {{ form.meta_title(class="form-control", id="meta_title") }}
+                    </div>
+                    <div class="form-group">
+                        {{ form.meta_keywords.label }}
+                        {{ form.meta_keywords(class="form-control", id="meta_keywords", placeholder="Comma separated
+                        keywords") }}
+                    </div>
+                    <div class="form-group">
+                        {{ form.meta_description.label }}
+                        {{ form.meta_description(class="form-control", rows=2, id="meta_description") }}
+                    </div>
+                </div>
+            </div>
+
+            <!-- Price, GST, and Tax details -->
+            <div class="form-row">
+                <div class="form-group col-md-3">
+                    {{ form.unit_price.label }}
+                    <div class="input-group">
+                        <div class="input-group-prepend">
+                            <span class="input-group-text">₹</span>
+                        </div>
+                        {{ form.unit_price(class="form-control", id="unit_price", step="0.01") }}
+                    </div>
+                    {% if form.unit_price.errors %}
+                    <div class="invalid-feedback d-block">
+                        {% for error in form.unit_price.errors %}
+                        <span>{{ error }}</span>
+                        {% endfor %}
+                    </div>
+                    {% endif %}
+                </div>
+                <div class="form-group col-md-3">
+                    {{ form.mrp.label }}
+                    <div class="input-group">
+                        <div class="input-group-prepend">
+                            <span class="input-group-text">₹</span>
+                        </div>
+                        {{ form.mrp(class="form-control", id="mrp", step="0.01") }}
+                    </div>
+                    {% if form.mrp.errors %}
+                    <div class="invalid-feedback d-block">
+                        {% for error in form.mrp.errors %}
+                        <span>{{ error }}</span>
+                        {% endfor %}
+                    </div>
+                    {% endif %}
+                </div>
+                <div class="form-group col-md-3">
+                    {{ form.gst_rate.label }}
+                    {{ form.gst_rate(class="form-control", id="gst_rate") }}
+                    {% if form.gst_rate.errors %}
+                    <div class="invalid-feedback d-block">
+                        {% for error in form.gst_rate.errors %}
+                        <span>{{ error }}</span>
+                        {% endfor %}
+                    </div>
+                    {% endif %}
+                </div>
+                <div class="form-group col-md-3 d-flex align-items-end" style="padding-bottom: 2px;">
+                    <button type="button" class="btn btn-outline-primary btn-block rounded-pill shadow-sm"
+                        id="btnPriceBreakup" data-toggle="modal" data-target="#priceBreakupModal">
+                        <i class="fas fa-calculator mr-1"></i> Price Breakup
+                    </button>
+                </div>
+            </div>
+
+            <!-- Material and Status -->
+            <div class="form-row">
+                <div class="form-group col-md-6">
+                    {{ form.material.label }}
+                    {{ form.material(class="form-control") }}
+                    {% if form.material.errors %}
+                    <div class="invalid-feedback d-block">
+                        {% for error in form.material.errors %}
+                        <span>{{ error }}</span>
+                        {% endfor %}
+                    </div>
+                    {% endif %}
+                </div>
+                <div class="form-group col-md-6">
+                    {{ form.is_active.label }}
+                    {{ form.is_active(class="form-control") }}
+                    {% if form.is_active.errors %}
+                    <div class="invalid-feedback d-block">
+                        {% for error in form.is_active.errors %}
+                        <span>{{ error }}</span>
+                        {% endfor %}
+                    </div>
+                    {% endif %}
+                </div>
+            </div>
+
+            <!-- Stock and Reorder -->
+            <div class="form-row">
+                <div class="form-group col-md-6">
+                    {{ form.stock_quantity.label }}
+                    {{ form.stock_quantity(class="form-control", id="stock_quantity", min="0") }}
+                    {% if form.stock_quantity.errors %}
+                    <div class="invalid-feedback d-block">
+                        {% for error in form.stock_quantity.errors %}
+                        <span>{{ error }}</span>
+                        {% endfor %}
+                    </div>
+                    {% endif %}
+                </div>
+                <div class="form-group col-md-6">
+                    {{ form.reorder_level.label }}
+                    {{ form.reorder_level(class="form-control", id="reorder_level", min="0") }}
+                    {% if form.reorder_level.errors %}
+                    <div class="invalid-feedback d-block">
+                        {% for error in form.reorder_level.errors %}
+                        <span>{{ error }}</span>
+                        {% endfor %}
+                    </div>
+                    {% endif %}
+                </div>
+            </div>
+            <div class="form-row">
+                <div class="form-group col-md-6">
+                    {{ form.size.label }}
+                    {{ form.size(class="form-control") }}
+                </div>
+                <div class="form-group col-md-6">
+                    {{ form.color.label }}
+                    <div class="input-group">
+                        {% if is_variant|default(False) %}
+                        {{ form.color(class="form-control border-primary shadow-sm", id="colorSelect") }}
+                        {% else %}
+                        {{ form.color(class="form-control", id="colorSelect") }}
+                        {% endif %}
+                        <div class="input-group-append">
+                            <span class="input-group-text bg-white">
+                                <div id="colorPreview"
+                                    style="width: 20px; height: 20px; border-radius: 50%; border: 1px solid #ddd; background-color: transparent;">
+                                </div>
+                            </span>
+                        </div>
+                    </div>
+                    {% if is_variant|default(False) %}
+                    <small class="text-primary font-weight-bold">Select the color for the new variant.</small>
+                    {% endif %}
+                </div>
+            </div>
+            <!-- SKU, HSN -->
+            <div class="form-row">
+                <div class="form-group col-md-4">
+                    {{ form.sku.label }}
+                    <div class="input-group">
+                        {% if form.sku.errors %}
+                        {{ form.sku(class="form-control is-invalid", id="sku") }}
+                        {% elif is_variant|default(False) %}
+                        {{ form.sku(class="form-control is-invalid", id="sku") }}
+                        {% else %}
+                        {{ form.sku(class="form-control", id="sku") }}
+                        {% endif %}
+                        {% if not is_variant|default(False) %}
+                        <div class="input-group-append">
+                            <button type="button" class="btn btn-outline-secondary"
+                                id="generateSkuBtn">Generate</button>
+                        </div>
+                        {% endif %}
+                    </div>
+                    {% if form.sku.errors %}
+                    <div class="invalid-feedback d-block">
+                        {% for error in form.sku.errors %}
+                        <span>{{ error }}</span>
+                        {% endfor %}
+                    </div>
+                    {% elif is_variant|default(False) %}
+                    <small class="text-danger">SKU must be unique for the new variant.</small>
+                    {% endif %}
+                </div>
+                <div class="form-group col-md-4">
+                    {{ form.sku_variant.label }}
+                    {{ form.sku_variant(class="form-control", id="sku_variant") }}
+                    <small class="text-muted">Links different sizes/colors together. Defaults to SKU if empty.</small>
+                </div>
+                <div class="form-group col-md-4">
+                    {{ form.hsn_code.label }}
+                    {{ form.hsn_code(class="form-control") }}
+                </div>
+            </div>
+
+            <input type="hidden" name="material_cost" id="material_cost" value="{{ form.material_cost.data or '' }}">
+
+            <!-- Dimensions -->
+            <div class="form-row">
+                <!-- Height -->
+                <div class="form-group col-md-3">
+                    {{ form.item_height.label }}
+                    <div class="input-group">
+                        {{ form.item_height(class="form-control", step="0.01") }}
+                        <div class="input-group-append">
+                            <span class="input-group-text">cm</span>
+                        </div>
+                    </div>
+                </div>
+                <!-- Width -->
+                <div class="form-group col-md-3">
+                    {{ form.item_width.label }}
+                    <div class="input-group">
+                        {{ form.item_width(class="form-control", step="0.01") }}
+                        <div class="input-group-append">
+                            <span class="input-group-text">cm</span>
+                        </div>
+                    </div>
+                </div>
+                <!-- Length -->
+                <div class="form-group col-md-3">
+                    {{ form.item_length.label }}
+                    <div class="input-group">
+                        {{ form.item_length(class="form-control", step="0.01") }}
+                        <div class="input-group-append">
+                            <span class="input-group-text">cm</span>
+                        </div>
+                    </div>
+                </div>
+                <!-- Weight -->
+                <div class="form-group col-md-3">
+                    {{ form.item_weight.label }}
+                    <div class="input-group">
+                        {{ form.item_weight(class="form-control", step="0.01") }}
+                        <div class="input-group-append">
+                            <span class="input-group-text">g</span>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- ========== NEW FIXED PRODUCT GALLERY SECTION ========== -->
+            <div class="card info-card-luxury mt-4" style="animation-delay: 0.2s;">
+                <div class="card-header d-flex justify-content-between align-items-center">
+                    <div>
+                        <h5 class="mb-0">Product Photos (0/6)</h5>
+                        <small class="text-muted">Follow Image Guidelines to reduce Quality Check failures</small>
+                    </div>
+                    <div>
+                        <div class="custom-control custom-checkbox">
+                            {{ form.apply_watermark(class="custom-control-input", id="apply_watermark") }}
+                            {{ form.apply_watermark.label(class="custom-control-label font-weight-bold text-primary",
+                            for="apply_watermark") }}
+                        </div>
+                    </div>
+                </div>
+                <div class="card-body">
+                    <div class="row" id="fixedImageSlots">
+                        <!-- Six fixed slots will be generated by JavaScript -->
+                    </div>
+                    <div class="alert alert-info mt-3">
+                        <strong>Image Resolution:</strong> Use clear color images with minimum resolution of 200×1100
+                        px.
+                        <br>
+                        <strong>Tip:</strong> Drag images to reorder (primary image cannot be changed here – use the
+                        main product image field).
+                    </div>
+                </div>
+            </div>
+            <!-- ========== END GALLERY SECTION ========== -->
+
+            <!-- Form Errors -->
+            {% if form.errors and (form.errors|length > 1 or 'sku' not in form.errors) %}
+            <div class="alert alert-danger">
+                <ul>
+                    {% for field, errors in form.errors.items() %}
+                    {% if field != 'sku' %}
+                    {% for error in errors %}
+                    <li>{{ form[field].label }}: {{ error }}</li>
+                    {% endfor %}
+                    {% endif %}
+                    {% endfor %}
+                </ul>
+            </div>
+            {% endif %}
+
+            <!-- Submit Buttons -->
+            <hr class="mt-4 mb-4" style="border-top: 1px solid rgba(0,0,0,0.05)">
+            <div class="d-flex justify-content-end">
+                <a href="{{ url_for('admin_bp.admin_products') }}" class="btn btn-glass-secondary mr-3">
+                    Cancel
+                </a>
+                <button type="submit" class="btn btn-gradient-primary" id="btnSaveProduct">
+                    <i class="fas fa-save mr-2"></i> {% if is_variant|default(False) %}Save Variant{% elif product %}Update Product{% else %}Save Product{% endif %}
+                </button>
+            </div>
+        </form>
+    </div>
+</div>
+
+<!-- ==================== PRICE BREAKUP MODAL ==================== -->
+<div class="modal fade" id="priceBreakupModal" tabindex="-1" role="dialog" aria-labelledby="priceBreakupModalLabel"
+    aria-hidden="true">
+    <div class="modal-dialog modal-dialog-centered" role="document">
+        <div class="modal-content info-card-luxury" style="border-radius: 20px;">
+            <div class="modal-header border-0 pt-4 pb-2 px-4">
+                <h5 class="modal-title font-weight-bold text-primary" id="priceBreakupModalLabel">
+                    <i class="fas fa-calculator mr-2"></i>Price Breakup & Margin
+                </h5>
+                <button type="button" class="close text-dark" data-dismiss="modal" aria-label="Close">
+                    <span aria-hidden="true">&times;</span>
+                </button>
+            </div>
+            <div class="modal-body p-4">
+                <!-- Reference Price info -->
+                <div class="row mb-3 bg-light p-3 rounded"
+                    style="border-radius: 12px; margin-left: 0; margin-right: 0;">
+                    <div class="col-6 text-center">
+                        <small class="text-muted text-uppercase font-weight-bold d-block">Unit Price</small>
+                        <span class="h5 font-weight-bold text-dark" id="pop_unit_price">₹0.00</span>
+                    </div>
+                    <div class="col-6 text-center border-left">
+                        <small class="text-muted text-uppercase font-weight-bold d-block">GST Rate</small>
+                        <span class="h5 font-weight-bold text-dark" id="pop_gst_rate">0%</span>
+                    </div>
+                </div>
+
+                <!-- Calculations breakdown -->
+                <div class="form-row">
+                    <div class="form-group col-md-6 mb-3">
+                        <label class="text-muted font-weight-bold small text-uppercase">Taxable Amount</label>
+                        <div class="input-group">
+                            <div class="input-group-prepend">
+                                <span class="input-group-text bg-white">₹</span>
+                            </div>
+                            <input type="text" id="pop_taxable_amount"
+                                class="form-control font-weight-bold bg-white text-dark" readonly>
+                        </div>
+                    </div>
+
+                    <div class="form-group col-md-6 mb-3">
+                        <label class="text-muted font-weight-bold small text-uppercase">Tax Amount</label>
+                        <div class="input-group">
+                            <div class="input-group-prepend">
+                                <span class="input-group-text bg-white">₹</span>
+                            </div>
+                            <input type="text" id="pop_tax_amount"
+                                class="form-control font-weight-bold bg-white text-dark" readonly>
+                        </div>
+                    </div>
+                </div>
+
+                <div class="form-group mb-3">
+                    <label class="text-muted font-weight-bold small text-uppercase" for="pop_material_cost">Material
+                        Cost <span class="text-danger">*</span></label>
+                    <div class="input-group">
+                        <div class="input-group-prepend">
+                            <span class="input-group-text bg-primary text-white">₹</span>
+                        </div>
+                        <input type="number" id="pop_material_cost"
+                            class="form-control font-weight-bold border-primary shadow-sm" step="0.01" min="0"
+                            placeholder="Enter material cost">
+                    </div>
+                    <small class="text-muted">Enter the cost of materials to compute your profit margin.</small>
+                </div>
+
+                <!-- Shipping and Packaging Costs -->
+                <div class="form-row">
+                    <div class="form-group col-md-6 mb-3">
+                        <label class="text-muted font-weight-bold small text-uppercase" for="pop_shipping_cost">Shipping
+                            Cost</label>
+                        <div class="input-group">
+                            <div class="input-group-prepend">
+                                <span class="input-group-text bg-white">₹</span>
+                            </div>
+                            <input type="number" id="pop_shipping_cost" class="form-control font-weight-bold"
+                                step="0.01" min="0" value="0">
+                        </div>
+                        <small class="text-muted">Default shipping cost.</small>
+                    </div>
+                    <div class="form-group col-md-6 mb-3">
+                        <label class="text-muted font-weight-bold small text-uppercase"
+                            for="pop_packaging_cost">Packaging Cost</label>
+                        <div class="input-group">
+                            <div class="input-group-prepend">
+                                <span class="input-group-text bg-white">₹</span>
+                            </div>
+                            <input type="number" id="pop_packaging_cost" class="form-control font-weight-bold"
+                                step="0.01" min="0" value="0">
+                        </div>
+                        <small class="text-muted">Default packaging cost.</small>
+                    </div>
+                </div>
+
+
+                <!-- Profit Estimate Card inside Popup -->
+                <div class="card bg-soft-primary border-0 mt-4 animate__animated animate__pulse"
+                    style="border-radius: 15px; background: rgba(166, 77, 121, 0.05);">
+                    <div class="card-body p-3">
+                        <div class="d-flex justify-content-between align-items-center">
+                            <div>
+                                <h6 class="text-primary font-weight-bold mb-1 text-uppercase small"
+                                    style="letter-spacing: 1px;">Estimated Profit</h6>
+                                <span class="text-muted small">(Base Price - Material - Shipping - Packaging)</span>
+                            </div>
+                            <div class="text-right">
+                                <span class="h3 font-weight-bold mb-0" id="pop_profit_amount"
+                                    style="color: var(--primary-color);">₹0.00</span>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+            <div class="modal-footer border-top-0">
+                <button type="button" class="btn btn-secondary btn-block" data-dismiss="modal"
+                    style="border-radius: 50px;">
+                    <i class="fas fa-check mr-2"></i>Apply & Close
+                </button>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}
+
+{% block scripts %}
+<!-- Summernote Rich Text Editor CDN -->
+<link href="https://cdn.jsdelivr.net/npm/summernote@0.8.18/dist/summernote-bs4.min.css" rel="stylesheet">
+<script src="https://cdn.jsdelivr.net/npm/summernote@0.8.18/dist/summernote-bs4.min.js"></script>
+
+<div id="server-data" style="display: none;"
+    data-is-edit="{{ 'true' if product and not is_variant|default(False) else 'false' }}"
+    data-images="{{ product_images | tojson | forceescape if product_images else '[]' }}">
+</div>
+<script>
+    // ========== TAX CALCULATION & SYNC ==========
+    function calculateTax() {
+        const priceInput = document.getElementById('unit_price');
+        const gstSelect = document.getElementById('gst_rate');
+        const mrpInput = document.getElementById('mrp');
+        const materialCostInput = document.getElementById('material_cost');
+
+        const price = parseFloat(priceInput.value) || 0;
+        const gst = parseFloat(gstSelect.value) || 0;
+        const mrp = parseFloat(mrpInput.value) || 0;
+        const materialCost = parseFloat(materialCostInput.value) || 0;
+
+        const taxable = price / (1 + gst / 100);
+        const tax = price - taxable;
+
+        // Update popup values
+        const popUnitPrice = document.getElementById('pop_unit_price');
+        const popGstRate = document.getElementById('pop_gst_rate');
+        const popTaxableEl = document.getElementById('pop_taxable_amount');
+        const popTaxEl = document.getElementById('pop_tax_amount');
+        const popMrpEl = document.getElementById('pop_mrp');
+        const popMaterialCostInput = document.getElementById('pop_material_cost');
+
+        if (popUnitPrice) popUnitPrice.innerText = '₹' + price.toFixed(2);
+        if (popGstRate) popGstRate.innerText = gst + '%';
+        if (popTaxableEl) popTaxableEl.value = price > 0 ? taxable.toFixed(2) : '0.00';
+        if (popTaxEl) popTaxEl.value = price > 0 ? tax.toFixed(2) : '0.00';
+        if (popMrpEl) popMrpEl.value = mrp.toFixed(2);
+
+        if (popMaterialCostInput && document.activeElement !== popMaterialCostInput) {
+            popMaterialCostInput.value = materialCost > 0 ? materialCost.toFixed(2) : '';
+        }
+
+        updateProfit();
+    }
+
+    // ========== PROFIT ESTIMATION & SYNC ==========
+    function updateProfit() {
+        const mrpInput = document.getElementById('mrp');
+        const materialCostInput = document.getElementById('material_cost');
+        const popProfitSpan = document.getElementById('pop_profit_amount');
+
+        // Shipping, packaging, price and gst inputs
+        const popShippingInput = document.getElementById('pop_shipping_cost');
+        const popPackagingInput = document.getElementById('pop_packaging_cost');
+        const priceInput = document.getElementById('unit_price');
+        const gstSelect = document.getElementById('gst_rate');
+
+        const price = parseFloat(priceInput.value) || 0;
+        const gst = parseFloat(gstSelect.value) || 0;
+        const taxable = price / (1 + gst / 100);
+
+        const materialCost = parseFloat(materialCostInput.value) || 0;
+        const shipping = popShippingInput ? (parseFloat(popShippingInput.value) || 0) : 120;
+        const packaging = popPackagingInput ? (parseFloat(popPackagingInput.value) || 0) : 20;
+
+        // Profit = Taxable Amount (Base Price) - Material Cost - Shipping Charges - Packaging Charges
+        const profit = taxable - materialCost - shipping - packaging;
+
+        if (popProfitSpan) {
+            const marginPercent = taxable > 0 ? ((profit / taxable) * 100) : 0;
+            popProfitSpan.innerText = '₹' + profit.toFixed(2) + ' (' + (profit >= 0 ? '+' : '') + marginPercent.toFixed(1) + '%)';
+            if (profit < 0) {
+                popProfitSpan.style.color = '#dc3545';
+            } else {
+                popProfitSpan.style.color = '#28a745';
+            }
+        }
+    }
+
+    // ========== AUTOMATICALLY SHOW BREAKUP MODAL ==========
+    function triggerBreakupModal() {
+        const price = parseFloat(document.getElementById('unit_price').value) || 0;
+        if (price > 0) {
+            calculateTax();
+            $('#priceBreakupModal').modal('show');
+        }
+    }
+
+    // ========== CHARACTER COUNTER ==========
+    function updateCharCount(inputId, counterId, limit) {
+        const input = document.getElementById(inputId);
+        if (!input) return;
+
+        let count = 0;
+        if (typeof $ !== 'undefined' && $('#' + inputId).data('summernote')) {
+            const rawHtml = $('#' + inputId).summernote('code');
+            const plainText = $('<div>').html(rawHtml).text() || '';
+            count = plainText.length;
+        } else {
+            count = input.value.length;
+        }
+
+        const counter = document.getElementById(counterId);
+        if (counter) {
+            counter.innerText = count + ' / ' + limit + ' characters';
+            if (count > limit) {
+                counter.style.color = 'red';
+            } else {
+                counter.style.color = '';
+            }
+        }
+    }
+
+    // ========== SKU GENERATOR ==========
+    async function generateSKU() {
+        const categorySelect = document.getElementById('category');
+        const categoryVal = categorySelect.value;
+        const categoryText = categorySelect.options[categorySelect.selectedIndex].text;
+
+        if (!categoryVal || categoryText.includes('Select')) {
+            alert('Please select a category first.');
+            return;
+        }
+
+        const sizeSelect = document.getElementById('size');
+        const colorSelect = document.getElementById('colorSelect');
+
+        const size = sizeSelect ? sizeSelect.value : '';
+        const color = colorSelect ? colorSelect.value : '';
+
+        // Extract subcategory if it's in "Parent > Child" format
+        const subCategoryText = categoryText.split('>').pop().trim();
+        const prefix = subCategoryText.replace(/[^a-zA-Z]/g, '').substring(0, 2).toUpperCase();
+
+        let seq = 1;
+        try {
+            const response = await fetch(`/admin/api/category-sku-sequence?category=${encodeURIComponent(categoryVal)}`);
+            const data = await response.json();
+            seq = data.sequence || 1;
+        } catch (e) {
+            console.error("Error fetching sequence:", e);
+        }
+
+        let sku = `${prefix}-${seq}`;
+
+        if (size && size !== '') {
+            sku += `-${size.toUpperCase()}`;
+        }
+
+        if (color && color !== '') {
+            const colorMap = {
+                'beige': 'BG', 'white': 'WT', 'black': 'BK', 'red': 'RD', 'blue': 'BL',
+                'green': 'GR', 'yellow': 'YL', 'multicolor': 'MC', 'pink': 'PK',
+                'orange': 'OR', 'purple': 'PR', 'brown': 'BR', 'grey': 'GY',
+                'maroon': 'MR', 'peach': 'PH'
+            };
+            const colorLower = color.toLowerCase();
+            const colorCode = colorMap[colorLower] || colorLower.substring(0, 2).toUpperCase();
+            sku += `-${colorCode}`;
+        }
+
+        document.getElementById('sku').value = sku;
+
+        // Also update SKU Variant if not manually modified
+        const skuVariant = document.getElementById('sku_variant');
+        if (skuVariant && !skuVariant.dataset.userModified) {
+            skuVariant.value = sku;
+        }
+    }
+
+    // ========== POSITIVE NUMBER VALIDATION ==========
+    function validatePositive(input) {
+        if (input.value < 0) {
+            input.setCustomValidity('Value cannot be negative');
+        } else {
+            input.setCustomValidity('');
+        }
+    }
+
+    // ========== FIXED IMAGE GALLERY ==========
+    const FIXED_SLOTS = [
+        { type: 'front_view', label: 'Front view' },
+        { type: 'sample', label: 'Sample' },
+        { type: 'closeup', label: 'Closeup (Thumbnail)' },
+        { type: 'size_view', label: 'Size View' },
+        { type: 'video', label: 'Product Video' },
+        { type: 'extra_1', label: 'Image' },
+        { type: 'extra_2', label: 'Image' }
+    ];
+
+    function renderFixedSlots(existingImages = {}) {
+        const container = document.getElementById('fixedImageSlots');
+        if (!container) return;
+        container.innerHTML = '';
+
+        FIXED_SLOTS.forEach((slot) => {
+            const existing = existingImages[slot.type] || null;
+            const hasImage = existing && existing.id;
+
+            const colDiv = document.createElement('div');
+            colDiv.className = 'col-md-4 col-lg-3 mb-4';
+            colDiv.setAttribute('data-slot-type', slot.type);
+
+            colDiv.innerHTML = `
+                <div class="card h-100">
+                    <div class="card-header bg-light p-2 text-center">
+                        <strong>${escapeHtml(slot.label)}</strong>
+                    </div>
+                    <div class="card-body p-2 text-center">
+                        <div class="image-preview-container mb-2" style="min-height: 150px;">
+                            ${hasImage ? `<img src="${escapeHtml(existing.url)}" class="img-fluid rounded" style="max-height: 140px;">` : '<div class="text-muted">No image</div>'}
+                        </div>
+                        <div class="custom-file mb-2">
+                            <input type="file" class="custom-file-input" id="file_${slot.type}" name="file_${slot.type}" accept="${slot.type === 'video' ? 'video/*' : 'image/*'}" data-slot-type="${slot.type}">
+                            <label class="custom-file-label text-truncate" for="file_${slot.type}">${hasImage ? escapeHtml(existing.filename) : 'Choose file...'}</label>
+                        </div>
+                        ${hasImage ? `
+                            <button type="button" class="btn btn-sm btn-danger delete-slot-img" data-slot-type="${slot.type}" data-image-id="${existing.id}">
+                                <i class="fas fa-trash"></i> Delete
+                            </button>
+                        ` : ''}
+                        <input type="hidden" name="existing_image_id_${slot.type}" value="${hasImage ? existing.id : ''}">
+                        <input type="hidden" name="image_type_${slot.type}" value="${slot.type}">
+                    </div>
+                </div>
+            `;
+
+            container.appendChild(colDiv);
+
+            const fileInput = colDiv.querySelector(`#file_${slot.type}`);
+            const label = fileInput.nextElementSibling;
+            const previewDiv = colDiv.querySelector('.image-preview-container');
+
+            fileInput.addEventListener('change', function (e) {
+                if (this.files && this.files[0]) {
+                    const file = this.files[0];
+                    label.innerText = file.name;
+                    const reader = new FileReader();
+                    reader.onload = function (ev) {
+                        if (slot.type === 'video') {
+                            previewDiv.innerHTML = `<video src="${ev.target.result}" class="img-fluid rounded" style="max-height: 140px;" autoplay loop muted></video>`;
+                        } else {
+                            previewDiv.innerHTML = `<img src="${ev.target.result}" class="img-fluid rounded" style="max-height: 140px;">`;
+                        }
+                    };
+                    reader.readAsDataURL(file);
+                    const delBtn = colDiv.querySelector('.delete-slot-img');
+                    if (delBtn) delBtn.style.display = 'none';
+                } else {
+                    label.innerText = 'Choose file...';
+                    if (!hasImage) previewDiv.innerHTML = '<div class="text-muted">No image</div>';
+                }
+            });
+
+            const delBtn = colDiv.querySelector('.delete-slot-img');
+            if (delBtn) {
+                delBtn.addEventListener('click', async function (e) {
+                    const hiddenInput = colDiv.querySelector(`input[name="existing_image_id_${slot.type}"]`);
+                    const imageId = hiddenInput ? hiddenInput.value : null;
+
+                    // If there's no image ID in the database, just clear the UI
+                    if (!imageId) {
+                        previewDiv.innerHTML = '<div class="text-muted">No image</div>';
+                        fileInput.value = '';
+                        label.innerText = 'Choose file...';
+                        if (hiddenInput) hiddenInput.value = '';
+                        this.remove();  // remove the delete button itself
+                        return;
+                    }
+
+                    if (!confirm(`Remove image from "${slot.label}"? This cannot be undone.`)) return;
+
+                    // Disable button to prevent double clicks
+                    this.disabled = true;
+                    const originalText = this.innerHTML;
+                    this.innerHTML = '<i class="fas fa-spinner fa-spin"></i> Deleting...';
+
+                    try {
+                        // Get CSRF token from the hidden input rendered by {{ form.csrf_token }}
+                        const csrfToken = document.querySelector('input[name="csrf_token"]').value;
+
+                        const response = await fetch(`/admin/products/delete-image/${imageId}`, {
+                            method: 'POST',
+                            headers: {
+                                'X-CSRFToken': csrfToken
+                            }
+                        });
+                        const result = await response.json();
+
+                        if (result.success) {
+                            // Clear the UI
+                            previewDiv.innerHTML = '<div class="text-muted">No image</div>';
+                            fileInput.value = '';
+                            label.innerText = 'Choose file...';
+                            if (hiddenInput) hiddenInput.value = '';
+                            this.remove();  // remove delete button
+                        } else {
+                            alert(result.message || 'Failed to delete image');
+                            this.disabled = false;
+                            this.innerHTML = originalText;
+                        }
+                    } catch (error) {
+                        console.error('Delete error:', error);
+                        alert('Error deleting image. Please try again.');
+                        this.disabled = false;
+                        this.innerHTML = originalText;
+                    }
+                });
+            }
+        });
+    }
+
+    function escapeHtml(str) {
+        if (!str) return '';
+        return str.replace(/[&<>]/g, function (m) {
+            if (m === '&') return '&amp;';
+            if (m === '<') return '&lt;';
+            if (m === '>') return '&gt;';
+            return m;
+        });
+    }
+
+    function loadExistingImagesIntoSlots(imagesArray) {
+        const existingMap = {};
+        imagesArray.forEach(img => {
+            existingMap[img.image_type] = {
+                id: img.id,
+                filename: img.image_filename.split('/').pop(),
+                url: img.image_url,
+                type: img.image_type
+            };
+        });
+        renderFixedSlots(existingMap);
+    }
+
+    // ========== DEFAULT VALUES AND SYNC LOGIC (NEW) ==========
+    let isEditMode = false;
+    let userModifiedMrp = false;
+    let userModifiedMaterialCost = false;
+
+    function applyDefaultValuesForNewProduct() {
+        if (isEditMode) return;
+
+        // Stock & Reorder
+        const stockQty = document.getElementById('stock_quantity');
+        const reorderLevel = document.getElementById('reorder_level');
+        if (stockQty && (stockQty.value === '' || stockQty.value === '0')) stockQty.value = '1';
+        if (reorderLevel && (reorderLevel.value === '' || reorderLevel.value === '0')) reorderLevel.value = '1';
+
+        // Dimensions and weight
+        const height = document.getElementById('item_height');
+        const width = document.getElementById('item_width');
+        const length = document.getElementById('item_length');
+        const weight = document.getElementById('item_weight');
+        if (height && height.value === '') height.value = '0';
+        if (width && width.value === '') width.value = '0';
+        if (length && length.value === '') length.value = '0';
+        if (weight && weight.value === '') weight.value = '0';
+
+        // SKU, HSN
+        const sku = document.getElementById('sku');
+        const hsn = document.getElementById('hsn_code');
+        if (sku && sku.value === '') sku.value = '0';
+        if (hsn && hsn.value === '') hsn.value = '0';
+
+        // Size and Color
+        const size = document.getElementById('size');
+        const color = document.getElementById('color');
+        if (size && size.value === '') size.value = 'S';
+        if (color && color.value === '') color.value = 'multicolor';
+
+        // MRP & Material Cost sync with Unit Price
+        const unitPrice = document.getElementById('unit_price');
+        const mrp = document.getElementById('mrp');
+        const materialCost = document.getElementById('material_cost');
+        if (unitPrice && mrp && materialCost) {
+            let priceVal = parseFloat(unitPrice.value) || 0;
+            if (mrp.value === '' || parseFloat(mrp.value) === 0) mrp.value = priceVal.toFixed(2);
+            if (materialCost.value === '' || parseFloat(materialCost.value) === 0) materialCost.value = priceVal.toFixed(2);
+        }
+    }
+
+    function setupUnitPriceSync() {
+        const unitPrice = document.getElementById('unit_price');
+        const mrp = document.getElementById('mrp');
+        const materialCost = document.getElementById('material_cost');
+        const sku = document.getElementById('sku');
+        const skuVariant = document.getElementById('sku_variant');
+
+        if (!unitPrice || !mrp || !materialCost) return;
+
+        let oldPrice = parseFloat(unitPrice.value) || 0;
+
+        // Mark when user manually edits MRP, Material Cost, or SKU Variant
+        mrp.addEventListener('focus', () => { userModifiedMrp = true; });
+        materialCost.addEventListener('focus', () => { userModifiedMaterialCost = true; });
+        if (skuVariant) {
+            skuVariant.addEventListener('input', () => { skuVariant.dataset.userModified = 'true'; });
+        }
+
+        // Sync SKU Variant with SKU
+        if (sku && skuVariant) {
+            sku.addEventListener('input', function () {
+                if (!skuVariant.dataset.userModified) {
+                    skuVariant.value = this.value;
+                }
+            });
+        }
+
+        unitPrice.addEventListener('input', function () {
+            const newPrice = parseFloat(this.value) || 0;
+            if (!userModifiedMrp) {
+                mrp.value = newPrice.toFixed(2);
+            }
+            if (!userModifiedMaterialCost) {
+                materialCost.value = newPrice.toFixed(2);
+            }
+            oldPrice = newPrice;
+            calculateTax();      // Recalculate tax on price change
+            updateProfit();      // Recalculate profit estimate
+        });
+    }
+
+    // ========== COLOR PREVIEW ==========
+    function setupColorPreview() {
+        const colorSelect = document.getElementById('colorSelect');
+        const colorPreview = document.getElementById('colorPreview');
+        if (!colorSelect || !colorPreview) return;
+
+        const colorMap = {
+            'Multicolor': 'linear-gradient(to right, red, orange, yellow, green, blue, indigo, violet)',
+            'Red': '#dc3545',
+            'Blue': '#007bff',
+            'Green': '#28a745',
+            'Yellow': '#ffc107',
+            'Pink': '#e83e8c',
+            'Black': '#000000',
+            'White': '#ffffff',
+            'Orange': '#fd7e14',
+            'Purple': '#6f42c1',
+            'Beige': '#f5f5dc',
+            'Brown': '#a52a2a',
+            'Grey': '#6c757d',
+            'Maroon': '#800000',
+            'Peach': '#ffdab9'
+        };
+
+        function updatePreview() {
+            const val = colorSelect.value;
+            colorPreview.style.background = colorMap[val] || 'transparent';
+        }
+
+        colorSelect.addEventListener('change', updatePreview);
+        updatePreview();
+    }
+
+    // ========== INITIALIZE EVERYTHING ON DOM READY ==========
+    document.addEventListener('DOMContentLoaded', function () {
+        const serverData = document.getElementById('server-data');
+
+        // Determine if we are in edit mode (from server data attribute)
+        isEditMode = serverData.dataset.isEdit === 'true';
+
+        // Initialize fixed image gallery
+        try {
+            const existingImages = JSON.parse(serverData.dataset.images || '[]');
+            if (existingImages && existingImages.length > 0) {
+                loadExistingImagesIntoSlots(existingImages);
+            } else {
+                renderFixedSlots({});
+            }
+        } catch (e) {
+            console.error("Error parsing images data", e);
+            renderFixedSlots({});
+        }
+
+        // Apply default values for new product
+        applyDefaultValuesForNewProduct();
+
+        // Setup unit price → MRP & Material Cost sync
+        setupUnitPriceSync();
+
+        // Setup color preview
+        setupColorPreview();
+
+        // Tax calculation
+        const priceInput = document.getElementById('unit_price');
+        const gstSelect = document.getElementById('gst_rate');
+        if (priceInput && gstSelect) {
+            priceInput.addEventListener('input', calculateTax);
+            gstSelect.addEventListener('change', calculateTax);
+
+            // Auto-show modal when user finishes entering price or picking GST
+            priceInput.addEventListener('change', triggerBreakupModal);
+            gstSelect.addEventListener('change', triggerBreakupModal);
+
+            calculateTax();
+        }
+
+        // Profit estimation & popup sync
+        const mrpInput = document.getElementById('mrp');
+        const costInput = document.getElementById('material_cost');
+        if (mrpInput && costInput) {
+            mrpInput.addEventListener('input', calculateTax);
+            costInput.addEventListener('input', calculateTax);
+        }
+
+        // Setup popup material cost sync
+        const popCostInput = document.getElementById('pop_material_cost');
+        if (popCostInput) {
+            popCostInput.addEventListener('input', function () {
+                const hiddenCost = document.getElementById('material_cost');
+                if (hiddenCost) {
+                    hiddenCost.value = this.value;
+                }
+                updateProfit();
+            });
+            popCostInput.addEventListener('focus', () => { userModifiedMaterialCost = true; });
+        }
+
+        // Setup popup shipping and packaging cost event listeners
+        const popShippingInput = document.getElementById('pop_shipping_cost');
+        if (popShippingInput) {
+            popShippingInput.addEventListener('input', updateProfit);
+        }
+        const popPackagingInput = document.getElementById('pop_packaging_cost');
+        if (popPackagingInput) {
+            popPackagingInput.addEventListener('input', updateProfit);
+        }
+
+        // Initial tax and profit load
+        calculateTax();
+
+        // Product Name Character Counter
+        const nameInput = document.getElementById('product_name');
+        if (nameInput) {
+            nameInput.addEventListener('input', function () {
+                updateCharCount('product_name', 'nameCharCount', 200);
+            });
+            updateCharCount('product_name', 'nameCharCount', 200);
+        }
+
+        // Initialize Summernote Rich Text Editor
+        const descInput = document.getElementById('product_description');
+        if (descInput) {
+            descInput.removeAttribute('maxlength');
+            $('#product_description').summernote({
+                placeholder: 'Enter detailed product description with bullets, blank spaces, styling...',
+                tabsize: 2,
+                height: 180,
+                toolbar: [
+                    ['style', ['style']],
+                    ['font', ['bold', 'underline', 'italic', 'clear']],
+                    ['fontname', ['fontname']],
+                    ['color', ['color']],
+                    ['fontsize', ['fontsize']],
+                    ['para', ['ul', 'ol', 'paragraph']],
+                    ['table', ['table']],
+                    ['insert', ['link', 'picture', 'video']],
+                    ['view', ['fullscreen', 'codeview', 'help']]
+                ],
+                callbacks: {
+                    onChange: function (contents, $editable) {
+                        updateCharCount('product_description', 'charCount', 1000);
+                    }
+                }
+            });
+            updateCharCount('product_description', 'charCount', 1000);
+        }
+
+        const featuresInput = document.getElementById('product_features');
+        if (featuresInput) {
+            $('#product_features').summernote({
+                placeholder: 'Enter product features with bullets, styling...',
+                tabsize: 2,
+                height: 180,
+                toolbar: [
+                    ['style', ['style']],
+                    ['font', ['bold', 'underline', 'italic', 'clear']],
+                    ['fontname', ['fontname']],
+                    ['color', ['color']],
+                    ['fontsize', ['fontsize']],
+                    ['para', ['ul', 'ol', 'paragraph']],
+                    ['table', ['table']],
+                    ['insert', ['link', 'picture', 'video']],
+                    ['view', ['fullscreen', 'codeview', 'help']]
+                ],
+                callbacks: {
+                    onChange: function (contents, $editable) {
+                        updateCharCount('product_features', 'featuresCharCount', 1000);
+                    }
+                }
+            });
+            updateCharCount('product_features', 'featuresCharCount', 1000);
+        }
+
+        const careInput = document.getElementById('care_instructions');
+        if (careInput) {
+            $('#care_instructions').summernote({
+                placeholder: 'Enter care instructions with bullets, styling...',
+                tabsize: 2,
+                height: 180,
+                toolbar: [
+                    ['style', ['style']],
+                    ['font', ['bold', 'underline', 'italic', 'clear']],
+                    ['fontname', ['fontname']],
+                    ['color', ['color']],
+                    ['fontsize', ['fontsize']],
+                    ['para', ['ul', 'ol', 'paragraph']],
+                    ['table', ['table']],
+                    ['insert', ['link', 'picture', 'video']],
+                    ['view', ['fullscreen', 'codeview', 'help']]
+                ],
+                callbacks: {
+                    onChange: function (contents, $editable) {
+                        updateCharCount('care_instructions', 'careCharCount', 1000);
+                    }
+                }
+            });
+            updateCharCount('care_instructions', 'careCharCount', 1000);
+        }
+
+        // SKU generator
+        const genBtn = document.getElementById('generateSkuBtn');
+        if (genBtn) {
+            genBtn.addEventListener('click', generateSKU);
+        }
+
+        // Positive number validation
+        const positiveFields = ['stock_quantity', 'reorder_level', 'unit_price', 'mrp', 'material_cost'];
+        positiveFields.forEach(id => {
+            const el = document.getElementById(id);
+            if (el) {
+                el.addEventListener('input', function () { validatePositive(el); });
+            }
+        });
+
+        // Smooth scroll and focus on SKU field if there is a validation error
+        setTimeout(function () {
+            const skuInput = document.getElementById('sku');
+            if (skuInput && skuInput.classList.contains('is-invalid')) {
+                skuInput.focus();
+                skuInput.scrollIntoView({ behavior: 'smooth', block: 'center' });
+            }
+        }, 100);
+
+        // Form Submission with Loading State
+        $('#productForm').on('submit', function() {
+            const $btn = $('#btnSaveProduct');
+            $btn.html('<i class="fas fa-spinner fa-spin mr-2"></i> Saving...');
+            $btn.prop('disabled', true);
+            // Allow form to submit normally
+        });
+    });
+</script>
+{% endblock %}
