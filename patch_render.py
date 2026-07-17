@@ -7,29 +7,28 @@ with open('app.py', 'r') as f:
     content = f.read()
 
 original = content
+NL = chr(10)
 
 # Fix 1: Wrap scheduler.start() in try/except
-if 'scheduler.start()' in content and 'try:\n    scheduler.start()' not in content:
+if 'scheduler.start()' in content and 'except Exception' not in content:
     content = content.replace(
         'scheduler.start()',
-        'try:\n    scheduler.start()\nexcept Exception as e:\n    print(f"Scheduler start failed: {e}")'
+        'try:' + NL + '    scheduler.start()' + NL + 'except Exception as e:' + NL + '    print(f"Scheduler start failed: {e}")'
     )
     print('SUCCESS: scheduler.start() wrapped in try/except')
 
 # Fix 2: Override database URI to use PostgreSQL from DATABASE_URL env var
-db_patch = '''
-# Render PostgreSQL patch
-_render_db_url = os.environ.get('DATABASE_URL', '')
-if _render_db_url:
-    if _render_db_url.startswith('postgres://'):
-        _render_db_url = 'postgresql://' + _render_db_url[11:]
-    app.config['SQLALCHEMY_DATABASE_URI'] = _render_db_url
-    print('DB: Using PostgreSQL from DATABASE_URL')
-'''
+db_patch_marker = 'Render PostgreSQL patch'
+db_patch = (NL + '# Render PostgreSQL patch' + NL +
+    '_render_db_url = os.environ.get("DATABASE_URL", "")' + NL +
+    'if _render_db_url:' + NL +
+    '    if _render_db_url.startswith("postgres://"):' + NL +
+    '        _render_db_url = "postgresql://" + _render_db_url[11:]' + NL +
+    '    app.config["SQLALCHEMY_DATABASE_URI"] = _render_db_url' + NL +
+    '    print("DB: Using PostgreSQL from DATABASE_URL")' + NL)
 
-if 'Render PostgreSQL patch' not in content:
-    # Find the line setting SQLALCHEMY_DATABASE_URI to mysql and insert after it
-    lines = content.split('\n')
+if db_patch_marker not in content:
+    lines = content.split(NL)
     new_lines = []
     inserted = False
     for line in lines:
@@ -38,7 +37,7 @@ if 'Render PostgreSQL patch' not in content:
             new_lines.append(db_patch)
             inserted = True
     if inserted:
-        content = '\n'.join(new_lines)
+        content = NL.join(new_lines)
         print('SUCCESS: DATABASE_URL PostgreSQL override added')
     else:
         print('WARNING: Could not find MySQL URI line to patch')
