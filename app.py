@@ -36,6 +36,13 @@ db_port = os.getenv('DB_PORT', '3309')
 db_name = os.getenv('DB_NAME', '')
 
 app.config['SQLALCHEMY_DATABASE_URI'] = f"mysql+mysqlconnector://{db_user}:{db_password}@{db_host}:{db_port}/{db_name}"
+# Render.com PostgreSQL override
+_render_db_url = os.environ.get('DATABASE_URL', '')
+if _render_db_url:
+    if _render_db_url.startswith('postgres://'):
+        _render_db_url = 'postgresql://' + _render_db_url[11:]
+    app.config['SQLALCHEMY_DATABASE_URI'] = _render_db_url
+    print('Using PostgreSQL from DATABASE_URL')
 app.config['SQLALCHEMY_TRACK_MODIFICATIONS'] = False
 
 # Detect PythonAnywhere environment
